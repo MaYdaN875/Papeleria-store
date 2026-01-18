@@ -13,6 +13,10 @@ y contacto directo vía WhatsApp.
 - Vite
 - CSS (o framework si aplica)
 - Git & GitHub
+---
+
+## -Funcionalidades principales
+
 
 ---
 
@@ -30,3 +34,26 @@ Se marcarán con un ✔ las completadas.
 
 ## 📁 Estructura del proyecto
 
+src/
+├── components/ # Componentes reutilizables
+├── pages/ # Vistas principales
+├── data/ # Datos mock (productos)
+├── types/ # Tipos TypeScript
+├── context/ # Estado global (carrito)
+├── styles/ # Estilos globales
+---
+## ▶️ Cómo ejecutar el proyecto
+
+1. Clona el repositorio:
+```bash
+git clone https://github.com/usuario/tienda-online.git
+```
+
+  Instala dependencias:
+```bash
+npm install
+```
+  Ejecuta el proyecto:
+```bash
+npm run dev
+```
