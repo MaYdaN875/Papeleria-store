@@ -15,10 +15,6 @@ y contacto directo vía WhatsApp.
 - Git & GitHub
 ---
 
-## -Funcionalidades principales
-
-
----
 
 ## -Funcionalidades principales
 
@@ -35,12 +31,12 @@ Se marcarán con un ✔ las completadas.
 ## 📁 Estructura del proyecto
 
 src/
-├── components/ # Componentes reutilizables
-├── pages/ # Vistas principales
-├── data/ # Datos mock (productos)
-├── types/ # Tipos TypeScript
-├── context/ # Estado global (carrito)
-├── styles/ # Estilos globales
+- components/ # Componentes reutilizables
+- pages/ # Vistas principales
+- data/ # Datos mock (productos)
+- types/ # Tipos TypeScript
+- context/ # Estado global (carrito)
+- styles/ # Estilos globales
 ---
 ## ▶️ Cómo ejecutar el proyecto
 
