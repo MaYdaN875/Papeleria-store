@@ -42,7 +42,7 @@ src/
 
 1. Clona el repositorio:
 ```bash
-git clone https://github.com/usuario/tienda-online.git
+git clone https://github.com/MaYdaN875/Papeleria-store.git
 ```
 
   Instala dependencias:
