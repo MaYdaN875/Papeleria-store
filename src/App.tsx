@@ -10,7 +10,11 @@ function App() {
   return (
     <>
       <Navbar />
-
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+      </Routes>
 
     </>
   )
