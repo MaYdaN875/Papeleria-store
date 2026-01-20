@@ -7,9 +7,9 @@ export const Navbar = () => {
                 Angel
             </div>
             <div className="links">
-                <a href="#home">Home</a>
+                <a href="/">Home</a>
                 <a href="#about">About</a>
-                <a href="#contact">Contact</a>
+                <a href="/cart">Contact</a>
             </div>
             <div className="contact">
                 <h1>Contact Us</h1>
