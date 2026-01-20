@@ -48,6 +48,7 @@ git clone https://github.com/MaYdaN875/Papeleria-store.git
   Instala dependencias:
 ```bash
 npm install
+npm install react-router-dom
 ```
   Ejecuta el proyecto:
 ```bash
