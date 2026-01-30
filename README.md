@@ -53,5 +53,9 @@ npm install fontawesome-free
 ```
   Ejecuta el proyecto:
 ```bash
-npm run dev
+npm run dev — Servidor de desarrollo (Vite)
+npm run build — Build de producción
+npm run preview — Vista previa del build
+npm run lint — Ejecutar ESLint
+
 ```
