@@ -1,0 +1,132 @@
+/* ================================
+   PÁGINA TODOS LOS PRODUCTOS (AllProducts)
+   ================================ */
+
+.all-products-header-container {
+    background: linear-gradient(180deg, #A8E6E1 0%, #9DDDD8 100%);
+    padding: 40px 20px;
+    color: #1a1a1a;
+    position: relative;
+    overflow: hidden;
+}
+
+.all-products-header-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="20" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="30" fill="rgba(255,255,255,0.05)"/></svg>');
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.btn-back {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition-normal);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.btn-back:hover {
+    background-color: rgba(255, 255, 255, 0.35);
+    border-color: white;
+    transform: translateX(-5px);
+}
+
+.btn-back:active {
+    transform: translateX(-3px) scale(0.98);
+}
+
+.btn-back i {
+    font-size: 16px;
+    transition: var(--transition-normal);
+}
+
+.btn-back:hover i {
+    transform: translateX(-3px);
+}
+
+.header-info {
+    flex: 1;
+}
+
+.page-title {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0;
+    margin-bottom: 8px;
+}
+
+.page-subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Responsive para header */
+@media (max-width: 768px) {
+    .all-products-header-container {
+        padding: 30px 15px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+    }
+
+    .page-title {
+        font-size: 28px;
+    }
+
+    .page-subtitle {
+        font-size: 14px;
+    }
+
+    .btn-back {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .all-products-header-container {
+        padding: 20px 15px;
+    }
+
+    .page-title {
+        font-size: 24px;
+    }
+
+    .page-subtitle {
+        font-size: 12px;
+    }
+
+    .btn-back {
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+}

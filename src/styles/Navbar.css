@@ -1,88 +1,16 @@
-
-/* ================================
-   ANIMACIONES
-   ================================ */
-
-@keyframes slideDown {
-    from {
-        transform: translateY(-100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.7;
-    }
-}
-
-@keyframes scaleIn {
-    from {
-        transform: scale(0.9);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-@keyframes bounceIn {
-    0% {
-        transform: scale(0.3);
-        opacity: 0;
-    }
-    50% {
-        opacity: 1;
-    }
-    70% {
-        transform: scale(1.05);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: -1000px 0;
-    }
-    100% {
-        background-position: 1000px 0;
-    }
-}
-
 /* ================================
    ESTILOS DEL HEADER
    ================================ */
 
 /* Contenedor principal del header */
 .header {
-    background: linear-gradient(135deg, #ffffff 0%, #F8FAFC 100%);
-    padding: 20px 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    background: linear-gradient(180deg, #A8E6E1 0%, #9DDDD8 100%);
+    padding: 5px 0 3px 0;
+    position: static;
+    top: auto;
+    z-index: auto;
     box-shadow: var(--shadow-md);
-    border-bottom: 2px solid var(--color-primary);
+    border-bottom: none;
     animation: slideDown 0.6s ease;
 }
 
@@ -117,10 +45,7 @@
 .header-logo h1 {
     font-size: 28px;
     font-weight: 700;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #222222;
     letter-spacing: -1px;
 }
 
@@ -133,17 +58,17 @@
     flex: 1;
     max-width: 500px;
     animation: fadeInUp 0.6s ease 0.1s backwards;
+    position: relative;
 }
 
 /* Caja de búsqueda */
 .search-box {
     display: flex;
     align-items: center;
-    background-color: white;
-    border-radius: 30px;
-    padding: 12px 20px;
-    gap: 12px;
-    border: 2px solid var(--color-border);
+    background-color: rgb(255, 255, 255);
+    border-radius: 25px;
+    padding: 8px 16px;
+    border: 2px solid transparent;
     transition: var(--transition-normal);
     box-shadow: var(--shadow-sm);
 }
@@ -151,14 +76,13 @@
 .search-box:focus-within {
     border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
-    transform: translateY(-2px);
 }
 
 /* Icono de búsqueda */
 .search-box i {
-    color: var(--color-text-muted);
+    color: var(--color-text-light);
+    margin-right: 8px;
     font-size: 16px;
-    transition: var(--transition-normal);
 }
 
 .search-box:focus-within i {
@@ -168,11 +92,9 @@
 /* Campo de entrada de búsqueda */
 .search-box input {
     border: none;
-    background-color: transparent;
-    padding: 5px;
-    width: 100%;
-    color: var(--color-text-dark);
-    font-size: var(--font-size-lg);
+    outline: none;
+    flex: 1;
+    font-size: var(--font-size-base);
     font-family: var(--font-family);
 }
 
@@ -184,56 +106,128 @@
     outline: none;
 }
 
+/* Dropdown de resultados de búsqueda */
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    margin-top: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 100;
+    animation: fadeInUp 0.2s ease;
+}
+
+/* Items de resultados */
+.search-result-item {
+    display: block;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition-fast);
+    cursor: pointer;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background-color: rgba(0, 102, 255, 0.05);
+    padding-left: 20px;
+}
+
+.result-name {
+    font-weight: 600;
+    color: var(--color-text-dark);
+    font-size: var(--font-size-base);
+    margin-bottom: 4px;
+}
+
+.result-category {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.result-price {
+    font-weight: 700;
+    color: var(--color-primary);
+    font-size: var(--font-size-base);
+}
+
+/* Mensaje cuando no hay resultados */
+.search-no-results {
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+.search-no-results i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    opacity: 0.5;
+}
+
+.search-no-results p {
+    margin: 8px 0 0 0;
+    font-size: var(--font-size-base);
+}
+
 /* Contenedor de elementos derechos del header */
 .header-right {
     display: flex;
     align-items: center;
     gap: 20px;
-    min-width: fit-content;
     animation: fadeInUp 0.6s ease 0.2s backwards;
 }
 
 /* Botón "Contactar" */
 .btn-cta {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: white;
+    background-color: #F5EFE7;
+    color: #5B7C99;
     border: none;
-    padding: 12px 28px;
-    border-radius: 30px;
-    font-weight: 600;
-    font-size: var(--font-size-lg);
+    padding: 10px 20px;
+    border-radius: 20px;
     cursor: pointer;
+    font-weight: 600;
+    font-size: var(--font-size-base);
     transition: var(--transition-normal);
-    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
-    font-family: var(--font-family);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-cta:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 102, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
 .btn-cta:active {
-    transform: translateY(-1px);
+    transform: translateY(0);
 }
 
 /* Icono del carrito */
 .cart-icon {
     position: relative;
-    color: var(--color-text-dark);
-    font-size: 24px;
+    font-size: 30px;
+    color: #5B7C99;
     cursor: pointer;
     transition: var(--transition-normal);
     text-decoration: none;
 }
 
 .cart-icon:hover {
-    color: var(--color-primary);
-    transform: scale(1.2);
+    color: #E0F4F7;
+    transform: scale(1.1);
 }
 
 .cart-icon.active {
-    color: var(--color-primary);
+    color: #222222;
 }
 
 /* Contador del carrito */
@@ -241,54 +235,57 @@
     position: absolute;
     top: -8px;
     right: -8px;
-    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-warning) 100%);
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    width: 22px;
-    height: 22px;
+    background: linear-gradient(135deg, #B8E6D5 0%, #A8DEC9 100%);
+    color: #1a1a1a;
     border-radius: 50%;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
     box-shadow: var(--shadow-md);
     animation: scaleIn 0.3s ease;
 }
 
 /* ================================
-   ESTILOS DE LA BARRA DE NAVEGACIÓN
+   NAVEGACIÓN DE CATEGORÍAS
    ================================ */
 
 /* Navegación de categorías */
 .navbar {
-    background: linear-gradient(90deg, var(--color-light-bg) 0%, white 50%, var(--color-light-bg) 100%);
-    padding: 15px 0;
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
+    background: none;
+    border-bottom: none;
+    padding: 0;
 }
 
 /* Contenedor de navegación */
 .navbar-container {
     display: flex;
     justify-content: center;
-    gap: 50px;
+    gap: 30px;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 3px 20px;
+    flex-wrap: wrap;
 }
 
 /* Enlaces de categorías */
 .category-link {
+    text-decoration: none;
+    color: rgb(0, 0, 0);
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    transition: var(--transition-normal);
+    position: relative;
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--color-text-dark);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: var(--font-size-lg);
-    transition: var(--transition-normal);
     padding: 8px 0;
-    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 
 .category-link i {
@@ -296,135 +293,70 @@
 }
 
 .category-link:hover {
-    color: var(--color-primary);
+    color: #8BA894;
 }
 
 .category-link::after {
     content: '';
     position: absolute;
-    bottom: -8px;
+    bottom: -5px;
     left: 0;
     width: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    background: linear-gradient(135deg, #5B7C99 0%, #A89968 100%);
     transition: var(--transition-normal);
+    border-radius: 2px;
 }
 
 .category-link:hover::after {
     width: 100%;
 }
 
-/* ================================
-   SECCIÓN BANNER PRINCIPAL
-   ================================ */
+/* Responsive */
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        gap: 15px;
+    }
 
-.banner-principal {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
-    color: white;
-    padding: var(--spacing-2xl) 20px;
-    margin-top: 20px;
-    margin-bottom: 40px;
-    border-radius: 20px;
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
-    animation: fadeInUp 0.7s ease 0.3s backwards;
+    .header-search {
+        max-width: 100%;
+    }
+
+    .navbar-container {
+        gap: 15px;
+    }
+
+    .category-link {
+        font-size: 12px;
+    }
 }
 
-.banner-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 40px;
+@media (max-width: 480px) {
+    .header-logo h1 {
+        font-size: 20px;
+    }
+
+    .logo-icon {
+        font-size: 24px;
+    }
+
+    .search-box {
+        padding: 6px 12px;
+    }
+
+    .search-box input {
+        font-size: 12px;
+    }
+
+    .btn-cta {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
 }
 
-.banner-text h2 {
-    font-size: 48px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    letter-spacing: -1px;
-    animation: slideDown 0.6s ease 0.4s backwards;
-}
-
-.banner-text p {
-    font-size: 18px;
-    margin-bottom: 8px;
-    opacity: 0.95;
-    animation: slideDown 0.6s ease 0.5s backwards;
-}
-
-.discount-percent {
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--color-warning);
-}
-
-.banner-subtitle {
-    font-size: 16px !important;
-    opacity: 0.9;
-}
-
-.btn-banner {
-    background-color: white;
-    color: var(--color-primary);
-    border: none;
-    padding: 14px 32px;
-    border-radius: 30px;
-    font-weight: 700;
-    font-size: var(--font-size-lg);
-    cursor: pointer;
-    transition: var(--transition-normal);
-    margin-top: 20px;
-    animation: slideDown 0.6s ease 0.6s backwards;
-}
-
-.btn-banner:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-}
-
-.banner-graphic {
-    font-size: 120px;
-    opacity: 0.2;
-    animation: bounceIn 0.8s ease 0.5s backwards;
-}
-
-/* ================================
-   ESTILOS DE SECCIONES PRINCIPALES
-   ================================ */
-
-/* Sección de ofertas */
-.offers-section {
-    background-color: var(--color-white);
-    padding: var(--spacing-2xl) 20px;
-    margin-bottom: var(--spacing-2xl);
-    animation: fadeInUp 0.8s ease;
-}
-
-/* Sección de productos */
-.products-section {
-    background-color: var(--color-white);
-    padding: var(--spacing-2xl) 20px;
-    margin-bottom: var(--spacing-2xl);
-    animation: fadeInUp 0.8s ease 0.1s backwards;
-}
-
-/* Título de las secciones */
-.section-title {
-    text-align: center;
-    font-size: var(--font-size-3xl);
-    font-weight: 700;
-    color: var(--color-text-dark);
-    margin-bottom: 10px;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.section-subtitle {
-    text-align: center;
-    font-size: var(--font-size-lg);
-    color: var(--color-text-light);
-    margin-bottom: 40px;
+@media (max-width: 320px) {
+    .header-logo h1 {
+        font-size: 16px;
+    }
 }
