@@ -49,6 +49,7 @@ git clone https://github.com/MaYdaN875/Papeleria-store.git
 ```bash
 npm install
 npm install react-router
+npm install fontawesome-free
 ```
   Ejecuta el proyecto:
 ```bash
