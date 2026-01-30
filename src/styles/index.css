@@ -1,76 +1,100 @@
 @import url('normalize.css');
+@import url('animations.css');
 @import url('Navbar.css');
+@import url('carousel.css');
+@import url('products.css');
+@import url('home.css');
+@import url('cart.css');
+@import url('footer.css');
+@import url('notifications.css');
 @import url('whatsapp.css');
+@import url('allproducts.css');
+
+/* ================================
+   ESTILOS GENERALES Y VARIABLES
+   ================================ */
+
+/* Variables de color */
 :root {
-  /* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400; */
+  /* Colores principales - Tonos cálidos y suaves */
+  --color-primary: #5B7C99;
+  /* Azul grisáceo suave */
+  --color-secondary: #A89968;
+  /* Arena/beige cálido */
+  --color-accent: #D4956B;
+  /* Terracota suave */
+  --color-success: #8BA894;
+  /* Verde grisáceo suave */
+  --color-warning: #C9A876;
+  /* Dorado arena suave */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Colores de fondo - Degradados cálidos */
+  --color-white: #F5EFE7;
+  /* Blanco crema cálido */
+  --color-light-bg: #FAF7F2;
+  /* Fondo muy claro cálido */
+  --color-dark-bg: #4A4A4A;
+  /* Gris suave oscuro */
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Colores de texto */
+  --color-text-dark: #1a1a1a;
+  --color-text-light: #666666;
+  --color-text-muted: #999999;
 
-  /* Colores principales */
-    --color-primary: #0066FF;        /* Azul principal */
-    --color-secondary: #00D4FF;      /* Azul claro */
-    --color-accent: #FF6B35;         /* Naranja vibrante */
-    --color-success: #00A86B;        /* Verde éxito */
-    --color-warning: #FFB84D;        /* Naranja advertencia */
-    
-    /* Colores de fondo */
-    --color-white: #ffffff;
-    --color-light-bg: #F8FAFC;
-    --color-dark-bg: #1a1a1a;
-    
-    /* Colores de texto */
-    --color-text-dark: #1a1a1a;
-    --color-text-light: #666666;
-    --color-text-muted: #999999;
-    
-    /* Otros colores */
-    --color-border: #E0E0E0;
-    --color-shadow: rgba(0, 0, 0, 0.1);
-    --color-whatsapp: #25D366;
-    
-    /* Fuentes */
-    --font-family: 'Poppins', 'Inter', sans-serif;
-    --font-size-sm: 12px;
-    --font-size-base: 14px;
-    --font-size-lg: 16px;
-    --font-size-xl: 18px;
-    --font-size-2xl: 24px;
-    --font-size-3xl: 32px;
-    
-    /* Espaciado */
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
-    --spacing-2xl: 48px;
-    
-    /* Sombras */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
-    --shadow-xl: 0 12px 36px rgba(0, 0, 0, 0.25);
-    
-    /* Transiciones */
-    --transition-fast: 0.2s ease;
-    --transition-normal: 0.3s ease;
-    --transition-slow: 0.5s ease;
+  /* Otros colores */
+  --color-border: #E0E0E0;
+  --color-shadow: rgba(0, 0, 0, 0.1);
+  --color-whatsapp: #25D366;
+
+  /* Fuentes */
+  --font-family: 'Poppins', 'Inter', sans-serif;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 32px;
+
+  /* Espaciado */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 12px 36px rgba(0, 0, 0, 0.25);
+
+  /* Transiciones */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
 }
 
-.root{
-    font-family: var(--font-family);
-    background-color: var(--color-light-bg);
-    color: var(--color-text-dark);
-    line-height: 1.6;
-    overflow-x: hidden;
+/* Reset de estilos por defecto */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+/* Estilos generales del body */
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-light-bg);
+  color: var(--color-text-dark);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.root {
+  font-family: var(--font-family);
+  background-color: var(--color-light-bg);
+  color: var(--color-text-dark);
+  line-height: 1.6;
+  overflow-x: hidden;
+}

@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router"
 import { Navbar } from "./components/Navbar"
-import { Home, ProductDetail, Cart } from "./pages"
+import { AllProducts, Cart, Home, ProductDetail } from "./pages"
 import { FloatingWhatsAppButton } from "./components/FloatingWhatsAppButton"
 
 
@@ -13,10 +13,11 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/all-products" element={<AllProducts />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
       </Routes>
-      <FloatingWhatsAppButton/>
+      <FloatingWhatsAppButton />
     </>
   )
 }
