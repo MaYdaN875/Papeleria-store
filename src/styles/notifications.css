@@ -1,0 +1,17 @@
+/* ================================
+   NOTIFICACIÓN
+   ================================ */
+
+.notification {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: linear-gradient(135deg, #B8E6D5 0%, #A8DEC9 100%);
+    color: #1a1a1a;
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: slideInRight 0.3s ease;
+    font-weight: 600;
+}
