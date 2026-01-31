@@ -1,7 +1,8 @@
 import { Route, Routes } from "react-router"
+import { FloatingWhatsAppButton } from "./components/FloatingWhatsAppButton"
+import { Footer } from "./components/Footer"
 import { Navbar } from "./components/Navbar"
 import { AllProducts, Cart, Home, ProductDetail } from "./pages"
-import { FloatingWhatsAppButton } from "./components/FloatingWhatsAppButton"
 
 
 
@@ -18,6 +19,7 @@ function App() {
         <Route path="/cart" element={<Cart />} />
       </Routes>
       <FloatingWhatsAppButton />
+      <Footer />
     </>
   )
 }
