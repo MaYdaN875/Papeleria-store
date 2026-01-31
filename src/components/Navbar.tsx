@@ -103,8 +103,8 @@ export const Navbar: React.FC = () => {
                         className="header-logo"
                         onClick={() => smoothScroll('inicio')}
                     >
-                        <div className="logo-icon">📚</div>
-                        <h1>PaperHub</h1>
+                        <div className="logo-icon">🎨</div>
+                        <h1>God Art</h1>
                     </Link>
 
                     {/* Buscador de productos en el centro del header */}
