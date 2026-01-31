@@ -1,6 +1,258 @@
 /* ================================
-   SECCIONES DE HOME
+   HOME - Banner, secciones y carruseles
+   (diseños de src/index.css)
    ================================ */
 
-/* Estilos adicionales para la página Home */
-/* Los estilos principales están en products.css y carousel.css */
+/* BANNER PRINCIPAL */
+.banner-principal {
+    background: linear-gradient(180deg, #F4DCC9 0%, #F0D9C0 100%);
+    color: #1a1a1a;
+    padding: 100px 20px;
+    text-align: center;
+    animation: fadeInUp 0.6s ease;
+}
+
+.carousel-banner .carousel-track {
+    gap: 40px;
+}
+
+.banner-card {
+    display: none;
+}
+
+/* Fusion carousel (banner) */
+.fusion-carousel {
+    background: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    height: 350px;
+    min-height: 350px;
+}
+
+.fusion-carousel-wrapper {
+    width: 100%;
+    overflow: visible;
+    border-radius: 0;
+    background: none;
+    height: 350px;
+    min-height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fusion-slide {
+    width: 100%;
+    height: 350px;
+    min-height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    position: relative;
+    transition: transform 0.4s cubic-bezier(0.77, 0, 0.18, 1), opacity 0.4s cubic-bezier(0.77, 0, 0.18, 1);
+    opacity: 1;
+    z-index: 1;
+}
+
+.fusion-slide-content {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 40px 60px;
+    gap: 40px;
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.fusion-slide-text {
+    flex: 1;
+    color: #1a1a1a;
+    text-align: left;
+    min-width: 320px;
+}
+
+.fusion-slide-img {
+    max-height: 260px;
+    max-width: 400px;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+    background: #fff;
+    object-fit: contain;
+}
+
+.fusion-badge {
+    background: #fff;
+    color: #1a1a1a;
+    font-weight: 700;
+    border-radius: 18px;
+    padding: 6px 18px;
+    display: inline-block;
+    margin-bottom: 18px;
+    font-size: 18px;
+}
+
+.fusion-oldprice {
+    color: #1a1a1a;
+    opacity: 0.7;
+    font-size: 18px;
+    text-decoration: line-through;
+}
+
+.fusion-sku {
+    color: #1a1a1a;
+    opacity: 0.8;
+    font-size: 16px;
+    margin-top: 8px;
+}
+
+.fusion-arrow {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 10;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+}
+
+.fusion-arrow.prev-btn {
+    left: 24px !important;
+    right: auto;
+}
+
+.fusion-arrow.next-btn {
+    right: 24px !important;
+    left: auto;
+}
+
+@keyframes fusion-slide-left {
+    0% { opacity: 0; transform: translateX(80px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fusion-slide-right {
+    0% { opacity: 0; transform: translateX(-80px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+.fusion-slide.animating.slide-left {
+    animation: fusion-slide-left 0.4s cubic-bezier(0.77, 0, 0.18, 1);
+}
+
+.fusion-slide.animating.slide-right {
+    animation: fusion-slide-right 0.4s cubic-bezier(0.77, 0, 0.18, 1);
+}
+
+/* SECCIÓN DE PRODUCTOS */
+.products-section {
+    padding: 60px 20px;
+    background-color: #F5E6C8;
+}
+
+/* Título de las secciones */
+.section-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #D4956B 0%, #A89968 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeInUp 0.6s ease;
+    position: relative;
+    padding-top: 30px;
+}
+
+.section-title::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #D4956B, #A89968);
+    border-radius: 2px;
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #5B7C99;
+    text-align: center;
+    margin-bottom: 40px;
+    letter-spacing: 0.3px;
+    animation: fadeInUp 0.6s ease 0.1s backwards;
+}
+
+/* Títulos de carruseles por categoría */
+.carousel-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #3a3a3a;
+    margin: 60px 0 40px 0;
+    text-align: center;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #D4956B 0%, #A89968 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.carousel-title::before {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #D4956B, #A89968);
+    margin: 0 auto 20px;
+    border-radius: 2px;
+}
+
+/* Ver más productos */
+.see-more-container {
+    display: flex;
+    justify-content: center;
+    padding: 60px 20px 0;
+}
+
+.btn-see-more {
+    background: linear-gradient(135deg, #B8E6D5 0%, #A8DEC9 100%);
+    color: #1a1a1a;
+    border: none;
+    padding: 14px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: var(--font-size-lg);
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-see-more:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-see-more:active {
+    transform: translateY(0);
+}
+
+.btn-see-more i {
+    transition: var(--transition-normal);
+}
+
+.btn-see-more:hover i {
+    transform: translateY(3px);
+}

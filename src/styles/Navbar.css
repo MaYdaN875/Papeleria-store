@@ -256,8 +256,10 @@
 /* Navegación de categorías */
 .navbar {
     background: none;
-    border-bottom: none;
+    border-top: none;
+    border-bottom: 8px solid #000000;
     padding: 0;
+    box-shadow: 0 6px 15px rgba(168, 230, 225, 0.4);
 }
 
 /* Contenedor de navegación */
