@@ -11,7 +11,7 @@
 
 /* Sección de productos */
 .products-section {
-    padding: 60px 20px;
+    padding: 60px 20px 100px 20px;
     background-color: #F5E6C8;
 }
 
@@ -23,6 +23,14 @@
     margin-bottom: 20px;
     color: var(--color-text-dark);
     animation: fadeInUp 0.6s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.section-icon {
+    font-size: 40px;
 }
 
 .section-subtitle {
@@ -34,15 +42,189 @@
 }
 
 /* ================================
-   GRID DE PRODUCTOS
+   CAROUSEL DE HOME
    ================================ */
 
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
+.home-carousel-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
     max-width: 1400px;
-    margin: 0 auto;
+    margin: 0 auto 60px auto;
+    position: relative;
+    justify-content: center;
+}
+
+.carousel-nav-btn {
+    background: linear-gradient(135deg, #B8E6D5 0%, #A8DEC9 100%);
+    color: #1a1a1a;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-md);
+    flex-shrink: 0;
+    font-size: 18px;
+}
+
+.carousel-nav-btn:hover:not(:disabled) {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-lg);
+}
+
+.carousel-nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.carousel-nav-btn.prev-btn {
+    order: -1;
+}
+
+.carousel-nav-btn.next-btn {
+    order: 3;
+}
+
+.home-carousel-wrapper {
+    flex: 1;
+    overflow: hidden;
+    border-radius: 12px;
+    order: 2;
+}
+
+.home-carousel-track {
+    display: flex;
+    gap: 20px;
+    transition: transform 0.4s cubic-bezier(0.77, 0, 0.18, 1);
+}
+
+.carousel-product-card {
+    flex: 0 0 calc(50% - 10px);
+    min-width: 250px;
+}
+
+.btn-see-more-carousel {
+    position: absolute;
+    bottom: -50px;
+    right: 0;
+    background: linear-gradient(135deg, #A89968 0%, #8BA894 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.btn-see-more-carousel:hover {
+    transform: translateX(5px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* ================================
+   CAROUSEL DE PRODUCTOS DESTACADOS
+   ================================ */
+
+.featured-carousel-container {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    max-width: 1400px;
+    margin: 0 auto 60px auto;
+    position: relative;
+    justify-content: center;
+}
+
+.carousel-arrow {
+    background: linear-gradient(135deg, #B8E6D5 0%, #A8DEC9 100%);
+    color: #1a1a1a;
+    border: none;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-md);
+    flex-shrink: 0;
+    font-size: 20px;
+}
+
+.carousel-arrow:hover:not(:disabled) {
+    transform: scale(1.15) translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.carousel-arrow:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.carousel-arrow:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.prev-arrow {
+    order: -1;
+}
+
+.next-arrow {
+    order: 3;
+}
+
+.featured-carousel-wrapper {
+    flex: 1;
+    max-width: 1100px;
+    overflow: hidden;
+    order: 2;
+}
+
+.featured-carousel-track {
+    display: flex;
+    gap: 20px;
+}
+
+.featured-carousel-item {
+    flex: 0 0 calc(33.333% - 13.33px);
+    min-width: 250px;
+    animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.featured-carousel-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.featured-carousel-item:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.featured-carousel-item:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.featured-carousel-item:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.featured-carousel-item:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+.featured-carousel-item:nth-child(6) {
+    animation-delay: 0.6s;
 }
 
 /* ================================
