@@ -5,7 +5,6 @@ import { ProductCard } from "../components/ProductCard"
 import { products } from "../data/products"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
-import { Footer } from "../components/Footer"
 
 /* ================================
    COMPONENTE: Home
@@ -119,6 +118,7 @@ function ProductCarouselSlide({
 
 export const Home = () => {
     const navigate = useNavigate()
+    const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0)
     const [currentArtIndex, setCurrentArtIndex] = useState(0)
     const [currentSchoolIndex, setCurrentSchoolIndex] = useState(0)
 
@@ -141,27 +141,81 @@ export const Home = () => {
             </section>
 
             <section className="products-section">
-                <h2 className="section-title">Productos Destacados</h2>
-                <p className="section-subtitle">Los mejores artículos para tus necesidades</p>
-
-                <div className="products-grid">
-                    {featuredProducts.map((product) => {
-                        const config = FEATURED_CONFIG[product.id]
-                        return (
-                            <ProductCard
-                                key={product.id}
-                                product={product}
-                                badge={config?.badge}
-                                originalPrice={config?.originalPrice}
-                                brand={config?.brand}
-                                rating={4.5}
-                                onAddToCart={() =>
-                                    addProductToCart(product.name, product.price.toFixed(2))
-                                }
-                            />
-                        )
-                    })}
-                </div>
+                {/* ============ CARRUSEL PRODUCTOS DESTACADOS ============ */}
+                {featuredProducts.length > 0 && (
+                    <>
+                        <h2 className="carousel-title">⭐ Productos Destacados</h2>
+                        <div className="products-carousel-container">
+                            <button
+                                type="button"
+                                className="carousel-button carousel-button-prev"
+                                onClick={() => moveCarousel(-1, setCurrentFeaturedIndex, featuredProducts.length)}
+                                aria-label="Producto anterior"
+                            >
+                                <i className="fas fa-chevron-left" aria-hidden="true" />
+                            </button>
+                            <div className="carousel-track">
+                                {featuredProducts.map((product, index) => {
+                                    const isActive = index === currentFeaturedIndex
+                                    const offset = index - currentFeaturedIndex
+                                    let badgeClass = ""
+                                    if (offset > 0) badgeClass = "next"
+                                    else if (offset < 0) badgeClass = "prev"
+                                    const config = FEATURED_CONFIG[product.id]
+                                    return (
+                                        <div
+                                            key={product.id}
+                                            className={`carousel-item ${isActive ? "active" : ""} ${badgeClass}`}
+                                            style={{
+                                                transform: `translateX(${offset * 100}%) scale(${isActive ? 1 : 0.85})`,
+                                                opacity: Math.abs(offset) > 1 ? 0 : 1 - Math.abs(offset) * 0.3,
+                                            }}
+                                        >
+                                            <ProductCarouselSlide
+                                                product={product}
+                                                badge={config?.badge}
+                                                originalPrice={config?.originalPrice}
+                                                brand={config?.brand}
+                                                onNavigate={(id) => navigate(`/product/${id}`)}
+                                                onAddToCart={handleAddToCart}
+                                            />
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                            {currentFeaturedIndex === featuredProducts.length - 1 ? (
+                                <button
+                                    type="button"
+                                    className="btn-see-more-carousel"
+                                    onClick={() => navigate("/all-products")}
+                                    aria-label="Ver más productos"
+                                >
+                                    <i className="fas fa-arrow-right" aria-hidden="true" /> Ver Más
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="carousel-button carousel-button-next"
+                                    onClick={() => moveCarousel(1, setCurrentFeaturedIndex, featuredProducts.length)}
+                                    aria-label="Siguiente producto"
+                                >
+                                    <i className="fas fa-chevron-right" aria-hidden="true" />
+                                </button>
+                            )}
+                        </div>
+                        <div className="carousel-indicators">
+                            {featuredProducts.map((_, index) => (
+                                <button
+                                    key={`featured-${index}`}
+                                    type="button"
+                                    className={`indicator ${index === currentFeaturedIndex ? "active" : ""}`}
+                                    onClick={() => setCurrentFeaturedIndex(index)}
+                                    aria-label={`Ir al producto ${index + 1}`}
+                                />
+                            ))}
+                        </div>
+                    </>
+                )}
 
                 {/* ============ CARRUSEL ARTE & MANUALIDADES ============ */}
                 {artProducts.length > 0 && (
@@ -315,17 +369,7 @@ export const Home = () => {
                     </>
                 )}
 
-                <div className="see-more-container">
-                    <button
-                        type="button"
-                        className="btn-see-more"
-                        onClick={() => navigate("/all-products")}
-                    >
-                        <i className="fas fa-arrow-down" aria-hidden="true" /> Ver Más Productos
-                    </button>
-                </div>
             </section>
-            <Footer />
         </>
     )
 }
