@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { useNavigate } from "react-router"
 import { Carusel } from "../components/Carusel"
-import { ProductCard } from "../components/ProductCard"
 import { products } from "../data/products"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
