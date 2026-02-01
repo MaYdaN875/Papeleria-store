@@ -706,14 +706,17 @@
 .carousel-button-next {
     right: 0;
 }
+/* ================================
+   BOTÓN DE VER MAS (Home)
+   ================================ */
 
 .btn-see-more-carousel {
     position: absolute;
     right: -100px;
-    width: 110px;
-    height: 110px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
-    border: 3px solid #ffffff;
+    border: none;
     background: linear-gradient(135deg, #D4956B 0%, #C9A876 100%);
     color: #ffffff;
     cursor: pointer;
@@ -721,34 +724,28 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.3s ease;
     z-index: 10;
-    box-shadow: 0 12px 40px rgba(212, 149, 107, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 24px rgba(212, 149, 107, 0.4);
     font-size: 12px;
-    font-weight: 900;
-    gap: 6px;
+    font-weight: 700;
+    gap: 4px;
     top: 50%;
     transform: translateY(-50%);
-    padding: 8px;
+    padding: 0;
     text-align: center;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
 }
 
 .btn-see-more-carousel i {
-    font-size: 38px;
+    font-size: 32px;
     line-height: 1;
-    animation: float 3s ease-in-out infinite;
 }
 
 .btn-see-more-carousel:hover {
-    transform: translateY(-50%) scale(1.2);
-    box-shadow: 0 20px 60px rgba(212, 149, 107, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.3);
     background: linear-gradient(135deg, #E0A176 0%, #D5B382 100%);
-}
-
-.btn-see-more-carousel:hover i {
-    animation: float 1.5s ease-in-out infinite;
+    box-shadow: 0 12px 32px rgba(212, 149, 107, 0.6);
 }
 
 .btn-see-more-carousel:active {
