@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 /* ================================
    COMPONENTE: Carousel
@@ -17,6 +17,18 @@ export const Carusel = ({ type = 'offers' }: CarouselProps) => {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [animating, setAnimating] = useState(false);
     const [direction, setDirection] = useState(0); // -1: left, 1: right
+
+    /* ================================
+       EFECTO: Auto-avance del carousel
+       Avanza automáticamente cada 5 segundos
+       ================================ */
+    useEffect(() => {
+        const interval = setInterval(() => {
+            moveCarousel(1);
+        }, 5000);
+        
+        return () => clearInterval(interval);
+    }, [currentIndex, animating]);
 
     /* ================================
        FUNCIÓN: moveCarousel

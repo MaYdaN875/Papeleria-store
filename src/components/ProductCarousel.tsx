@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import type { Product } from "../types/Product"
 import type { ProductCarouselSlideConfig } from "./ProductCarouselSlide"
@@ -45,6 +45,19 @@ export function ProductCarousel({
 }: ProductCarouselProps) {
     const navigate = useNavigate()
     const [currentIndex, setCurrentIndex] = useState(0)
+
+    // Auto-avance del carousel cada 5 segundos
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => {
+                let next = prev + 1
+                if (next >= products.length) next = 0
+                return next
+            })
+        }, 5000)
+
+        return () => clearInterval(interval)
+    }, [products.length])
 
     if (products.length === 0) return null
 
