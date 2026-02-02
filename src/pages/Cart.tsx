@@ -11,6 +11,7 @@ interface CartItem {
     name: string
     price: string
     id: number
+    quantity: number
 }
 
 export const Cart = () => {
@@ -22,7 +23,12 @@ export const Cart = () => {
     // Función para cargar el carrito desde localStorage
     const loadCart = () => {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]')
-        setCartItems(cart)
+        // Asegurar que todos los items tengan cantidad (para compatibilidad)
+        const updatedCart = cart.map((item: CartItem) => ({
+            ...item,
+            quantity: item.quantity || 1
+        }))
+        setCartItems(updatedCart)
         setIsFirstLoad(false)
     }
 
@@ -50,7 +56,8 @@ export const Cart = () => {
         
         const cartCount = document.getElementById('cartCount')
         if (cartCount) {
-            cartCount.textContent = cartItems.length.toString()
+            const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0)
+            cartCount.textContent = totalItems.toString()
         }
     }, [cartItems, isFirstLoad])
 
@@ -73,6 +80,29 @@ export const Cart = () => {
     }
 
     /* ================================
+       FUNCIÓN: updateQuantity
+       Actualiza la cantidad de un producto en el carrito
+       Parámetros:
+       - id: ID del producto
+       - delta: cantidad a sumar o restar (1 o -1)
+       ================================ */
+    const updateQuantity = (id: number, delta: number) => {
+        setCartItems(prevItems =>
+            prevItems.map(item => {
+                if (item.id === id) {
+                    const newQuantity = item.quantity + delta;
+                    if (newQuantity < 1) {
+                        removeItem(id);
+                        return item;
+                    }
+                    return { ...item, quantity: newQuantity };
+                }
+                return item;
+            })
+        )
+    }
+
+    /* ================================
        FUNCIÓN: updateCartTotal
        Actualiza el total del carrito
        Suma los precios de todos los productos
@@ -83,7 +113,7 @@ export const Cart = () => {
         // Iterar sobre cada item y sumar los precios
         items.forEach(item => {
             const price = Number.parseFloat(item.price)
-            total += price
+            total += price * item.quantity
         })
         
         // Actualizar el elemento del total en la página
@@ -93,10 +123,10 @@ export const Cart = () => {
         }
         
         // Actualizar el título con la cantidad de items
-        const itemCount = items.length
+        const totalItemCount = items.reduce((sum, item) => sum + item.quantity, 0)
         const cartTitle = document.getElementById('cartTitle')
         if (cartTitle) {
-            cartTitle.textContent = `Mi Carrito (${itemCount} Artículos)`
+            cartTitle.textContent = `Mi Carrito (${totalItemCount} Artículos)`
         }
     }
 
@@ -145,7 +175,7 @@ export const Cart = () => {
     // Calcular total
     let total = 0
     cartItems.forEach(item => {
-        total += Number.parseFloat(item.price)
+        total += Number.parseFloat(item.price) * item.quantity
     })
 
     return (
@@ -177,7 +207,7 @@ export const Cart = () => {
                 // Contenedor del carrito con productos
                 <div className="cart-full-container">
                     {/* Título del carrito con cantidad de artículos */}
-                    <h2 id="cartTitle">Mi Carrito ({cartItems.length} Artículos)</h2>
+                    <h2 id="cartTitle">Mi Carrito ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} Artículos)</h2>
                     
                     {/* Lista de productos en el carrito */}
                     <div className="cart-items">
@@ -199,6 +229,30 @@ export const Cart = () => {
                                 <div className="item-info">
                                     <h4>{item.name}</h4>
                                     <p className="item-price">${item.price}</p>
+                                </div>
+
+                                {/* Controles de cantidad */}
+                                <div className="item-quantity-controls">
+                                    <button 
+                                        className="btn-quantity-minus"
+                                        onClick={() => updateQuantity(item.id, -1)}
+                                        title="Disminuir cantidad"
+                                    >
+                                        <i className="fas fa-minus"></i>
+                                    </button>
+                                    <span className="quantity-display">{item.quantity}</span>
+                                    <button 
+                                        className="btn-quantity-plus"
+                                        onClick={() => updateQuantity(item.id, 1)}
+                                        title="Aumentar cantidad"
+                                    >
+                                        <i className="fas fa-plus"></i>
+                                    </button>
+                                </div>
+
+                                {/* Subtotal del producto */}
+                                <div className="item-subtotal">
+                                    ${(Number.parseFloat(item.price) * item.quantity).toFixed(2)}
                                 </div>
                                 
                                 {/* Botón para eliminar el producto */}

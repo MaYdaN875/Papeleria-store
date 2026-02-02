@@ -1,5 +1,6 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
+import { FilterPanel, FilterState } from "../components/FilterPanel"
 import { products } from "../data/products"
 
 /* ================================
@@ -9,31 +10,44 @@ import { products } from "../data/products"
 
 export const AllProducts = () => {
     const navigate = useNavigate()
+    const [filters, setFilters] = useState<FilterState>({
+        brands: [],
+        mayoreo: false,
+        menudeo: false,
+        priceRange: [0, 1000],
+    })
 
     // Hacer scroll al top cuando se carga la página
     useEffect(() => {
         window.scrollTo(0, 0)
     }, [])
 
+    // Aplicar filtros cuando cambian
+    useEffect(() => {
+        applyFilters(filters)
+    }, [filters])
+
     /* ================================
-       FUNCIÓN: filterProducts
-       Filtra los productos según la categoría seleccionada
+       FUNCIÓN: applyFilters
+       Aplica los filtros seleccionados a los productos
        ================================ */
-    const filterProducts = (category: string, evt: React.MouseEvent<HTMLButtonElement>) => {
+    const applyFilters = (filterState: FilterState) => {
         const productCards = document.querySelectorAll('.all-products-grid .product-card')
-        const filterBtns = document.querySelectorAll('.filter-btn')
-        
-        filterBtns.forEach(btn => {
-            btn.classList.remove('active')
-        })
-        ;(evt.target as HTMLButtonElement).classList.add('active')
-        
+
         productCards.forEach(product => {
-            const productCategory = (product as HTMLElement).dataset.category || ''
-            if (category === 'todos' || productCategory.includes(category)) {
-                product.classList.remove('hidden')
+            const productElement = product as HTMLElement
+            const productPrice = Number.parseFloat(productElement.dataset.price || '0')
+            let shouldShow = true
+
+            // Filtro de precios
+            if (productPrice < filterState.priceRange[0] || productPrice > filterState.priceRange[1]) {
+                shouldShow = false
+            }
+
+            if (shouldShow) {
+                productElement.classList.remove('hidden')
             } else {
-                product.classList.add('hidden')
+                productElement.classList.add('hidden')
             }
         })
     }
@@ -45,17 +59,28 @@ export const AllProducts = () => {
     const addProductToCart = (productName: string, productPrice: string) => {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]')
         
-        cart.push({
-            name: productName,
-            price: productPrice,
-            id: Date.now()
-        })
+        // Verificar si el producto ya existe en el carrito
+        const existingProduct = cart.find((item: any) => item.name === productName && item.price === productPrice)
+        
+        if (existingProduct) {
+            // Si existe, aumentar la cantidad
+            existingProduct.quantity = (existingProduct.quantity || 1) + 1
+        } else {
+            // Si no existe, agregar nuevo producto con cantidad 1
+            cart.push({
+                name: productName,
+                price: productPrice,
+                id: Date.now(),
+                quantity: 1
+            })
+        }
         
         localStorage.setItem('cart', JSON.stringify(cart))
         
         const cartCount = document.getElementById('cartCount')
         if (cartCount) {
-            cartCount.textContent = cart.length.toString()
+            const totalItems = cart.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0)
+            cartCount.textContent = totalItems.toString()
             cartCount.style.animation = 'none'
             setTimeout(() => {
                 cartCount.style.animation = 'scaleIn 0.3s ease'
@@ -63,7 +88,7 @@ export const AllProducts = () => {
         }
         
         // Disparar evento personalizado para que otros componentes se actualicen
-        window.dispatchEvent(new Event('cartUpdated'))
+        globalThis.dispatchEvent(new Event('cartUpdated'))
         
         showNotification(productName + ' agregado al carrito!')
     }
@@ -112,27 +137,8 @@ export const AllProducts = () => {
             {/* ============ SECCIÓN DE TODOS LOS PRODUCTOS ============ */}
             <section className="all-products-section">
                 <div className="products-layout-container">
-                    {/* Filtros por categoría - Izquierda */}
-                    <aside className="category-filters-sidebar">
-                        <h3 className="sidebar-title">Categorías</h3>
-                        <div className="category-filters-vertical">
-                            <button className="filter-btn active" onClick={(e) => filterProducts('todos', e)}>
-                                <i className="fas fa-th"></i> Todos
-                            </button>
-                            <button className="filter-btn" onClick={(e) => filterProducts('escolares', e)}>
-                                <i className="fas fa-book"></i> Útiles Escolares
-                            </button>
-                            <button className="filter-btn" onClick={(e) => filterProducts('escritura', e)}>
-                                <i className="fas fa-pencil-alt"></i> Escritura
-                            </button>
-                            <button className="filter-btn" onClick={(e) => filterProducts('papeleria', e)}>
-                                <i className="fas fa-file"></i> Papelería
-                            </button>
-                            <button className="filter-btn" onClick={(e) => filterProducts('arte', e)}>
-                                <i className="fas fa-palette"></i> Arte & Manualidades
-                            </button>
-                        </div>
-                    </aside>
+                    {/* Panel de filtros - Izquierda */}
+                    <FilterPanel onFilterChange={(newFilters) => setFilters(newFilters)} />
 
                     {/* Grid de productos - Derecha */}
                     <div className="products-content-area">
@@ -141,8 +147,17 @@ export const AllProducts = () => {
                                 <div 
                                     key={product.id}
                                     className="product-card" 
-                                    data-category={product.category.toLowerCase()} 
-                                    onClick={() => navigate(`/product/${product.id}`)} 
+                                    data-category={product.category.toLowerCase()}
+                                    data-price={product.price}
+                                    onClick={() => navigate(`/product/${product.id}`)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault()
+                                            navigate(`/product/${product.id}`)
+                                        }
+                                    }}
+                                    role="button"
+                                    tabIndex={0}
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <div className="product-image">
@@ -172,8 +187,8 @@ export const AllProducts = () => {
                                         <h4>{product.name}</h4>
                                         <p className="product-brand">{product.description}</p>
                                         <div className="product-rating">
-                                            {[...Array(5)].map((_, i) => (
-                                                <i key={i} className="fas fa-star"></i>
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                <i key={`star-${product.id}-${i}`} className="fas fa-star"></i>
                                             ))}
                                         </div>
                                         <div className="product-price">
