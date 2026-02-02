@@ -164,7 +164,7 @@ export const Cart = () => {
                     
                     {/* Icono de carrito vacío (imagen proporcionada) */}
                     <div className="empty-cart-icon">
-                        <img src="/src/imagenes/imagen.png" alt="Carrito vacío" style={{ width: 300, height: 300, margin: '0 auto', display: 'block' }} />
+                        <img src="/src/imagenes/carrito.png" alt="Carrito vacío" style={{ width: 300, height: 300, margin: '0 auto', display: 'block' }} />
                     </div>
                     
                     {/* Texto que indica que el carrito está vacío */}
