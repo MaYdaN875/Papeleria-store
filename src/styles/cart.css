@@ -148,6 +148,57 @@
     color: var(--color-accent);
 }
 
+/* Controles de cantidad */
+.item-quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--color-light-bg);
+    border-radius: 8px;
+    padding: 8px;
+    flex-shrink: 0;
+}
+
+.btn-quantity-minus,
+.btn-quantity-plus {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-quantity-minus:hover,
+.btn-quantity-plus:hover {
+    background-color: var(--color-accent);
+    transform: scale(1.1);
+}
+
+.quantity-display {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-text-dark);
+    min-width: 30px;
+    text-align: center;
+}
+
+/* Subtotal del producto */
+.item-subtotal {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-text-dark);
+    min-width: 80px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
 /* Botón para eliminar producto */
 .btn-remove {
     background-color: #ff4444;
