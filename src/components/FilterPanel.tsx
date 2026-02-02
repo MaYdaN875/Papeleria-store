@@ -40,7 +40,7 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
     const brands = getBrands()
 
     /* ================================
-       MANEJO DE ESTADOS
+       MANEJO DE ESTADOS.
        ================================ */
 
     const toggleSection = useCallback((section: string) => {
@@ -159,7 +159,7 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                 )}
             </div>
 
-            {/* Sección Precios */}
+            {/* Seccion Precios */}
             <div className="filter-section">
                 <button
                     className={`filter-section-header ${expandedSections.precios ? 'expanded' : ''}`}
