@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
 import { FilterPanel, FilterState } from "../components/FilterPanel"
 import { products } from "../data/products"

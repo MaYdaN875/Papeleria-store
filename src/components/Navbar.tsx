@@ -3,6 +3,7 @@ import { Link } from "react-router"
 import { products } from "../data/products"
 import { Product } from "../types/Product"
 import { smoothScroll } from "../utils/SmoothScroll"
+import { CategoryDropdown, CategoryDropdownCategory } from "./CategoryDropdown"
 
 // Componente de notificación usando React
 interface NotificationProps {
@@ -32,6 +33,54 @@ export const Navbar: React.FC = () => {
     const [showResults, setShowResults] = useState<boolean>(false)
     const [notification, setNotification] = useState<string | null>(null)
     const searchBoxRef = useRef<HTMLDivElement>(null)
+
+    // Definir las categorías con sus subcategorías
+    const categories: CategoryDropdownCategory[] = [
+        {
+            id: "escolares",
+            label: "Útiles Escolares",
+            icon: "fas fa-book",
+            items: [
+                { name: "Cuadernos", icon: "fas fa-book", color: "#FF6B9D" },
+                { name: "Estuches", icon: "fas fa-briefcase", color: "#C44569" },
+                { name: "Gomas", icon: "fas fa-eraser", color: "#F7CE5B" },
+                { name: "Mochilas", icon: "fas fa-backpack", color: "#1A535C" },
+            ]
+        },
+        {
+            id: "escritura",
+            label: "Escritura",
+            icon: "fas fa-pencil-alt",
+            items: [
+                { name: "Bolígrafos", icon: "fas fa-pen", color: "#4ECDC4" },
+                { name: "Lápices", icon: "fas fa-pencil", color: "#FFE66D" },
+                { name: "Marcadores", icon: "fas fa-marker", color: "#FF6B6B" },
+                { name: "Rotuladores", icon: "fas fa-highlighter", color: "#95E1D3" },
+            ]
+        },
+        {
+            id: "papeleria",
+            label: "Papelería",
+            icon: "fas fa-file",
+            items: [
+                { name: "Papel", icon: "fas fa-file", color: "#0099FF" },
+                { name: "Carpetas", icon: "fas fa-folder", color: "#00CC88" },
+                { name: "Sobres", icon: "fas fa-envelope", color: "#FF3366" },
+                { name: "Post-it", icon: "fas fa-sticky-note", color: "#FFB900" },
+            ]
+        },
+        {
+            id: "arte",
+            label: "Arte & Manualidades",
+            icon: "fas fa-palette",
+            items: [
+                { name: "Lápices de Colores", icon: "fas fa-palette", color: "#FF006E" },
+                { name: "Pinturas", icon: "fas fa-paint-brush", color: "#FFBE0B" },
+                { name: "Lienzos", icon: "fas fa-image", color: "#FB5607" },
+                { name: "Materiales", icon: "fas fa-toolbox", color: "#8338EC" },
+            ]
+        }
+    ]
 
     // Búsqueda de productos con useCallback para optimización
     const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -172,21 +221,12 @@ export const Navbar: React.FC = () => {
                 </div>
 
                 {/* NAVEGACIÓN DE CATEGORÍAS ============ */}
-                {/* Menú horizontal con las 4 categorías principales */}
+                {/* Menú horizontal con las 4 categorías principales con dropdown */}
                 <nav className="navbar" aria-label="Categorías de productos">
                     <div className="navbar-container">
-                        <button type="button" className="category-link">
-                            <i className="fas fa-book" aria-hidden="true" /> Útiles Escolares
-                        </button>
-                        <button type="button" className="category-link">
-                            <i className="fas fa-pencil-alt" aria-hidden="true" /> Escritura
-                        </button>
-                        <button type="button" className="category-link">
-                            <i className="fas fa-file" aria-hidden="true" /> Papelería
-                        </button>
-                        <button type="button" className="category-link">
-                            <i className="fas fa-palette" aria-hidden="true" /> Arte & Manualidades
-                        </button>
+                        {categories.map((category) => (
+                            <CategoryDropdown key={category.id} category={category} />
+                        ))}
                     </div>
                 </nav>
             </header>
