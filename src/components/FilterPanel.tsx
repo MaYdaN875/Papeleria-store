@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { products } from "../data/products"
 
 export interface FilterState {
@@ -12,7 +12,7 @@ export interface FilterPanelProps {
     onFilterChange: (filters: FilterState) => void
 }
 
-// Obtener todas las marcas únicas de los productos
+// Obtener todas las marcas únicas de los productos dinámicamente
 const getBrands = (): string[] => {
     const brandsSet = new Set(
         products
@@ -178,8 +178,17 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                                     id="price-min"
                                     type="number"
                                     min="0"
-                                    value={filters.priceRange[0]}
-                                    onChange={(e) => handlePriceChange('min', Number(e.target.value))}
+                                    placeholder="0"
+                                    value={filters.priceRange[0] === 0 ? '' : filters.priceRange[0]}
+                                    onChange={(e) => {
+                                        const value = e.target.value === '' ? 0 : Number(e.target.value)
+                                        handlePriceChange('min', value)
+                                    }}
+                                    onBlur={(e) => {
+                                        if (e.target.value === '') {
+                                            handlePriceChange('min', 0)
+                                        }
+                                    }}
                                     className="price-input"
                                 />
                             </div>
@@ -189,8 +198,17 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                                     id="price-max"
                                     type="number"
                                     min="0"
-                                    value={filters.priceRange[1]}
-                                    onChange={(e) => handlePriceChange('max', Number(e.target.value))}
+                                    placeholder="1000"
+                                    value={filters.priceRange[1] === 1000 ? '' : filters.priceRange[1]}
+                                    onChange={(e) => {
+                                        const value = e.target.value === '' ? 1000 : Number(e.target.value)
+                                        handlePriceChange('max', value)
+                                    }}
+                                    onBlur={(e) => {
+                                        if (e.target.value === '') {
+                                            handlePriceChange('max', 1000)
+                                        }
+                                    }}
                                     className="price-input"
                                 />
                             </div>
