@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useNavigate } from "react-router"
 import { FilterPanel, FilterState } from "../components/FilterPanel"
 import { products } from "../data/products"
@@ -29,7 +29,7 @@ export const AllProducts = () => {
 
     /* ================================
        FUNCIÓN: applyFilters
-       Aplica los filtros seleccionados a los productos
+       Aplica los filtros seleccionados a los productos en tiempo real
        ================================ */
     const applyFilters = (filterState: FilterState) => {
         const productCards = document.querySelectorAll('.all-products-grid .product-card')
@@ -37,7 +37,25 @@ export const AllProducts = () => {
         productCards.forEach(product => {
             const productElement = product as HTMLElement
             const productPrice = Number.parseFloat(productElement.dataset.price || '0')
+            const productBrand = productElement.dataset.brand || ''
+            const productMayoreo = productElement.dataset.mayoreo === 'true'
+            const productMenudeo = productElement.dataset.menudeo === 'true'
             let shouldShow = true
+
+            // Filtro de marcas
+            if (filterState.brands.length > 0 && !filterState.brands.includes(productBrand)) {
+                shouldShow = false
+            }
+
+            // Filtro de mayoreo
+            if (filterState.mayoreo && !productMayoreo) {
+                shouldShow = false
+            }
+
+            // Filtro de menudeo
+            if (filterState.menudeo && !productMenudeo) {
+                shouldShow = false
+            }
 
             // Filtro de precios
             if (productPrice < filterState.priceRange[0] || productPrice > filterState.priceRange[1]) {
@@ -149,6 +167,9 @@ export const AllProducts = () => {
                                     className="product-card" 
                                     data-category={product.category.toLowerCase()}
                                     data-price={product.price}
+                                    data-brand={product.description.split(' ')[0]}
+                                    data-mayoreo={product.mayoreo}
+                                    data-menudeo={product.menudeo}
                                     onClick={() => navigate(`/product/${product.id}`)}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {

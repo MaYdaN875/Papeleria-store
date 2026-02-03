@@ -6,4 +6,6 @@ export type Product = {
     description: string
     image: string
     stock: number
+    mayoreo?: boolean
+    menudeo?: boolean
 }

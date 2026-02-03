@@ -9,6 +9,8 @@ export const products: Product[] = [
         description: "Bolígrafos de calidad premium Staedtler",
         image: "/images/boligrafos.jpg",
         stock: 50,
+        mayoreo: true,
+        menudeo: true,
     },
     {
         id: 2,
@@ -18,6 +20,8 @@ export const products: Product[] = [
         description: "Cuadernos Moleskine profesionales",
         image: "/images/cuadernos.jpg",
         stock: 30,
+        mayoreo: true,
+        menudeo: true,
     },
     {
         id: 3,
@@ -27,6 +31,8 @@ export const products: Product[] = [
         description: "Marcadores Copic para artistas",
         image: "/images/marcadores.jpg",
         stock: 20,
+        mayoreo: false,
+        menudeo: true,
     },
     {
         id: 4,
@@ -36,6 +42,8 @@ export const products: Product[] = [
         description: "Set completo Faber-Castell",
         image: "/images/set-escritura.jpg",
         stock: 15,
+        mayoreo: true,
+        menudeo: false,
     },
     {
         id: 5,
@@ -45,6 +53,8 @@ export const products: Product[] = [
         description: "Papel Canson de alta calidad",
         image: "/images/papel.jpg",
         stock: 100,
+        mayoreo: true,
+        menudeo: true,
     },
     {
         id: 6,
@@ -54,6 +64,8 @@ export const products: Product[] = [
         description: "Carpetas Esselte para organizar",
         image: "/images/carpetas.jpg",
         stock: 40,
+        mayoreo: true,
+        menudeo: true,
     },
     {
         id: 7,
@@ -63,6 +75,8 @@ export const products: Product[] = [
         description: "Cuaderno de 100 hojas",
         image: "/images/cuaderno.jpg",
         stock: 20,
+        mayoreo: false,
+        menudeo: true,
     },
     {
         id: 8,
@@ -72,6 +86,8 @@ export const products: Product[] = [
         description: "Set de 72 lápices de colores",
         image: "/images/lapices.jpg",
         stock: 25,
+        mayoreo: true,
+        menudeo: true,
     },
     {
         id: 9,
@@ -81,6 +97,8 @@ export const products: Product[] = [
         description: "Gomas de borrar Staedtler",
         image: "/images/gomas.jpg",
         stock: 60,
+        mayoreo: true,
+        menudeo: true,
     },
     {
         id: 10,
@@ -90,5 +108,7 @@ export const products: Product[] = [
         description: "Estuches organizadores para útiles",
         image: "/images/estuches.jpg",
         stock: 35,
+        mayoreo: false,
+        menudeo: true,
     },
 ]
