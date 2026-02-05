@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 
 /* ================================
    COMPONENTE: Carousel
@@ -10,6 +11,12 @@ interface CarouselProps {
 }
 
 export const Carusel = ({ type = 'offers' }: CarouselProps) => {
+    /* ================================
+       HOOK: useNavigate
+       Proporciona función de navegación entre rutas
+       ================================ */
+    const navigate = useNavigate()
+
     /* ================================
        VARIABLE GLOBAL: carouselPosition
        Controla la posición del carousel
@@ -47,6 +54,14 @@ export const Carusel = ({ type = 'offers' }: CarouselProps) => {
             setCurrentIndex(newIndex);
             setAnimating(false);
         }, 400); // duración de la animación
+    }
+
+    /* ================================
+       FUNCIÓN: handleBannerClick
+       Navega a la página de todos los productos
+       ================================ */
+    const handleBannerClick = () => {
+        navigate('/all-products')
     }
 
     // Datos de las ofertas y banners
@@ -187,7 +202,11 @@ export const Carusel = ({ type = 'offers' }: CarouselProps) => {
                 </button>
                 <div className="carousel-wrapper fusion-carousel-wrapper" style={{ background: 'none', minHeight: 350, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div className={slideClassName}
-                        style={{ background: 'none', boxShadow: 'none', width: '100%', minHeight: 350, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        style={{ background: 'none', boxShadow: 'none', width: '100%', minHeight: 350, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                        onClick={handleBannerClick}
+                        onKeyDown={(e) => e.key === 'Enter' && handleBannerClick()}
+                        role="button"
+                        tabIndex={0}>
                         <div className="fusion-slide-content" style={{ background: 'none', boxShadow: 'none', borderRadius: 0, width: '100%', maxWidth: 1400, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '40px 60px', gap: 40 }}>
                             <div className="fusion-slide-text">
                                 {offer.badge && <div className="offer-badge fusion-badge">{offer.badge}</div>}
