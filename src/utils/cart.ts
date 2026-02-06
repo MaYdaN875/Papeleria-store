@@ -6,28 +6,38 @@ const CART_COUNT_ID = 'cartCount'
 /**
  * Agrega un producto al carrito (localStorage), actualiza el contador del header
  * y muestra una notificación.
+ * @param quantity - Cantidad de productos a agregar (por defecto 1)
  */
-export function addProductToCart(productName: string, productPrice: string): void {
+export function addProductToCart(productName: string, productPrice: string, quantity: number = 1): void {
     const cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]')
 
     cart.push({
         name: productName,
         price: productPrice,
         id: Date.now(),
+        quantity: quantity,
     })
 
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart))
 
     const cartCount = document.getElementById(CART_COUNT_ID)
     if (cartCount) {
-        cartCount.textContent = cart.length.toString()
+        const totalItems = cart.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0)
+        cartCount.textContent = totalItems.toString()
         cartCount.style.animation = 'none'
         setTimeout(() => {
             cartCount.style.animation = 'scaleIn 0.3s ease'
         }, 10)
     }
 
-    showNotification(`${productName} agregado al carrito!`)
+    // Mostrar notificación con cantidad si es > 1
+    const message = quantity > 1 
+        ? `${quantity}x ${productName} agregado al carrito!`
+        : `${productName} agregado al carrito!`
+    showNotification(message)
+    
+    // Lanzar evento personalizado para sincronizar en otras ventanas
+    window.dispatchEvent(new Event('cartUpdated'))
 }
 
 /**

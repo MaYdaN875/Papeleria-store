@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router"
 import { addProductToCart } from "../utils/cart"
 
@@ -21,6 +21,7 @@ interface Product {
 export const ProductDetail = () => {
     const { id } = useParams()
     const navigate = useNavigate()
+    const [quantity, setQuantity] = useState(1)
 
     // Scroll al top cuando se carga la página
     useEffect(() => {
@@ -151,7 +152,7 @@ export const ProductDetail = () => {
                         </p>
 
                         {/* Precio */}
-                        <div style={{ marginBottom: '30px' }}>
+                        <div style={{ marginBottom: '20px' }}>
                             {product.originalPrice && (
                                 <span style={{
                                     textDecoration: 'line-through',
@@ -171,19 +172,110 @@ export const ProductDetail = () => {
                             </span>
                         </div>
 
-                        {/* Botón agregar al carrito */}
-                        <button
-                            className="btn-add-cart"
-                            onClick={() => addProductToCart(product.name, product.price.toString())}
-                            style={{
-                                width: '100%',
-                                padding: '15px',
-                                fontSize: '18px',
-                                marginBottom: '15px'
-                            }}
-                        >
-                            <i className="fas fa-shopping-cart"></i> Agregar al carrito
-                        </button>
+                        {/* Selector de cantidad - Estilo Amazon */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '15px',
+                            marginBottom: '20px',
+                            background: 'var(--color-light-bg)',
+                            padding: '12px 15px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--color-border)'
+                        }}>
+                            <label 
+                                htmlFor="quantity-select"
+                                style={{
+                                    fontWeight: 600,
+                                    color: 'var(--color-text-dark)',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                Cantidad disponible:
+                            </label>
+                            <select
+                                id="quantity-select"
+                                value={quantity}
+                                onChange={(e) => setQuantity(Number(e.target.value))}
+                                style={{
+                                    padding: '8px 12px',
+                                    borderRadius: '4px',
+                                    border: '1px solid var(--color-border)',
+                                    backgroundColor: 'white',
+                                    color: 'var(--color-text-dark)',
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    transition: 'var(--transition-normal)',
+                                    outline: 'none'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--color-accent)'
+                                    e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--color-border)'
+                                    e.currentTarget.style.boxShadow = 'none'
+                                }}
+                            >
+                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                                    <option key={num} value={num}>{num}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Botones de acción */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '12px',
+                            marginBottom: '20px'
+                        }}>
+                            {/* Botón Agregar al carrito */}
+                            <button
+                                className="btn-add-cart"
+                                onClick={() => addProductToCart(product.name, product.price.toString(), quantity)}
+                                style={{
+                                    padding: '15px',
+                                    fontSize: '16px',
+                                    fontWeight: 600,
+                                    borderRadius: '6px'
+                                }}
+                            >
+                                <i className="fas fa-shopping-cart"></i> Agregar
+                            </button>
+
+                            {/* Botón Comprar ahora (decorativo) */}
+                            <button
+                                style={{
+                                    padding: '15px',
+                                    fontSize: '16px',
+                                    fontWeight: 600,
+                                    borderRadius: '6px',
+                                    backgroundColor: 'var(--color-primary)',
+                                    color: 'white',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'var(--transition-normal)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#475E7A'
+                                    e.currentTarget.style.transform = 'translateY(-2px)'
+                                    e.currentTarget.style.boxShadow = 'var(--shadow-md)'
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'var(--color-primary)'
+                                    e.currentTarget.style.transform = 'translateY(0)'
+                                    e.currentTarget.style.boxShadow = 'none'
+                                }}
+                            >
+                                <i className="fas fa-bolt"></i> Comprar ahora
+                            </button>
+                        </div>
 
                         {/* Información adicional */}
                         <div style={{
