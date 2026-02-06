@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router"
 import { addProductToCart } from "../utils/cart"
 
@@ -16,6 +16,112 @@ interface Product {
     image: string
     rating: number
     reviews: number
+}
+
+interface QuantityDropdownProps {
+    value: number
+    onChange: (v: number) => void
+    max?: number
+    visibleRows?: number
+}
+
+/* ================================
+   COMPONENTE: QuantityDropdown
+   Selector personalizado de cantidad tipo Amazon
+   ================================ */
+function QuantityDropdown({ value, onChange, max = 20, visibleRows = 5 }: Readonly<QuantityDropdownProps>) {
+    // Estado para controlar si el dropdown está abierto o cerrado
+    const [open, setOpen] = useState(false)
+    // Referencia al contenedor para detectar clics fuera
+    const containerRef = useRef<HTMLDivElement | null>(null)
+
+    // Efecto para cerrar el dropdown cuando se hace clic fuera de él
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setOpen(false)
+            }
+        }
+        document.addEventListener('click', handleClickOutside)
+        return () => document.removeEventListener('click', handleClickOutside)
+    }, [])
+
+    // Crear array de números del 1 al máximo (ej: [1, 2, 3, ... 20])
+    const items = Array.from({ length: max }, (_, i) => i + 1)
+
+    return (
+        // Contenedor del dropdown con referencia para detectar clics externos
+        <div ref={containerRef} style={{ display: 'inline-block', minWidth: 100 }}>
+            {/* Botón que muestra la cantidad seleccionada y abre/cierra el dropdown */}
+            <button
+                id="quantity-select-button"
+                aria-haspopup="listbox"
+                aria-expanded={open}
+                onClick={() => setOpen(prev => !prev)}
+                style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: 6,
+                    border: '1px solid var(--color-border)',
+                    background: 'white',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer'
+                }}
+            >
+                {/* Muestra el número de cantidad actual */}
+                <span style={{ fontWeight: 600 }}>{value}</span>
+                {/* Ícono chevron que cambia según estado (arriba si está abierto, abajo si cerrado) */}
+                <span style={{ marginLeft: 8 }}>
+                    <i className={`fas fa-chevron-${open ? 'up' : 'down'}`}></i>
+                </span>
+            </button>
+
+            {/* LISTA DEL DROPDOWN - Solo se muestra si open === true */}
+            {open && (
+                <ul
+                    role="listbox"
+                    aria-label="Cantidad disponible"
+                    tabIndex={-1}
+                    style={{
+                        position: 'absolute',
+                        marginTop: 8,
+                        right: 0,
+                        left: 0,
+                        maxHeight: visibleRows * 34,
+                        overflowY: 'auto',
+                        background: 'white',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 8,
+                        padding: 0,
+                        listStyle: 'none',
+                        boxShadow: 'var(--shadow-lg)',
+                        zIndex: 80
+                    }}
+                >
+                    {/* OPCIONES DEL DROPDOWN - Itera sobre cada número disponible */}
+                    {items.map((n) => (
+                        <li
+                            key={n}
+                            role="option"
+                            aria-selected={n === value}
+                            onClick={() => { onChange(n); setOpen(false) }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { onChange(n); setOpen(false) } }}
+                            style={{
+                                padding: '8px 12px',
+                                cursor: 'pointer',
+                                // Resalta la opción seleccionada con un fondo gris suave
+                                background: n === value ? 'rgba(0,0,0,0.06)' : 'transparent'
+                            }}
+                        >
+                            {n}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    )
 }
 
 export const ProductDetail = () => {
@@ -172,56 +278,28 @@ export const ProductDetail = () => {
                             </span>
                         </div>
 
-                        {/* Selector de cantidad - Estilo Amazon */}
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '15px',
-                            marginBottom: '20px',
-                            background: 'var(--color-light-bg)',
-                            padding: '12px 15px',
-                            borderRadius: '6px',
-                            border: '1px solid var(--color-border)'
-                        }}>
-                            <label 
-                                htmlFor="quantity-select"
-                                style={{
-                                    fontWeight: 600,
-                                    color: 'var(--color-text-dark)',
-                                    fontSize: '14px'
-                                }}
+                        {/* Selector de cantidad - componente personalizado (estilo Amazon) */}
+                        <div
+                            style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}
+                        >
+                            {/* Etiqueta para el selector de cantidad */}
+                            <label
+                                htmlFor="quantity-select-button"
+                                style={{ fontWeight: 600, color: 'var(--color-text-dark)', fontSize: '14px', whiteSpace: 'nowrap' }}
                             >
                                 Cantidad disponible:
                             </label>
-                            <select
-                                id="quantity-select"
-                                value={quantity}
-                                onChange={(e) => setQuantity(Number(e.target.value))}
-                                style={{
-                                    padding: '8px 12px',
-                                    borderRadius: '4px',
-                                    border: '1px solid var(--color-border)',
-                                    backgroundColor: 'white',
-                                    color: 'var(--color-text-dark)',
-                                    fontSize: '14px',
-                                    fontWeight: 600,
-                                    cursor: 'pointer',
-                                    transition: 'var(--transition-normal)',
-                                    outline: 'none'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.borderColor = 'var(--color-accent)'
-                                    e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.borderColor = 'var(--color-border)'
-                                    e.currentTarget.style.boxShadow = 'none'
-                                }}
-                            >
-                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                                    <option key={num} value={num}>{num}</option>
-                                ))}
-                            </select>
+
+                            {/* Contenedor relativo para el dropdown - permite posicionamiento absoluto del listado */}
+                            <div style={{ position: 'relative' }}>
+                                {/* Componente QuantityDropdown: controla cantidad de artículos a comprar */}
+                                <QuantityDropdown
+                                    value={quantity}
+                                    onChange={(v: number) => setQuantity(v)}
+                                    max={20}
+                                    visibleRows={5}
+                                />
+                            </div>
                         </div>
 
                         {/* Botones de acción */}
