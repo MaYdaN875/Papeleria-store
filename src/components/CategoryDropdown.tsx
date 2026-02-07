@@ -37,7 +37,7 @@ export function CategoryDropdown({ category }: CategoryDropdownProps) {
         }, 150)
     }
 
-    const handleItemClick = (itemName: string) => {
+    const handleItemClick = (_itemName: string) => {
         navigate(`/all-products?category=${category.id}`)
         setIsOpen(false)
     }

@@ -84,42 +84,28 @@ export const Home = () => {
                     seeMorePath="/all-products"
                 />
             </section>
-            <div className="products-content-area">
+            <section className="products-content-area">
                 <div className="all-products-grid" id="allProductsGrid">
-                    <ProductCard
-                        product={featuredProducts[0]}
-                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
-                    />
-                    <ProductCard
-                        product={featuredProducts[0]}
-                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
-                    />
-                    <ProductCard
-                        product={featuredProducts[0]}
-                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
-                    />
-                    <ProductCard
-                        product={featuredProducts[0]}
-                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
-                    />
-                    <ProductCard
-                        product={featuredProducts[0]}
-                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
-                    />
-                    <ProductCard
-                        product={featuredProducts[0]}
-                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
-                    />
-                    <ProductCard
-                        product={featuredProducts[0]}
-                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
-                    />
-                    <ProductCard
-                        product={featuredProducts[0]}
-                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
-                    />
+                    {featuredProducts.slice(0, 8).map((product) => {
+                        const config = getItemConfig(product)
+                        return (
+                            <ProductCard
+                                key={product.id}
+                                product={product}
+                                badge={config?.badge}
+                                originalPrice={config?.originalPrice}
+                                brand={config?.brand}
+                                onAddToCart={() =>
+                                    handleAddToCart(
+                                        product.name,
+                                        product.price.toFixed(2)
+                                    )
+                                }
+                            />
+                        )
+                    })}
                 </div>
-            </div>
+            </section>
 
         </>
     )

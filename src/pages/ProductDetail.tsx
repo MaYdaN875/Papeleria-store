@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router"
+import { getProductById } from "../data/products"
 import { addProductToCart } from "../utils/cart"
 
 /* ================================
@@ -7,15 +8,12 @@ import { addProductToCart } from "../utils/cart"
    Página de detalle de un producto individual
    ================================ */
 
-interface Product {
-    name: string
-    brand: string
-    price: number
-    originalPrice?: number
-    description: string
-    image: string
-    rating: number
-    reviews: number
+const ORIGINAL_PRICES: Record<number, number> = {
+    1: 89.99,
+    3: 120,
+    4: 150,
+    6: 55,
+    8: 110,
 }
 
 interface QuantityDropdownProps {
@@ -146,49 +144,16 @@ export const ProductDetail = () => {
         return () => clearTimeout(timer)
     }, [id])
 
-    // Datos de productos de ejemplo
-    const products: { [key: string]: Product } = {
-        '1': {
-            name: 'Bolígrafos Premium',
-            brand: 'Staedtler',
-            price: 71.99,
-            originalPrice: 89.99,
-            description: 'Set de bolígrafos premium de alta calidad con tinta suave y duradera. Perfectos para escritura profesional y cotidiana.',
-            image: '✒️',
-            rating: 4.5,
-            reviews: 234
-        },
-        '2': {
-            name: 'Cuadernos Profesionales',
-            brand: 'Moleskine',
-            price: 45.5,
-            description: 'Cuadernos de alta calidad con páginas de excelente gramaje. Ideales para notas, dibujo y escritura profesional.',
-            image: '📓',
-            rating: 5,
-            reviews: 156
-        },
-        '3': {
-            name: 'Marcadores Artísticos',
-            brand: 'Copic',
-            price: 102,
-            originalPrice: 120,
-            description: 'Marcadores artísticos de colores vibrantes y duraderos. Perfectos para diseño, ilustración y manualidades.',
-            image: '🖍️',
-            rating: 4.5,
-            reviews: 89
-        }
-    }
-
-    const product = products[id || '1']
+    const product = getProductById(id ?? "")
 
     if (!product) {
         return (
-            <main className="cart-main" style={{ textAlign: 'center' }}>
+            <main className="cart-main" style={{ textAlign: "center" }}>
                 <h2>Producto no encontrado</h2>
                 <button
                     className="btn-return"
-                    onClick={() => navigate('/')}
-                    style={{ marginTop: '30px' }}
+                    onClick={() => navigate("/")}
+                    style={{ marginTop: "30px" }}
                 >
                     Volver a la tienda
                 </button>
@@ -196,54 +161,93 @@ export const ProductDetail = () => {
         )
     }
 
+    const brand = product.description.split(" ")[0] ?? ""
+    const originalPrice = ORIGINAL_PRICES[product.id]
+    const rating = 4.5
+    const reviews = Math.floor(product.stock * 3.5)
+
     return (
         <main className="cart-main">
             <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
                 <button
                     className="btn-return"
-                    onClick={() => navigate('/')}
-                    style={{ marginBottom: '30px' }}
+                    onClick={() => navigate("/")}
+                    style={{ marginBottom: "30px" }}
                 >
-                    <i className="fas fa-arrow-left"></i> Volver
+                    <i className="fas fa-arrow-left" /> Volver
                 </button>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "40px" }}>
                     {/* Imagen del producto */}
-                    <div style={{
-                        background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)',
-                        borderRadius: '12px',
-                        height: '400px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '120px'
-                    }}>
-                        {product.image}
+                    <div
+                        style={{
+                            background:
+                                "linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)",
+                            borderRadius: "12px",
+                            height: "400px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "120px",
+                        }}
+                    >
+                        {product.image.startsWith("/") ? (
+                            <img
+                                src={product.image}
+                                alt={product.name}
+                                style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                            />
+                        ) : (
+                            <span>{product.image || "📦"}</span>
+                        )}
                     </div>
 
                     {/* Información del producto */}
                     <div>
-                        <p style={{ color: 'var(--color-text-light)', marginBottom: '10px' }}>
-                            Marca: <strong>{product.brand}</strong>
-                        </p>
+                        {brand && (
+                            <p
+                                style={{
+                                    color: "var(--color-text-light)",
+                                    marginBottom: "10px",
+                                }}
+                            >
+                                Marca: <strong>{brand}</strong>
+                            </p>
+                        )}
                         <h1 style={{ fontSize: '32px', fontWeight: 700, marginBottom: '15px' }}>
                             {product.name}
                         </h1>
 
                         {/* Rating */}
-                        <div style={{ marginBottom: '20px' }}>
+                        <div style={{ marginBottom: "20px" }}>
                             {Array.from({ length: 5 }).map((_, i) => {
-                                const isFilled = i < Math.floor(product.rating)
+                                const isFilled = i < Math.floor(rating)
+                                const isHalf =
+                                    i === Math.floor(rating) &&
+                                    rating % 1 >= 0.5
+                                const starClass = isFilled
+                                    ? "fas fa-star"
+                                    : isHalf
+                                      ? "fas fa-star-half-alt"
+                                      : "far fa-star"
                                 return (
                                     <i
-                                        key={`star-${isFilled ? 'filled' : 'half'}-${i}`}
-                                        className={`fas fa-star${isFilled ? '' : '-half-alt'}`}
-                                        style={{ color: 'var(--color-warning)', marginRight: '5px' }}
-                                    ></i>
+                                        key={`star-${i}`}
+                                        className={starClass}
+                                        style={{
+                                            color: "var(--color-warning)",
+                                            marginRight: "5px",
+                                        }}
+                                    />
                                 )
                             })}
-                            <span style={{ marginLeft: '10px', color: 'var(--color-text-light)' }}>
-                                ({product.reviews} reseñas)
+                            <span
+                                style={{
+                                    marginLeft: "10px",
+                                    color: "var(--color-text-light)",
+                                }}
+                            >
+                                ({reviews} reseñas)
                             </span>
                         </div>
 
@@ -258,23 +262,28 @@ export const ProductDetail = () => {
                         </p>
 
                         {/* Precio */}
-                        <div style={{ marginBottom: '20px' }}>
-                            {product.originalPrice && (
-                                <span style={{
-                                    textDecoration: 'line-through',
-                                    color: 'var(--color-text-muted)',
-                                    marginRight: '15px',
-                                    fontSize: '18px'
-                                }}>
-                                    ${product.originalPrice}
-                                </span>
-                            )}
-                            <span style={{
-                                fontSize: '36px',
-                                fontWeight: 700,
-                                color: 'var(--color-accent)'
-                            }}>
-                                ${product.price}
+                        <div style={{ marginBottom: "20px" }}>
+                            {originalPrice != null &&
+                                originalPrice > product.price && (
+                                    <span
+                                        style={{
+                                            textDecoration: "line-through",
+                                            color: "var(--color-text-muted)",
+                                            marginRight: "15px",
+                                            fontSize: "18px",
+                                        }}
+                                    >
+                                        ${originalPrice.toFixed(2)}
+                                    </span>
+                                )}
+                            <span
+                                style={{
+                                    fontSize: "36px",
+                                    fontWeight: 700,
+                                    color: "var(--color-accent)",
+                                }}
+                            >
+                                ${product.price.toFixed(2)}
                             </span>
                         </div>
 
@@ -296,7 +305,7 @@ export const ProductDetail = () => {
                                 <QuantityDropdown
                                     value={quantity}
                                     onChange={(v: number) => setQuantity(v)}
-                                    max={20}
+                                    max={Math.min(20, product.stock)}
                                     visibleRows={5}
                                 />
                             </div>
@@ -312,7 +321,13 @@ export const ProductDetail = () => {
                             {/* Botón Agregar al carrito */}
                             <button
                                 className="btn-add-cart"
-                                onClick={() => addProductToCart(product.name, product.price.toString(), quantity)}
+                                onClick={() =>
+                                    addProductToCart(
+                                        product.name,
+                                        product.price.toFixed(2),
+                                        quantity
+                                    )
+                                }
                                 style={{
                                     padding: '15px',
                                     fontSize: '16px',
