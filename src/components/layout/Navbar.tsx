@@ -1,10 +1,13 @@
 import { useCallback } from "react"
 import { Link } from "react-router"
-import { products } from "../data/products"
-import { useNotification } from "../hooks/useNotification"
-import { smoothScroll } from "../utils/SmoothScroll"
-import { CategoryDropdown, type CategoryDropdownCategory } from "./CategoryDropdown"
-import { Notification } from "./Notification"
+import { products } from "../../data/products"
+import { useNotification } from "../../hooks/useNotification"
+import { smoothScroll } from "../../utils/SmoothScroll"
+import {
+    CategoryDropdown,
+    type CategoryDropdownCategory,
+} from "../filters/CategoryDropdown"
+import { Notification } from "../ui/Notification"
 import { SearchBar } from "./SearchBar"
 
 const CATEGORIES: CategoryDropdownCategory[] = [
@@ -81,7 +84,10 @@ export function Navbar() {
                         <h1>God Art</h1>
                     </Link>
 
-                    <SearchBar products={products} placeholder="Buscar productos, marcas..." />
+                    <SearchBar
+                        products={products}
+                        placeholder="Buscar productos, marcas..."
+                    />
 
                     <div className="header-right">
                         <button
@@ -91,9 +97,15 @@ export function Navbar() {
                         >
                             Contactar
                         </button>
-                        <Link to="/cart" className="cart-icon" aria-label="Ver carrito">
-                            <i className="fas fa-shopping-cart" aria-hidden="true" />
-                            <span className="cart-count" id="cartCount">0</span>
+                        <Link
+                            to="/cart"
+                            className="cart-icon"
+                            aria-label="Ver carrito"
+                        >
+                            <i className="fas fa-shopping-cart" aria-hidden />
+                            <span className="cart-count" id="cartCount">
+                                0
+                            </span>
                         </Link>
                     </div>
                 </div>
@@ -101,7 +113,10 @@ export function Navbar() {
                 <nav className="navbar" aria-label="Categorías de productos">
                     <div className="navbar-container">
                         {CATEGORIES.map((category) => (
-                            <CategoryDropdown key={category.id} category={category} />
+                            <CategoryDropdown
+                                key={category.id}
+                                category={category}
+                            />
                         ))}
                     </div>
                 </nav>

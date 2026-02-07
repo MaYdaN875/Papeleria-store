@@ -76,6 +76,18 @@ export function useCart() {
         [removeItem]
     )
 
+    const setQuantity = useCallback((id: number, value: number) => {
+        if (value < 1) {
+            removeItem(id)
+            return
+        }
+        setCartItems((prev) =>
+            prev.map((i) =>
+                i.id === id ? { ...i, quantity: Math.min(value, 99) } : i
+            )
+        )
+    }, [removeItem])
+
     const clearCart = useCallback(() => {
         setCartItems([])
     }, [])
@@ -94,6 +106,7 @@ export function useCart() {
         removingId,
         removeItem,
         updateQuantity,
+        setQuantity,
         clearCart,
     }
 }

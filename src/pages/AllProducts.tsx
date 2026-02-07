@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
-import { FilterPanel, FilterState } from "../components/FilterPanel"
-import { ProductCard, type ProductCardBadge } from "../components/ProductCard"
+import {
+    FilterPanel,
+    FilterState,
+} from "../components/filters"
+import {
+    ProductCard,
+    type ProductCardBadge,
+} from "../components/product"
 import { products } from "../data/products"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"

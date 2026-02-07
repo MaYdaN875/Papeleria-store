@@ -148,45 +148,18 @@
     color: var(--color-accent);
 }
 
-/* Controles de cantidad */
+/* Controles de cantidad (QuantitySelector) */
 .item-quantity-controls {
     display: flex;
     align-items: center;
-    gap: 10px;
     background-color: var(--color-light-bg);
     border-radius: 8px;
     padding: 8px;
     flex-shrink: 0;
 }
 
-.btn-quantity-minus,
-.btn-quantity-plus {
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: var(--transition-normal);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-quantity-minus:hover,
-.btn-quantity-plus:hover {
-    background-color: var(--color-accent);
-    transform: scale(1.1);
-}
-
-.quantity-display {
-    font-weight: 700;
-    font-size: 16px;
-    color: var(--color-text-dark);
-    min-width: 30px;
-    text-align: center;
+.item-quantity-controls .quantity-selector {
+    min-width: 70px;
 }
 
 /* Subtotal del producto */

@@ -1,21 +1,17 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
-import type { Product } from "../types/Product"
+import type { Product } from "../../types/Product"
 import type { ProductCarouselSlideConfig } from "./ProductCarouselSlide"
 import { ProductCarouselSlide } from "./ProductCarouselSlide"
 
 export interface ProductCarouselProps {
-    /** Título de la sección (ej. "🎨 Arte & Manualidades") */
     title: string
-    /** Lista de productos a mostrar en el carrusel */
     products: Product[]
-    /** Obtiene badge, originalPrice y brand por producto (por id) */
-    getItemConfig?: (product: Product) => ProductCarouselSlideConfig | undefined
-    /** Navegación al detalle del producto */
+    getItemConfig?: (
+        product: Product
+    ) => ProductCarouselSlideConfig | undefined
     onNavigate: (id: number) => void
-    /** Callback al agregar al carrito */
     onAddToCart: (name: string, price: string) => void
-    /** Ruta del botón "Ver Más" (ej. "/all-products"). Si no se pasa, no se muestra. */
     seeMorePath?: string
 }
 
@@ -32,9 +28,6 @@ function moveCarousel(
     })
 }
 
-/**
- * Carrusel de productos con título, flechas prev/next, indicadores y opcional "Ver Más".
- */
 export function ProductCarousel({
     title,
     products,
@@ -46,7 +39,6 @@ export function ProductCarousel({
     const navigate = useNavigate()
     const [currentIndex, setCurrentIndex] = useState(0)
 
-    // Auto-avance del carousel cada 5 segundos
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentIndex((prev) => {
@@ -55,7 +47,6 @@ export function ProductCarousel({
                 return next
             })
         }, 5000)
-
         return () => clearInterval(interval)
     }, [products.length])
 
@@ -68,10 +59,12 @@ export function ProductCarousel({
                 <button
                     type="button"
                     className="carousel-button carousel-button-prev"
-                    onClick={() => moveCarousel(-1, setCurrentIndex, products.length)}
+                    onClick={() =>
+                        moveCarousel(-1, setCurrentIndex, products.length)
+                    }
                     aria-label="Producto anterior"
                 >
-                    <i className="fas fa-chevron-left" aria-hidden="true" />
+                    <i className="fas fa-chevron-left" aria-hidden />
                 </button>
                 <div className="carousel-track">
                     {products.map((product, index) => {
@@ -87,7 +80,10 @@ export function ProductCarousel({
                                 className={`carousel-item ${isActive ? "active" : ""} ${badgeClass}`}
                                 style={{
                                     transform: `translateX(${offset * 100}%) scale(${isActive ? 1 : 0.85})`,
-                                    opacity: Math.abs(offset) > 1 ? 0 : 1 - Math.abs(offset) * 0.3,
+                                    opacity:
+                                        Math.abs(offset) > 1
+                                            ? 0
+                                            : 1 - Math.abs(offset) * 0.3,
                                 }}
                             >
                                 <ProductCarouselSlide
@@ -107,16 +103,19 @@ export function ProductCarousel({
                         onClick={() => navigate(seeMorePath)}
                         aria-label="Ver más productos"
                     >
-                        <i className="fas fa-arrow-right" aria-hidden="true" /> Ver Más
+                        <i className="fas fa-arrow-right" aria-hidden /> Ver
+                        Más
                     </button>
                 ) : (
                     <button
                         type="button"
                         className="carousel-button carousel-button-next"
-                        onClick={() => moveCarousel(1, setCurrentIndex, products.length)}
+                        onClick={() =>
+                            moveCarousel(1, setCurrentIndex, products.length)
+                        }
                         aria-label="Siguiente producto"
                     >
-                        <i className="fas fa-chevron-right" aria-hidden="true" />
+                        <i className="fas fa-chevron-right" aria-hidden />
                     </button>
                 )}
             </div>

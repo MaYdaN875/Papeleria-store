@@ -1,6 +1,6 @@
 import { useRef, useState } from "react"
 import { useNavigate } from "react-router"
-import "../styles/category-dropdown.css"
+import "../../styles/category-dropdown.css"
 
 export type CategoryItem = {
     name: string
@@ -25,16 +25,12 @@ export function CategoryDropdown({ category }: CategoryDropdownProps) {
     const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const handleMouseEnter = () => {
-        if (closeTimeoutRef.current) {
-            clearTimeout(closeTimeoutRef.current)
-        }
+        if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current)
         setIsOpen(true)
     }
 
     const handleMouseLeave = () => {
-        closeTimeoutRef.current = setTimeout(() => {
-            setIsOpen(false)
-        }, 150)
+        closeTimeoutRef.current = setTimeout(() => setIsOpen(false), 150)
     }
 
     const handleItemClick = (_itemName: string) => {
@@ -43,17 +39,17 @@ export function CategoryDropdown({ category }: CategoryDropdownProps) {
     }
 
     return (
-        <div 
+        <div
             className="category-dropdown-wrapper"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
             <button
                 type="button"
-                className={`category-link ${isOpen ? 'active' : ''}`}
+                className={`category-link ${isOpen ? "active" : ""}`}
             >
-                <i className={category.icon} aria-hidden="true" /> {category.label}
-                <i className="fas fa-chevron-down dropdown-arrow" aria-hidden="true" />
+                <i className={category.icon} aria-hidden /> {category.label}
+                <i className="fas fa-chevron-down dropdown-arrow" aria-hidden />
             </button>
 
             {isOpen && (
@@ -66,8 +62,11 @@ export function CategoryDropdown({ category }: CategoryDropdownProps) {
                                 className="dropdown-item"
                                 onClick={() => handleItemClick(item.name)}
                             >
-                                <div className="item-icon" style={{ backgroundColor: item.color }}>
-                                    <i className={item.icon} aria-hidden="true" />
+                                <div
+                                    className="item-icon"
+                                    style={{ backgroundColor: item.color }}
+                                >
+                                    <i className={item.icon} aria-hidden />
                                 </div>
                                 <span className="item-label">{item.name}</span>
                             </button>
