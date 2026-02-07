@@ -6,6 +6,7 @@ import { products } from "../data/products"
 import type { Product } from "../types/Product"
 import type { ProductCarouselSlideConfig } from "../components/ProductCarouselSlide"
 import { addProductToCart, syncCartCount } from "../utils/cart"
+import { ProductCard } from "../components/ProductCard"
 
 /* ================================
    COMPONENTE: Home
@@ -83,6 +84,43 @@ export const Home = () => {
                     seeMorePath="/all-products"
                 />
             </section>
+            <div className="products-content-area">
+                <div className="all-products-grid" id="allProductsGrid">
+                    <ProductCard
+                        product={featuredProducts[0]}
+                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
+                    />
+                    <ProductCard
+                        product={featuredProducts[0]}
+                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
+                    />
+                    <ProductCard
+                        product={featuredProducts[0]}
+                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
+                    />
+                    <ProductCard
+                        product={featuredProducts[0]}
+                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
+                    />
+                    <ProductCard
+                        product={featuredProducts[0]}
+                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
+                    />
+                    <ProductCard
+                        product={featuredProducts[0]}
+                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
+                    />
+                    <ProductCard
+                        product={featuredProducts[0]}
+                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
+                    />
+                    <ProductCard
+                        product={featuredProducts[0]}
+                        onAddToCart={() => handleAddToCart(products[0].name, products[0].price.toString())}
+                    />
+                </div>
+            </div>
+
         </>
     )
 }
