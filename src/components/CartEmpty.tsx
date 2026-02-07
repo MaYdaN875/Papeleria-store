@@ -16,7 +16,7 @@ export function CartEmpty() {
             </div>
             <div className="empty-cart-icon">
                 <img
-                    src="/src/imagenes/carrito.png"
+                    src="images/carrito.png"
                     alt="Carrito vacío"
                     style={{
                         width: 300,
