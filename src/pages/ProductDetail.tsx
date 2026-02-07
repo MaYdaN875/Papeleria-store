@@ -379,10 +379,7 @@ export const ProductDetail = () => {
                 </div>
             </div>
 
-            {/* ============ BOTÓN FLOTANTE WHATSAPP ============ */}
-            <a href="https://wa.me/1234567890" className="whatsapp-btn" target="_blank" rel="noopener noreferrer" title="Contactanos por WhatsApp">
-                <i className="fab fa-whatsapp"></i>
-            </a>
+
         </main>
     )
 }

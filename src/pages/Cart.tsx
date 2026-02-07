@@ -38,10 +38,10 @@ export const Cart = () => {
 
         // Escuchar cambios en localStorage desde otras pestañas/ventanas
         window.addEventListener('storage', loadCart)
-        
+
         // Escuchar evento personalizado cuando se agrega un producto
         window.addEventListener('cartUpdated', loadCart)
-        
+
         return () => {
             window.removeEventListener('storage', loadCart)
             window.removeEventListener('cartUpdated', loadCart)
@@ -53,7 +53,7 @@ export const Cart = () => {
         if (!isFirstLoad) {
             localStorage.setItem('cart', JSON.stringify(cartItems))
         }
-        
+
         const cartCount = document.getElementById('cartCount')
         if (cartCount) {
             const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0)
@@ -70,7 +70,7 @@ export const Cart = () => {
     const removeItem = (id: number) => {
         // Marcar el item para animación
         setRemovingId(id)
-        
+
         // Esperar a que termine la animación antes de quitar
         setTimeout(() => {
             const updatedCart = cartItems.filter(item => item.id !== id)
@@ -109,19 +109,19 @@ export const Cart = () => {
        ================================ */
     const updateCartTotal = (items: CartItem[]) => {
         let total = 0
-        
+
         // Iterar sobre cada item y sumar los precios
         items.forEach(item => {
             const price = Number.parseFloat(item.price)
             total += price * item.quantity
         })
-        
+
         // Actualizar el elemento del total en la página
         const totalAmount = document.getElementById('totalAmount')
         if (totalAmount) {
             totalAmount.textContent = total.toFixed(2) + '$'
         }
-        
+
         // Actualizar el título con la cantidad de items
         const totalItemCount = items.reduce((sum, item) => sum + item.quantity, 0)
         const cartTitle = document.getElementById('cartTitle')
@@ -141,9 +141,9 @@ export const Cart = () => {
         const notification = document.createElement('div')
         notification.className = 'notification'
         notification.textContent = message
-        
+
         document.body.appendChild(notification)
-        
+
         // Quitar la notificación después de 3 segundos
         setTimeout(() => {
             notification.style.animation = 'slideOutRight 0.3s ease'
@@ -185,21 +185,21 @@ export const Cart = () => {
                 <div className="cart-empty-container">
                     {/* Título del carrito */}
                     <h2>Mi Carrito</h2>
-                    
+
                     {/* Mensaje cuando el carrito está vacío */}
                     <div className="empty-message">
                         <p>Tu Carrito Está Vacío</p>
                         <p>Tenemos Grandes Ofertas Que Podrían Interesarte. ¡Elige Lo Que Necesitas!</p>
                     </div>
-                    
+
                     {/* Icono de carrito vacío (imagen proporcionada) */}
                     <div className="empty-cart-icon">
                         <img src="/src/imagenes/carrito.png" alt="Carrito vacío" style={{ width: 300, height: 300, margin: '0 auto', display: 'block' }} />
                     </div>
-                    
+
                     {/* Texto que indica que el carrito está vacío */}
                     <p className="nothing-here">Nada aquí</p>
-                    
+
                     {/* Botón para volver a la tienda */}
                     <Link to="/" className="btn-return">Volver a la tienda</Link>
                 </div>
@@ -208,13 +208,13 @@ export const Cart = () => {
                 <div className="cart-full-container">
                     {/* Título del carrito con cantidad de artículos */}
                     <h2 id="cartTitle">Mi Carrito ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} Artículos)</h2>
-                    
+
                     {/* Lista de productos en el carrito */}
                     <div className="cart-items">
                         {cartItems.map((item) => (
-                            <div 
-                                key={item.id} 
-                                className="cart-item" 
+                            <div
+                                key={item.id}
+                                className="cart-item"
                                 data-id={item.id}
                                 style={removingId === item.id ? {
                                     opacity: '0',
@@ -224,7 +224,7 @@ export const Cart = () => {
                             >
                                 {/* Imagen del producto */}
                                 <div className="item-image"></div>
-                                
+
                                 {/* Información del producto */}
                                 <div className="item-info">
                                     <h4>{item.name}</h4>
@@ -233,7 +233,7 @@ export const Cart = () => {
 
                                 {/* Controles de cantidad */}
                                 <div className="item-quantity-controls">
-                                    <button 
+                                    <button
                                         className="btn-quantity-minus"
                                         onClick={() => updateQuantity(item.id, -1)}
                                         title="Disminuir cantidad"
@@ -241,7 +241,7 @@ export const Cart = () => {
                                         <i className="fas fa-minus"></i>
                                     </button>
                                     <span className="quantity-display">{item.quantity}</span>
-                                    <button 
+                                    <button
                                         className="btn-quantity-plus"
                                         onClick={() => updateQuantity(item.id, 1)}
                                         title="Aumentar cantidad"
@@ -254,10 +254,10 @@ export const Cart = () => {
                                 <div className="item-subtotal">
                                     ${(Number.parseFloat(item.price) * item.quantity).toFixed(2)}
                                 </div>
-                                
+
                                 {/* Botón para eliminar el producto */}
-                                <button 
-                                    className="btn-remove" 
+                                <button
+                                    className="btn-remove"
                                     onClick={() => removeItem(item.id)}
                                     title="Eliminar del carrito"
                                 >
@@ -284,11 +284,7 @@ export const Cart = () => {
                 </div>
             )}
 
-            {/* ============ BOTÓN FLOTANTE WHATSAPP ============ */}
-            {/* Botón fijo en la esquina inferior derecha para contacto por WhatsApp */}
-            <a href="https://wa.me/1234567890" className="whatsapp-btn" target="_blank" rel="noopener noreferrer" title="Contactanos por WhatsApp">
-                <i className="fab fa-whatsapp"></i>
-            </a>
+
         </main>
     )
 }

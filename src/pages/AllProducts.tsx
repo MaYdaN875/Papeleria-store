@@ -76,10 +76,10 @@ export const AllProducts = () => {
        ================================ */
     const addProductToCart = (productName: string, productPrice: string) => {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]')
-        
+
         // Verificar si el producto ya existe en el carrito
         const existingProduct = cart.find((item: any) => item.name === productName && item.price === productPrice)
-        
+
         if (existingProduct) {
             // Si existe, aumentar la cantidad
             existingProduct.quantity = (existingProduct.quantity || 1) + 1
@@ -92,9 +92,9 @@ export const AllProducts = () => {
                 quantity: 1
             })
         }
-        
+
         localStorage.setItem('cart', JSON.stringify(cart))
-        
+
         const cartCount = document.getElementById('cartCount')
         if (cartCount) {
             const totalItems = cart.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0)
@@ -104,10 +104,10 @@ export const AllProducts = () => {
                 cartCount.style.animation = 'scaleIn 0.3s ease'
             }, 10)
         }
-        
+
         // Disparar evento personalizado para que otros componentes se actualicen
         globalThis.dispatchEvent(new Event('cartUpdated'))
-        
+
         showNotification(productName + ' agregado al carrito!')
     }
 
@@ -119,9 +119,9 @@ export const AllProducts = () => {
         const notification = document.createElement('div')
         notification.className = 'notification'
         notification.textContent = message
-        
+
         document.body.appendChild(notification)
-        
+
         setTimeout(() => {
             notification.style.animation = 'slideOutRight 0.3s ease'
             setTimeout(() => {
@@ -162,9 +162,9 @@ export const AllProducts = () => {
                     <div className="products-content-area">
                         <div className="all-products-grid" id="allProductsGrid">
                             {products.map((product) => (
-                                <div 
+                                <div
                                     key={product.id}
-                                    className="product-card" 
+                                    className="product-card"
                                     data-category={product.category.toLowerCase()}
                                     data-price={product.price}
                                     data-brand={product.description.split(' ')[0]}
@@ -229,10 +229,7 @@ export const AllProducts = () => {
                 </div>
             </section>
 
-            {/* ============ BOTÓN FLOTANTE WHATSAPP ============ */}
-            <a href="https://wa.me/1234567890" className="whatsapp-btn" target="_blank" rel="noopener noreferrer" title="Contactanos por WhatsApp">
-                <i className="fab fa-whatsapp"></i>
-            </a>
+
         </>
     )
 }
