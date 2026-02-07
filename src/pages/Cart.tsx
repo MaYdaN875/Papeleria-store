@@ -1,18 +1,12 @@
-
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router"
+import type { CartItem } from "../utils/cart"
+import { showNotification } from "../utils/notification"
 
 /* ================================
    COMPONENTE: Cart
    Página del carrito de compras
    ================================ */
-
-interface CartItem {
-    name: string
-    price: string
-    id: number
-    quantity: number
-}
 
 export const Cart = () => {
     const [cartItems, setCartItems] = useState<CartItem[]>([])
@@ -100,57 +94,6 @@ export const Cart = () => {
                 return item;
             })
         )
-    }
-
-    /* ================================
-       FUNCIÓN: updateCartTotal
-       Actualiza el total del carrito
-       Suma los precios de todos los productos
-       ================================ */
-    const updateCartTotal = (items: CartItem[]) => {
-        let total = 0
-
-        // Iterar sobre cada item y sumar los precios
-        items.forEach(item => {
-            const price = Number.parseFloat(item.price)
-            total += price * item.quantity
-        })
-
-        // Actualizar el elemento del total en la página
-        const totalAmount = document.getElementById('totalAmount')
-        if (totalAmount) {
-            totalAmount.textContent = total.toFixed(2) + '$'
-        }
-
-        // Actualizar el título con la cantidad de items
-        const totalItemCount = items.reduce((sum, item) => sum + item.quantity, 0)
-        const cartTitle = document.getElementById('cartTitle')
-        if (cartTitle) {
-            cartTitle.textContent = `Mi Carrito (${totalItemCount} Artículos)`
-        }
-    }
-
-    /* ================================
-       FUNCIÓN: showNotification
-       Muestra una notificación temporal
-       Parámetro:
-       - message: mensaje a mostrar
-       ================================ */
-    const showNotification = (message: string) => {
-        // Crear elemento de notificación
-        const notification = document.createElement('div')
-        notification.className = 'notification'
-        notification.textContent = message
-
-        document.body.appendChild(notification)
-
-        // Quitar la notificación después de 3 segundos
-        setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.3s ease'
-            setTimeout(() => {
-                notification.remove()
-            }, 300)
-        }, 3000)
     }
 
     const handleCheckout = () => {
