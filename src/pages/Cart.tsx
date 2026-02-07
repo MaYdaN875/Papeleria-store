@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router"
-import { CartEmpty } from "../components/CartEmpty"
-import { CartItem } from "../components/CartItem"
+import { CartEmpty, CartItem } from "../components/cart"
 import { useCart } from "../hooks/useCart"
 import { showNotification } from "../utils/notification"
 
@@ -16,7 +15,7 @@ export const Cart = () => {
         itemCount,
         removingId,
         removeItem,
-        updateQuantity,
+        setQuantity,
         clearCart,
     } = useCart()
 
@@ -54,7 +53,7 @@ export const Cart = () => {
                                 key={item.id}
                                 item={item}
                                 isRemoving={removingId === item.id}
-                                onUpdateQuantity={updateQuantity}
+                                onQuantityChange={setQuantity}
                                 onRemove={removeItem}
                             />
                         ))}

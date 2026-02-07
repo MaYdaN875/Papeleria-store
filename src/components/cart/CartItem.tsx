@@ -1,20 +1,21 @@
-import type { CartItem as CartItemType } from "../utils/cart"
+import type { CartItem as CartItemType } from "../../utils/cart"
+import { QuantitySelector } from "../ui/QuantitySelector"
 
 interface CartItemProps {
     item: CartItemType
     isRemoving: boolean
-    onUpdateQuantity: (id: number, delta: number) => void
+    onQuantityChange: (id: number, value: number) => void
     onRemove: (id: number) => void
 }
 
 /**
- * Fila de un producto en el carrito: imagen, info, controles de cantidad,
+ * Fila de un producto en el carrito: imagen, info, selector de cantidad,
  * subtotal y botón eliminar.
  */
 export function CartItem({
     item,
     isRemoving,
-    onUpdateQuantity,
+    onQuantityChange,
     onRemove,
 }: CartItemProps) {
     const subtotal = Number.parseFloat(item.price) * item.quantity
@@ -39,21 +40,13 @@ export function CartItem({
                 <p className="item-price">${item.price}</p>
             </div>
             <div className="item-quantity-controls">
-                <button
-                    className="btn-quantity-minus"
-                    onClick={() => onUpdateQuantity(item.id, -1)}
-                    title="Disminuir cantidad"
-                >
-                    <i className="fas fa-minus" />
-                </button>
-                <span className="quantity-display">{item.quantity}</span>
-                <button
-                    className="btn-quantity-plus"
-                    onClick={() => onUpdateQuantity(item.id, 1)}
-                    title="Aumentar cantidad"
-                >
-                    <i className="fas fa-plus" />
-                </button>
+                <QuantitySelector
+                    id={`cart-quantity-${item.id}`}
+                    value={item.quantity}
+                    onChange={(v) => onQuantityChange(item.id, v)}
+                    max={99}
+                    visibleRows={6}
+                />
             </div>
             <div className="item-subtotal">
                 ${subtotal.toFixed(2)}

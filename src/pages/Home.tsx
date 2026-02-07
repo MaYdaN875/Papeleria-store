@@ -1,12 +1,14 @@
 import { useCallback, useEffect } from "react"
 import { useNavigate } from "react-router"
-import { Carusel } from "../components/Carusel"
-import { ProductCarousel } from "../components/ProductCarousel"
+import { Carusel } from "../components/carousel"
+import {
+    ProductCard,
+    ProductCarousel,
+    type ProductCarouselSlideConfig,
+} from "../components/product"
 import { products } from "../data/products"
 import type { Product } from "../types/Product"
-import type { ProductCarouselSlideConfig } from "../components/ProductCarouselSlide"
 import { addProductToCart, syncCartCount } from "../utils/cart"
-import { ProductCard } from "../components/ProductCard"
 
 /* ================================
    COMPONENTE: Home
