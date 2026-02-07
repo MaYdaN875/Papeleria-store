@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { products } from "../data/products"
+import { products } from "../../data/products"
 
 export interface FilterState {
     brands: string[]
@@ -12,18 +12,17 @@ export interface FilterPanelProps {
     onFilterChange: (filters: FilterState) => void
 }
 
-// Obtener todas las marcas únicas de los productos dinámicamente
 const getBrands = (): string[] => {
     const brandsSet = new Set(
-        products
-            .map(p => p.description.split(' ')[0])
-            .filter(Boolean)
+        products.map((p) => p.description.split(" ")[0]).filter(Boolean)
     )
     return Array.from(brandsSet).sort((a, b) => a.localeCompare(b))
 }
 
 export function FilterPanel({ onFilterChange }: FilterPanelProps) {
-    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    const [expandedSections, setExpandedSections] = useState<
+        Record<string, boolean>
+    >({
         brands: true,
         mayoreo: false,
         menudeo: false,
@@ -39,28 +38,27 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
 
     const brands = getBrands()
 
-    /* ================================
-       MANEJO DE ESTADOS.
-       ================================ */
-
     const toggleSection = useCallback((section: string) => {
-        setExpandedSections(prev => ({
-            ...prev,
-            [section]: !prev[section]
-        }))
+        setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }))
     }, [])
 
-    const updateFilters = useCallback((newFilters: FilterState) => {
-        setFilters(newFilters)
-        onFilterChange(newFilters)
-    }, [onFilterChange])
+    const updateFilters = useCallback(
+        (newFilters: FilterState) => {
+            setFilters(newFilters)
+            onFilterChange(newFilters)
+        },
+        [onFilterChange]
+    )
 
-    const handleBrandChange = useCallback((brand: string) => {
-        const newBrands = filters.brands.includes(brand)
-            ? filters.brands.filter(b => b !== brand)
-            : [...filters.brands, brand]
-        updateFilters({ ...filters, brands: newBrands })
-    }, [filters, updateFilters])
+    const handleBrandChange = useCallback(
+        (brand: string) => {
+            const newBrands = filters.brands.includes(brand)
+                ? filters.brands.filter((b) => b !== brand)
+                : [...filters.brands, brand]
+            updateFilters({ ...filters, brands: newBrands })
+        },
+        [filters, updateFilters]
+    )
 
     const handleMayoreoChange = useCallback(() => {
         updateFilters({ ...filters, mayoreo: !filters.mayoreo })
@@ -70,31 +68,36 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
         updateFilters({ ...filters, menudeo: !filters.menudeo })
     }, [filters, updateFilters])
 
-    const handlePriceChange = useCallback((type: 'min' | 'max', value: number) => {
-        const newRange: [number, number] = type === 'min'
-            ? [value, filters.priceRange[1]]
-            : [filters.priceRange[0], value]
-        updateFilters({ ...filters, priceRange: newRange })
-    }, [filters, updateFilters])
+    const handlePriceChange = useCallback(
+        (type: "min" | "max", value: number) => {
+            const newRange: [number, number] =
+                type === "min"
+                    ? [value, filters.priceRange[1]]
+                    : [filters.priceRange[0], value]
+            updateFilters({ ...filters, priceRange: newRange })
+        },
+        [filters, updateFilters]
+    )
 
     return (
         <aside className="filter-panel">
             <h3 className="filter-panel-title">Filtros</h3>
 
-            {/* Sección Marcas */}
             <div className="filter-section">
                 <button
-                    className={`filter-section-header ${expandedSections.brands ? 'expanded' : ''}`}
-                    onClick={() => toggleSection('brands')}
+                    className={`filter-section-header ${expandedSections.brands ? "expanded" : ""}`}
+                    onClick={() => toggleSection("brands")}
                     type="button"
                 >
                     <span>Marcas</span>
-                    <i className={`fas fa-chevron-${expandedSections.brands ? 'up' : 'down'}`}></i>
+                    <i
+                        className={`fas fa-chevron-${expandedSections.brands ? "up" : "down"}`}
+                    />
                 </button>
                 {expandedSections.brands && (
                     <div className="filter-section-content">
                         {brands.length > 0 ? (
-                            brands.map(brand => (
+                            brands.map((brand) => (
                                 <label key={brand} className="filter-checkbox">
                                     <input
                                         type="checkbox"
@@ -111,15 +114,16 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                 )}
             </div>
 
-            {/* Sección Mayoreo */}
             <div className="filter-section">
                 <button
-                    className={`filter-section-header ${expandedSections.mayoreo ? 'expanded' : ''}`}
-                    onClick={() => toggleSection('mayoreo')}
+                    className={`filter-section-header ${expandedSections.mayoreo ? "expanded" : ""}`}
+                    onClick={() => toggleSection("mayoreo")}
                     type="button"
                 >
                     <span>Mayoreo</span>
-                    <i className={`fas fa-chevron-${expandedSections.mayoreo ? 'up' : 'down'}`}></i>
+                    <i
+                        className={`fas fa-chevron-${expandedSections.mayoreo ? "up" : "down"}`}
+                    />
                 </button>
                 {expandedSections.mayoreo && (
                     <div className="filter-section-content">
@@ -135,15 +139,16 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                 )}
             </div>
 
-            {/* Sección Menudeo */}
             <div className="filter-section">
                 <button
-                    className={`filter-section-header ${expandedSections.menudeo ? 'expanded' : ''}`}
-                    onClick={() => toggleSection('menudeo')}
+                    className={`filter-section-header ${expandedSections.menudeo ? "expanded" : ""}`}
+                    onClick={() => toggleSection("menudeo")}
                     type="button"
                 >
                     <span>Menudeo</span>
-                    <i className={`fas fa-chevron-${expandedSections.menudeo ? 'up' : 'down'}`}></i>
+                    <i
+                        className={`fas fa-chevron-${expandedSections.menudeo ? "up" : "down"}`}
+                    />
                 </button>
                 {expandedSections.menudeo && (
                     <div className="filter-section-content">
@@ -159,15 +164,16 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                 )}
             </div>
 
-            {/* Seccion Precios */}
             <div className="filter-section">
                 <button
-                    className={`filter-section-header ${expandedSections.precios ? 'expanded' : ''}`}
-                    onClick={() => toggleSection('precios')}
+                    className={`filter-section-header ${expandedSections.precios ? "expanded" : ""}`}
+                    onClick={() => toggleSection("precios")}
                     type="button"
                 >
                     <span>Precios</span>
-                    <i className={`fas fa-chevron-${expandedSections.precios ? 'up' : 'down'}`}></i>
+                    <i
+                        className={`fas fa-chevron-${expandedSections.precios ? "up" : "down"}`}
+                    />
                 </button>
                 {expandedSections.precios && (
                     <div className="filter-section-content">
@@ -179,15 +185,21 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                                     type="number"
                                     min="0"
                                     placeholder="0"
-                                    value={filters.priceRange[0] === 0 ? '' : filters.priceRange[0]}
+                                    value={
+                                        filters.priceRange[0] === 0
+                                            ? ""
+                                            : filters.priceRange[0]
+                                    }
                                     onChange={(e) => {
-                                        const value = e.target.value === '' ? 0 : Number(e.target.value)
-                                        handlePriceChange('min', value)
+                                        const value =
+                                            e.target.value === ""
+                                                ? 0
+                                                : Number(e.target.value)
+                                        handlePriceChange("min", value)
                                     }}
                                     onBlur={(e) => {
-                                        if (e.target.value === '') {
-                                            handlePriceChange('min', 0)
-                                        }
+                                        if (e.target.value === "")
+                                            handlePriceChange("min", 0)
                                     }}
                                     className="price-input"
                                 />
@@ -199,15 +211,21 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                                     type="number"
                                     min="0"
                                     placeholder="1000"
-                                    value={filters.priceRange[1] === 1000 ? '' : filters.priceRange[1]}
+                                    value={
+                                        filters.priceRange[1] === 1000
+                                            ? ""
+                                            : filters.priceRange[1]
+                                    }
                                     onChange={(e) => {
-                                        const value = e.target.value === '' ? 1000 : Number(e.target.value)
-                                        handlePriceChange('max', value)
+                                        const value =
+                                            e.target.value === ""
+                                                ? 1000
+                                                : Number(e.target.value)
+                                        handlePriceChange("max", value)
                                     }}
                                     onBlur={(e) => {
-                                        if (e.target.value === '') {
-                                            handlePriceChange('max', 1000)
-                                        }
+                                        if (e.target.value === "")
+                                            handlePriceChange("max", 1000)
                                     }}
                                     className="price-input"
                                 />

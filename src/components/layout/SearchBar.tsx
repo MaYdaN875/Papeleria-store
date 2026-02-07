@@ -1,18 +1,12 @@
 import { Link } from "react-router"
-import type { Product } from "../types/Product"
-import { useProductSearch } from "../hooks/useProductSearch"
+import type { Product } from "../../types/Product"
+import { useProductSearch } from "../../hooks/useProductSearch"
 
 export interface SearchBarProps {
-    /** Lista de productos donde buscar */
     products: Product[]
-    /** Placeholder del input */
     placeholder?: string
 }
 
-/**
- * Barra de búsqueda con dropdown de resultados.
- * Usa useProductSearch para la lógica de filtrado y estado.
- */
 export function SearchBar({
     products,
     placeholder = "Buscar productos, marcas...",

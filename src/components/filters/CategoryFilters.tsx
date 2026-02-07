@@ -39,7 +39,7 @@ export function CategoryFilters({
                     className={`filter-btn ${activeId === cat.id ? "active" : ""}`}
                     onClick={() => handleClick(cat.id)}
                 >
-                    <i className={cat.icon} aria-hidden="true" /> {cat.label}
+                    <i className={cat.icon} aria-hidden /> {cat.label}
                 </button>
             ))}
         </div>

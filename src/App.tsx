@@ -1,7 +1,5 @@
 import { Route, Routes } from "react-router"
-import { FloatingWhatsAppButton } from "./components/FloatingWhatsAppButton"
-import { Footer } from "./components/Footer"
-import { Navbar } from "./components/Navbar"
+import { FloatingWhatsAppButton, Footer, Navbar } from "./components/layout"
 import { AllProducts, Cart, Home, ProductDetail } from "./pages"
 
 
