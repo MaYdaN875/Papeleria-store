@@ -1,12 +1,44 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import { FilterPanel, FilterState } from "../components/FilterPanel"
+import { ProductCard, type ProductCardBadge } from "../components/ProductCard"
 import { products } from "../data/products"
+import type { Product } from "../types/Product"
+import { addProductToCart, syncCartCount } from "../utils/cart"
 
 /* ================================
    COMPONENTE: AllProducts
    Página completa con todos los productos y filtros por categoría
    ================================ */
+
+function getBrand(product: Product): string {
+    return product.description.split(" ")[0] ?? ""
+}
+
+function getBadgeForProduct(product: Product): ProductCardBadge | undefined {
+    const remainder = product.id % 3
+    if (remainder === 1) return { type: "discount", value: "-20%" }
+    if (remainder === 2) return { type: "sale", value: "HOT" }
+    if (remainder === 0) return { type: "discount", value: "-15%" }
+    return undefined
+}
+
+function filterProducts(productsList: Product[], filters: FilterState): Product[] {
+    return productsList.filter((product) => {
+        const brand = getBrand(product)
+
+        if (filters.brands.length > 0 && !filters.brands.includes(brand)) return false
+        if (filters.mayoreo && !product.mayoreo) return false
+        if (filters.menudeo && !product.menudeo) return false
+        if (
+            product.price < filters.priceRange[0] ||
+            product.price > filters.priceRange[1]
+        )
+            return false
+
+        return true
+    })
+}
 
 export const AllProducts = () => {
     const navigate = useNavigate()
@@ -17,219 +49,66 @@ export const AllProducts = () => {
         priceRange: [0, 1000],
     })
 
-    // Hacer scroll al top cuando se carga la página
     useEffect(() => {
         window.scrollTo(0, 0)
+        syncCartCount()
     }, [])
 
-    // Aplicar filtros cuando cambian
-    useEffect(() => {
-        applyFilters(filters)
-    }, [filters])
+    const filteredProducts = useMemo(
+        () => filterProducts(products, filters),
+        [filters]
+    )
 
-    /* ================================
-       FUNCIÓN: applyFilters
-       Aplica los filtros seleccionados a los productos en tiempo real
-       ================================ */
-    const applyFilters = (filterState: FilterState) => {
-        const productCards = document.querySelectorAll('.all-products-grid .product-card')
-
-        productCards.forEach(product => {
-            const productElement = product as HTMLElement
-            const productPrice = Number.parseFloat(productElement.dataset.price || '0')
-            const productBrand = productElement.dataset.brand || ''
-            const productMayoreo = productElement.dataset.mayoreo === 'true'
-            const productMenudeo = productElement.dataset.menudeo === 'true'
-            let shouldShow = true
-
-            // Filtro de marcas
-            if (filterState.brands.length > 0 && !filterState.brands.includes(productBrand)) {
-                shouldShow = false
-            }
-
-            // Filtro de mayoreo
-            if (filterState.mayoreo && !productMayoreo) {
-                shouldShow = false
-            }
-
-            // Filtro de menudeo
-            if (filterState.menudeo && !productMenudeo) {
-                shouldShow = false
-            }
-
-            // Filtro de precios
-            if (productPrice < filterState.priceRange[0] || productPrice > filterState.priceRange[1]) {
-                shouldShow = false
-            }
-
-            if (shouldShow) {
-                productElement.classList.remove('hidden')
-            } else {
-                productElement.classList.add('hidden')
-            }
-        })
-    }
-
-    /* ================================
-       FUNCIÓN: addProductToCart
-       Agrega un producto al carrito
-       ================================ */
-    const addProductToCart = (productName: string, productPrice: string) => {
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]')
-
-        // Verificar si el producto ya existe en el carrito
-        const existingProduct = cart.find((item: any) => item.name === productName && item.price === productPrice)
-
-        if (existingProduct) {
-            // Si existe, aumentar la cantidad
-            existingProduct.quantity = (existingProduct.quantity || 1) + 1
-        } else {
-            // Si no existe, agregar nuevo producto con cantidad 1
-            cart.push({
-                name: productName,
-                price: productPrice,
-                id: Date.now(),
-                quantity: 1
-            })
-        }
-
-        localStorage.setItem('cart', JSON.stringify(cart))
-
-        const cartCount = document.getElementById('cartCount')
-        if (cartCount) {
-            const totalItems = cart.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0)
-            cartCount.textContent = totalItems.toString()
-            cartCount.style.animation = 'none'
-            setTimeout(() => {
-                cartCount.style.animation = 'scaleIn 0.3s ease'
-            }, 10)
-        }
-
-        // Disparar evento personalizado para que otros componentes se actualicen
-        globalThis.dispatchEvent(new Event('cartUpdated'))
-
-        showNotification(productName + ' agregado al carrito!')
-    }
-
-    /* ================================
-       FUNCIÓN: showNotification
-       Muestra una notificación temporal
-       ================================ */
-    const showNotification = (message: string) => {
-        const notification = document.createElement('div')
-        notification.className = 'notification'
-        notification.textContent = message
-
-        document.body.appendChild(notification)
-
-        setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.3s ease'
-            setTimeout(() => {
-                notification.remove()
-            }, 300)
-        }, 3000)
-    }
-
-    // Cargar contador del carrito
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]')
-    const cartCount = document.getElementById('cartCount')
-    if (cartCount) {
-        cartCount.textContent = cart.length.toString()
-    }
+    const handleAddToCart = useCallback((product: Product) => {
+        addProductToCart(product.name, product.price.toFixed(2))
+    }, [])
 
     return (
         <>
-            {/* ============ HEADER CON BOTÓN DE VOLVER ============ */}
             <section className="all-products-header-container">
                 <div className="header-content">
-                    <button className="btn-back" onClick={() => navigate('/')}>
-                        <i className="fas fa-arrow-left"></i> Volver
+                    <button className="btn-back" onClick={() => navigate("/")}>
+                        <i className="fas fa-arrow-left" /> Volver
                     </button>
                     <div className="header-info">
                         <h1 className="page-title">Todos Nuestros Productos</h1>
-                        <p className="page-subtitle">Explora nuestro catálogo completo por categoría</p>
+                        <p className="page-subtitle">
+                            Explora nuestro catálogo completo por categoría
+                        </p>
                     </div>
                 </div>
             </section>
 
-            {/* ============ SECCIÓN DE TODOS LOS PRODUCTOS ============ */}
             <section className="all-products-section">
                 <div className="products-layout-container">
-                    {/* Panel de filtros - Izquierda */}
-                    <FilterPanel onFilterChange={(newFilters) => setFilters(newFilters)} />
+                    <FilterPanel
+                        onFilterChange={(newFilters) => setFilters(newFilters)}
+                    />
 
-                    {/* Grid de productos - Derecha */}
                     <div className="products-content-area">
                         <div className="all-products-grid" id="allProductsGrid">
-                            {products.map((product) => (
-                                <div
-                                    key={product.id}
-                                    className="product-card"
-                                    data-category={product.category.toLowerCase()}
-                                    data-price={product.price}
-                                    data-brand={product.description.split(' ')[0]}
-                                    data-mayoreo={product.mayoreo}
-                                    data-menudeo={product.menudeo}
-                                    onClick={() => navigate(`/product/${product.id}`)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            e.preventDefault()
-                                            navigate(`/product/${product.id}`)
+                            {filteredProducts.length === 0 ? (
+                                <p className="no-products-message">
+                                    No hay productos que coincidan con los
+                                    filtros seleccionados.
+                                </p>
+                            ) : (
+                                filteredProducts.map((product) => (
+                                    <ProductCard
+                                        key={product.id}
+                                        product={product}
+                                        badge={getBadgeForProduct(product)}
+                                        brand={getBrand(product)}
+                                        onAddToCart={() =>
+                                            handleAddToCart(product)
                                         }
-                                    }}
-                                    role="button"
-                                    tabIndex={0}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <div className="product-image">
-                                        <div className="product-placeholder">
-                                            {product.id === 1 && '✒️'}
-                                            {product.id === 2 && '📓'}
-                                            {product.id === 3 && '🖍️'}
-                                            {product.id === 4 && '✏️'}
-                                            {product.id === 5 && '📄'}
-                                            {product.id === 6 && '📁'}
-                                            {product.id === 7 && '📚'}
-                                            {product.id === 8 && '🎨'}
-                                            {product.id === 9 && '🧹'}
-                                            {product.id === 10 && '🎒'}
-                                            {product.id === 11 && '🧴'}
-                                            {product.id === 12 && '✍️'}
-                                            {product.id === 13 && '🖌️'}
-                                            {product.id === 14 && '🧹'}
-                                            {product.id === 15 && '🖋️'}
-                                            {product.id === 16 && '🎨'}
-                                        </div>
-                                        {product.id % 3 === 1 && <div className="product-badge discount">-20%</div>}
-                                        {product.id % 3 === 2 && <div className="product-badge sale">HOT</div>}
-                                        {product.id % 3 === 0 && <div className="product-badge discount">-15%</div>}
-                                    </div>
-                                    <div className="product-info">
-                                        <h4>{product.name}</h4>
-                                        <p className="product-brand">{product.description}</p>
-                                        <div className="product-rating">
-                                            {Array.from({ length: 5 }).map((_, i) => (
-                                                <i key={`star-${product.id}-${i}`} className="fas fa-star"></i>
-                                            ))}
-                                        </div>
-                                        <div className="product-price">
-                                            <span className="price-current">${product.price.toFixed(2)}</span>
-                                        </div>
-                                        <button className="btn-add-cart" onClick={(e) => {
-                                            e.stopPropagation()
-                                            addProductToCart(product.name, product.price.toFixed(2))
-                                        }}>
-                                            <i className="fas fa-shopping-cart"></i> Agregar al carrito
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                                    />
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
             </section>
-
-
         </>
     )
 }

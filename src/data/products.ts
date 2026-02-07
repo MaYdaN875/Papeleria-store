@@ -1,5 +1,10 @@
 import { Product } from "../types/Product"
 
+export function getProductById(id: number | string): Product | undefined {
+    const numericId = typeof id === "string" ? parseInt(id, 10) : id
+    return products.find((p) => p.id === numericId)
+}
+
 export const products: Product[] = [
     {
         id: 1,

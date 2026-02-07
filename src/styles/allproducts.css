@@ -321,6 +321,14 @@
     gap: 20px;
 }
 
+.no-products-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 16px;
+    color: var(--color-text-muted);
+}
+
 /* Responsive para header */
 @media (max-width: 1200px) {
     .all-products-grid {
