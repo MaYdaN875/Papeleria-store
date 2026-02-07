@@ -6,6 +6,7 @@ import { products } from "../data/products"
 import type { Product } from "../types/Product"
 import type { ProductCarouselSlideConfig } from "../components/ProductCarouselSlide"
 import { addProductToCart, syncCartCount } from "../utils/cart"
+import { ProductCard } from "../components/ProductCard"
 
 /* ================================
    COMPONENTE: Home
@@ -83,6 +84,29 @@ export const Home = () => {
                     seeMorePath="/all-products"
                 />
             </section>
+            <section className="products-content-area">
+                <div className="all-products-grid" id="allProductsGrid">
+                    {featuredProducts.slice(0, 8).map((product) => {
+                        const config = getItemConfig(product)
+                        return (
+                            <ProductCard
+                                key={product.id}
+                                product={product}
+                                badge={config?.badge}
+                                originalPrice={config?.originalPrice}
+                                brand={config?.brand}
+                                onAddToCart={() =>
+                                    handleAddToCart(
+                                        product.name,
+                                        product.price.toFixed(2)
+                                    )
+                                }
+                            />
+                        )
+                    })}
+                </div>
+            </section>
+
         </>
     )
 }
