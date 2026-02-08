@@ -1,5 +1,6 @@
 import Fuse, { type FuseResult } from "fuse.js"
-import { useCallback, useMemo, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { expandSearchWithSynonyms } from "../data/synonyms"
 import type { Product } from "../types/Product"
 import { useDebounce } from "./useDebounce"
 
@@ -8,7 +9,7 @@ export interface UseProductSearchOptions {
     products: Product[]
     /** Campos por los que buscar (default: name, category, description) */
     searchFields?: (keyof Product)[]
-    /** Umbral de fuzzy match: 0 = exacto, 1 = acepta todo (default: 0.4) */
+    /** Umbral de fuzzy match: 0 = exacto, 1 = acepta todo (default: 0.3 para mayor tolerancia a typos) */
     threshold?: number
     /** Máximo de resultados a mostrar (default: 10) */
     limit?: number
@@ -29,13 +30,41 @@ export interface UseProductSearchReturn {
 const DEFAULT_SEARCH_FIELDS: (keyof Product)[] = ["name", "category", "description"]
 
 /**
+ * Función auxiliar para filtrar productos por búsqueda usando Fuse.js
+ * Reutilizable en componentes (como AllProducts) para filtrar resultados
+ * 
+ * @param products - Lista de productos a buscar
+ * @param query - Término de búsqueda
+ * @param searchFields - Campos donde buscar (default: name, category, description)
+ * @param threshold - Umbral de fuzzy match (default: 0.4)
+ * @returns Array de productos que coinciden con la búsqueda
+ */
+export function filterProductsBySearch(
+    products: Product[],
+    query: string,
+    searchFields: (keyof Product)[] = DEFAULT_SEARCH_FIELDS,
+    threshold: number = 0.4
+): Product[] {
+    if (!query.trim()) return products
+
+    const fuse = new Fuse(products, {
+        keys: searchFields as string[],
+        threshold,
+        includeScore: true,
+    })
+
+    const results = fuse.search(query.toLowerCase()) as FuseResult<Product>[]
+    return results.map((item: FuseResult<Product>) => item.item)
+}
+
+/**
  * Hook para búsqueda difusa de productos con Fuse.js.
  * Usa debounce para no ejecutar búsqueda en cada keystroke.
  */
 export function useProductSearch({
     products,
     searchFields = DEFAULT_SEARCH_FIELDS,
-    threshold = 0.4,
+    threshold = 0.3,
     limit = 10,
     debounceMs = 200,
 }: UseProductSearchOptions): UseProductSearchReturn {
@@ -58,7 +87,9 @@ export function useProductSearch({
 
     useEffect(() => {
         if (debouncedQuery.length > 0) {
-            const found = fuse.search(debouncedQuery) as FuseResult<Product>[]
+            // Expandir búsqueda con sinónimos
+            const expandedQuery = expandSearchWithSynonyms(debouncedQuery)
+            const found = fuse.search(expandedQuery) as FuseResult<Product>[]
             const results = found.slice(0, limit).map((item: FuseResult<Product>) => item.item)
             setSearchResults(results)
             setShowResults(true)

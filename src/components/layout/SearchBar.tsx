@@ -1,6 +1,6 @@
-import { Link } from "react-router"
-import type { Product } from "../../types/Product"
+import { Link, useNavigate } from "react-router"
 import { useProductSearch } from "../../hooks/useProductSearch"
+import type { Product } from "../../types/Product"
 
 export interface SearchBarProps {
     products: Product[]
@@ -11,6 +11,7 @@ export function SearchBar({
     products,
     placeholder = "Buscar productos, marcas...",
 }: SearchBarProps) {
+    const navigate = useNavigate()
     const {
         searchQuery,
         searchResults,
@@ -20,6 +21,17 @@ export function SearchBar({
         handleResultClick,
         setShowResults,
     } = useProductSearch({ products })
+
+    // Manejar presionar ENTER para navegar a all-products con búsqueda
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter" && searchQuery.trim().length > 0) {
+            e.preventDefault()
+            // Navegar a all-products con el término de búsqueda como query param
+            navigate(`/all-products?search=${encodeURIComponent(searchQuery.trim())}`)
+            // Limpiar estado del buscador
+            handleResultClick()
+        }
+    }
 
     return (
         <div className="header-search" ref={searchBoxRef}>
@@ -31,6 +43,7 @@ export function SearchBar({
                     id="searchInput"
                     value={searchQuery}
                     onChange={handleSearch}
+                    onKeyDown={handleKeyDown}
                     onFocus={() => searchQuery && setShowResults(true)}
                     aria-label="Buscar productos"
                 />
