@@ -57,7 +57,7 @@ export const PRODUCT_SYNONYMS: Record<string, string[]> = {
 
 /**
  * Expande una búsqueda incluyendo sinónimos
- * Ejemplo: "boligrafo" → "boligrafo pluma pen"
+ * Ejemplo: "boligrafo" → "boligrafo pluma"
  */
 export function expandSearchWithSynonyms(query: string): string {
     const terms = query.toLowerCase().split(/\s+/).filter(Boolean)

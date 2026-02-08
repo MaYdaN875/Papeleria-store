@@ -275,6 +275,33 @@
     text-align: center;
 }
 
+.brands-list-container {
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.brands-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.brands-list-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.brands-list-container::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 10px;
+}
+
+.brands-list-container::-webkit-scrollbar-thumb:hover {
+    background: #85b3ad;
+}
+
 .category-filters-vertical {
     display: flex;
     flex-direction: column;

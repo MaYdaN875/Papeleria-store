@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router"
 import { useProductSearch } from "../../hooks/useProductSearch"
 import type { Product } from "../../types/Product"
@@ -16,6 +16,7 @@ export function SearchBar({
     const [searchParams] = useSearchParams()
     const urlSearchQuery = searchParams.get("search") || ""
     const [isSearchActive, setIsSearchActive] = useState(!urlSearchQuery)
+    const inputRef = useRef<HTMLInputElement>(null)
 
     const {
         searchQuery,
@@ -40,6 +41,8 @@ export function SearchBar({
             handleResultClick()
             // Desactivar input para que no se pueda escribir hasta hacer click
             setIsSearchActive(false)
+            // Quitar focus del input para que no se vea resaltado
+            inputRef.current?.blur()
         }
     }
 
@@ -66,6 +69,7 @@ export function SearchBar({
             <div className="search-box">
                 <i className="fas fa-search" aria-hidden="true" />
                 <input
+                    ref={inputRef}
                     type="text"
                     placeholder={placeholder}
                     id="searchInput"

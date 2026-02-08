@@ -34,6 +34,7 @@ function filterProducts(productsList: Product[], filters: FilterState): Product[
     return productsList.filter((product) => {
         const brand = getBrand(product)
 
+        if (filters.productos.length > 0 && !filters.productos.includes(brand)) return false
         if (filters.brands.length > 0 && !filters.brands.includes(brand)) return false
         if (filters.mayoreo && !product.mayoreo) return false
         if (filters.menudeo && !product.menudeo) return false
@@ -53,6 +54,7 @@ export const AllProducts = () => {
     const searchQuery = searchParams.get("search") || ""
 
     const [filters, setFilters] = useState<FilterState>({
+        productos: [],
         brands: [],
         mayoreo: false,
         menudeo: false,
