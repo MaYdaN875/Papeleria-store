@@ -1,8 +1,7 @@
 import { useCallback } from "react"
-import { Link } from "react-router"
+import { Link, useLocation, useNavigate } from "react-router"
 import { products } from "../../data/products"
 import { useNotification } from "../../hooks/useNotification"
-import { smoothScroll } from "../../utils/SmoothScroll"
 import {
     CategoryDropdown,
     type CategoryDropdownCategory,
@@ -59,10 +58,29 @@ const CATEGORIES: CategoryDropdownCategory[] = [
 
 export function Navbar() {
     const { message, showNotification, clearNotification } = useNotification()
+    const navigate = useNavigate()
+    const location = useLocation()
 
     const handleContactClick = useCallback(() => {
         showNotification("¡Nos pondremos en contacto pronto!")
     }, [showNotification])
+
+    const handleLogoClick = useCallback(
+        (e: React.MouseEvent<HTMLAnchorElement>) => {
+            e.preventDefault()
+            if (location.pathname === "/") {
+                // Si ya estamos en la página principal, scroll hasta arriba
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                })
+            } else {
+                // Si no estamos en la página principal, navega al inicio
+                navigate("/")
+            }
+        },
+        [location.pathname, navigate]
+    )
 
     return (
         <>
@@ -78,7 +96,7 @@ export function Navbar() {
                     <Link
                         to="/"
                         className="header-logo"
-                        onClick={() => smoothScroll("inicio")}
+                        onClick={handleLogoClick}
                     >
                         <div className="logo-icon">🎨</div>
                         <h1>God Art</h1>
