@@ -148,7 +148,7 @@
     color: var(--color-accent);
 }
 
-/* Controles de cantidad (QuantitySelector) */
+/* Controles de cantidad (QuantitySelector / QuantitySteppers) */
 .item-quantity-controls {
     display: flex;
     align-items: center;
@@ -160,6 +160,84 @@
 
 .item-quantity-controls .quantity-selector {
     min-width: 70px;
+}
+
+/* ================================
+   CONTROLES DE CANTIDAD (+ - buttons)
+   ================================ */
+
+.quantity-steppers {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: white;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    padding: 4px;
+    min-width: 120px;
+}
+
+/* Botones de incremento/decremento */
+.quantity-steppers__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    background-color: #f0f0f0;
+    color: var(--color-text-dark);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.quantity-steppers__btn:hover:not(:disabled) {
+    background-color: #B8E6D5;
+    transform: scale(1.05);
+    color: var(--color-text-dark);
+}
+
+.quantity-steppers__btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* Estado deshabilitado */
+.quantity-steppers__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #e0e0e0;
+}
+
+/* Input de cantidad */
+.quantity-steppers__input {
+    width: 50px;
+    height: 32px;
+    border: none;
+    background-color: transparent;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--color-text-dark);
+    cursor: default;
+}
+
+.quantity-steppers__input::-webkit-outer-spin-button,
+.quantity-steppers__input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.quantity-steppers__input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Botones específicos (opcional, para más personalización) */
+.quantity-steppers__btn--minus i,
+.quantity-steppers__btn--plus i {
+    pointer-events: none;
 }
 
 /* Subtotal del producto */
@@ -289,6 +367,17 @@
     .item-image {
         width: 80px;
         height: 80px;
+    }
+
+    .item-quantity-controls {
+        width: 100%;
+        justify-content: center;
+        background-color: transparent;
+        padding: 0;
+    }
+
+    .quantity-steppers {
+        min-width: 130px;
     }
 
     .cart-actions {

@@ -1,5 +1,5 @@
 import type { CartItem as CartItemType } from "../../utils/cart"
-import { QuantitySelector } from "../ui/QuantitySelector"
+import { QuantitySteppers } from "../ui/QuantitySteppers"
 
 interface CartItemProps {
     item: CartItemType
@@ -40,12 +40,12 @@ export function CartItem({
                 <p className="item-price">${item.price}</p>
             </div>
             <div className="item-quantity-controls">
-                <QuantitySelector
+                <QuantitySteppers
                     id={`cart-quantity-${item.id}`}
                     value={item.quantity}
                     onChange={(v) => onQuantityChange(item.id, v)}
                     max={99}
-                    visibleRows={6}
+                    min={1}
                 />
             </div>
             <div className="item-subtotal">
