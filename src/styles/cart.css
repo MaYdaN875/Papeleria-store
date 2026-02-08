@@ -6,7 +6,7 @@
 .cart-main {
     background-color: var(--color-white);
     padding: 5px 5px;
-    min-height: calc(100vh - 200px);
+    min-height: calc(100vh - 260px);
     max-width: 1700px;
     margin: 0 auto;
 }
@@ -21,38 +21,38 @@
 }
 
 .cart-empty-container h2 {
-    font-size: 32px;
+    font-size: 38px;
     font-weight: 700;
     color: var(--color-text-dark);
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 /* Mensaje cuando el carrito está vacío */
 .empty-message {
-    margin-bottom: 40px;
+    margin-bottom: 25px;
 }
 
 .empty-message p {
     font-size: 16px;
     color: var(--color-text-dark);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 /* Icono del carrito vacío */
 .empty-cart-icon {
-    margin: 40px 0;
+    margin: 30px 0;
 }
 
 .empty-cart-icon svg {
-    width: 200px;
-    height: 200px;
+    width: 220px;
+    height: 220px;
 }
 
 /* Texto "Nada aqui" */
 .nothing-here {
-    font-size: 20px;
+    font-size: 22px;
     color: var(--color-text-dark);
-    margin: 20px 0;
+    margin: 15px 0;
     font-weight: 700;
 }
 
@@ -61,7 +61,7 @@
     display: inline-block;
     background: linear-gradient(135deg, #B8E6D5 0%, #A8DEC9 100%);
     color: #1a1a1a;
-    padding: 12px 32px;
+    padding: 14px 40px;
     border-radius: 25px;
     text-decoration: none;
     font-weight: 600;
@@ -70,6 +70,7 @@
     box-shadow: var(--shadow-md);
     border: none;
     cursor: pointer;
+    font-size: 16px;
 }
 
 .btn-return:hover {
@@ -394,11 +395,11 @@
 
     .cart-empty-container h2,
     .cart-full-container h2 {
-        font-size: 24px;
+        font-size: 20px;
     }
 
     .empty-cart-icon svg {
-        width: 150px;
-        height: 150px;
+        width: 120px;
+        height: 120px;
     }
 }
