@@ -1,7 +1,11 @@
 import { useCallback, useState } from "react"
-import { products } from "../../data/products"
+
+/* ================================
+   TIPOS E INTERFACES
+   ================================ */
 
 export interface FilterState {
+    productos: string[]
     brands: string[]
     mayoreo: boolean
     menudeo: boolean
@@ -9,39 +13,175 @@ export interface FilterState {
 }
 
 export interface FilterPanelProps {
-    onFilterChange: (filters: FilterState) => void
+    readonly onFilterChange: (filters: FilterState) => void
+}
+
+/* ================================
+   FUNCIONES DE DATOS
+   ================================ */
+
+const getProducts = (): string[] => {
+    return [
+        "Bolígrafos",
+        "Carpetas",
+        "Cuaderno",
+        "Cuadernos",
+        "Estuches",
+        "Gomas",
+        "Marcadores",
+        "Papel",
+    ]
 }
 
 const getBrands = (): string[] => {
-    const brandsSet = new Set(
-        products.map((p) => p.description.split(" ")[0]).filter(Boolean)
-    )
-    return Array.from(brandsSet).sort((a, b) => a.localeCompare(b))
+    return [
+        "MAE",
+        "PELIKAN",
+        "FIX-UP",
+        "PEGAS",
+        "RESISTOL 850",
+        "PRITT",
+        "BULLY",
+        "BACO",
+        "DIXON",
+        "TOP",
+        "AZOR",
+        "ARTLINE",
+        "NEWELL",
+        "ALBE",
+        "PADI",
+        "ESTRELLA",
+        "SHARPIE",
+        "KORES",
+        "TUK",
+        "EURO",
+        "RAYTER",
+        "A-INK",
+        "DS",
+        "AFRICA",
+        "DIEM",
+        "NASSA",
+        "FABER CASTELL",
+        "LUCELLO",
+        "SHARPENER",
+        "BEROL",
+        "BIC",
+        "ZEBRA",
+        "BAHANG",
+        "SMART OFFICE",
+        "CETVELL",
+        "ALCO",
+        "PRODUCTOS G.G",
+        "NEW",
+        "ARLY",
+        "CHÓSCH",
+        "TRYME",
+        "PAPER MATE",
+        "VINCI",
+        "DIDASEL",
+        "CORTY",
+        "DELTA",
+        "CRAYOLA",
+        "MAPITA",
+        "NORMA",
+        "STRATERS",
+        "PRISMACOLOR",
+        "PILOT",
+        "MUJUU",
+        "JIA HAO",
+        "MAPED",
+        "QUIN",
+        "BIC EVOLUTION",
+        "HAPPY HALLOWEEN",
+        "GAMA COLOR",
+        "BOMBIN",
+        "CIRCULAR",
+        "FANTASIA",
+        "LORD´II",
+        "AIN STEIN",
+        "ELEPHANT",
+        "CELICA",
+        "PRETUL",
+        "LESA",
+        "KPMG",
+        "DORAEMON",
+        "SNRIO",
+        "GM TOYS",
+        "ALIAMEX",
+        "FUMETAX",
+        "SMOKELESS CANDLES",
+        "CANDLE",
+        "RUVALCABA FANTASIAS Y NOVEDADES",
+        "POPULAR",
+        "ARCOIRIS",
+        "PLAY DOH",
+        "KOLA LOKA",
+        "RESISTOL",
+        "UHU",
+        "ZHENG HAO",
+        "MAIN FLEX",
+        "MENDOZA",
+        "ZIGZAG",
+        "BAZICMAGISTRAL",
+        "EXPO",
+        "SIGNAL",
+        "TWIN",
+        "BACOFLASH",
+        "SCRIBE",
+        "U PACK",
+        "JEANBOOK",
+        "ARTIST PALETTE",
+        "SAIRA",
+        "POLYCHEM",
+        "JANEL",
+        "NAVITEK",
+        "LAROUSSE",
+        "BARRILITO",
+        "HANFANG",
+        "BINDER CLIP",
+        "BOB",
+    ]
 }
 
+/* ================================
+   COMPONENTE: FilterPanel
+   Panel lateral de filtros con múltiples opciones
+   ================================ */
+
 export function FilterPanel({ onFilterChange }: FilterPanelProps) {
+    /* Estado para controlar qué secciones están expandidas */
     const [expandedSections, setExpandedSections] = useState<
         Record<string, boolean>
     >({
+        productos: true,
         brands: true,
         mayoreo: false,
         menudeo: false,
         precios: true,
     })
 
+    /* Estado principal de filtros */
     const [filters, setFilters] = useState<FilterState>({
+        productos: [],
         brands: [],
         mayoreo: false,
         menudeo: false,
         priceRange: [0, 1000],
     })
 
+    const filterProducts = getProducts()
     const brands = getBrands()
 
+    /* ================================
+       MANEJADORES DE EVENTOS
+       ================================ */
+
+    /* Alternar la expansión/contracción de una sección */
     const toggleSection = useCallback((section: string) => {
         setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }))
     }, [])
 
+    /* Actualizar filtros y notificar al componente padre */
     const updateFilters = useCallback(
         (newFilters: FilterState) => {
             setFilters(newFilters)
@@ -50,6 +190,18 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
         [onFilterChange]
     )
 
+    /* Manejar cambios en filtro de productos */
+    const handleProductChange = useCallback(
+        (product: string) => {
+            const newProducts = filters.productos.includes(product)
+                ? filters.productos.filter((p) => p !== product)
+                : [...filters.productos, product]
+            updateFilters({ ...filters, productos: newProducts })
+        },
+        [filters, updateFilters]
+    )
+
+    /* Manejar cambios en filtro de marcas */
     const handleBrandChange = useCallback(
         (brand: string) => {
             const newBrands = filters.brands.includes(brand)
@@ -60,14 +212,17 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
         [filters, updateFilters]
     )
 
+    /* Manejar cambios en filtro de mayoreo */
     const handleMayoreoChange = useCallback(() => {
         updateFilters({ ...filters, mayoreo: !filters.mayoreo })
     }, [filters, updateFilters])
 
+    /* Manejar cambios en filtro de menudeo */
     const handleMenudeoChange = useCallback(() => {
         updateFilters({ ...filters, menudeo: !filters.menudeo })
     }, [filters, updateFilters])
 
+    /* Manejar cambios en rango de precios */
     const handlePriceChange = useCallback(
         (type: "min" | "max", value: number) => {
             const newRange: [number, number] =
@@ -83,6 +238,39 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
         <aside className="filter-panel">
             <h3 className="filter-panel-title">Filtros</h3>
 
+            {/* SECCIÓN: FILTRO DE PRODUCTOS */}
+            <div className="filter-section">
+                <button
+                    className={`filter-section-header ${expandedSections.productos ? "expanded" : ""}`}
+                    onClick={() => toggleSection("productos")}
+                    type="button"
+                >
+                    <span>Productos</span>
+                    <i
+                        className={`fas fa-chevron-${expandedSections.productos ? "up" : "down"}`}
+                    />
+                </button>
+                {expandedSections.productos && (
+                    <div className="filter-section-content">
+                        {filterProducts.length > 0 ? (
+                            filterProducts.map((product) => (
+                                <label key={product} className="filter-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        checked={filters.productos.includes(product)}
+                                        onChange={() => handleProductChange(product)}
+                                    />
+                                    <span>{product}</span>
+                                </label>
+                            ))
+                        ) : (
+                            <p className="no-items">No hay productos disponibles</p>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* SECCIÓN: FILTRO DE MARCAS */}
             <div className="filter-section">
                 <button
                     className={`filter-section-header ${expandedSections.brands ? "expanded" : ""}`}
@@ -95,7 +283,7 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                     />
                 </button>
                 {expandedSections.brands && (
-                    <div className="filter-section-content">
+                    <div className="filter-section-content brands-list-container">
                         {brands.length > 0 ? (
                             brands.map((brand) => (
                                 <label key={brand} className="filter-checkbox">
@@ -114,6 +302,7 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                 )}
             </div>
 
+            {/* SECCIÓN: FILTRO DE MAYOREO */}
             <div className="filter-section">
                 <button
                     className={`filter-section-header ${expandedSections.mayoreo ? "expanded" : ""}`}
@@ -139,6 +328,7 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                 )}
             </div>
 
+            {/* SECCIÓN: FILTRO DE MENUDEO */}
             <div className="filter-section">
                 <button
                     className={`filter-section-header ${expandedSections.menudeo ? "expanded" : ""}`}
@@ -164,6 +354,7 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                 )}
             </div>
 
+            {/* SECCIÓN: FILTRO DE PRECIOS */}
             <div className="filter-section">
                 <button
                     className={`filter-section-header ${expandedSections.precios ? "expanded" : ""}`}
