@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useNavigate } from "react-router"
+import { useNavigate, useSearchParams } from "react-router"
 import {
     FilterPanel,
     FilterState,
@@ -9,6 +9,7 @@ import {
     type ProductCardBadge,
 } from "../components/product"
 import { products } from "../data/products"
+import { filterProductsBySearch } from "../hooks/useProductSearch"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
 
@@ -48,6 +49,9 @@ function filterProducts(productsList: Product[], filters: FilterState): Product[
 
 export const AllProducts = () => {
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const searchQuery = searchParams.get("search") || ""
+
     const [filters, setFilters] = useState<FilterState>({
         brands: [],
         mayoreo: false,
@@ -60,9 +64,16 @@ export const AllProducts = () => {
         syncCartCount()
     }, [])
 
+    // Primero filtrar por búsqueda si existe, luego aplicar filtros adicionales
+    const productsAfterSearch = useMemo(() => {
+        if (!searchQuery) return products
+
+        return filterProductsBySearch(products, searchQuery)
+    }, [searchQuery])
+
     const filteredProducts = useMemo(
-        () => filterProducts(products, filters),
-        [filters]
+        () => filterProducts(productsAfterSearch, filters),
+        [productsAfterSearch, filters]
     )
 
     const handleAddToCart = useCallback((product: Product) => {
@@ -77,9 +88,15 @@ export const AllProducts = () => {
                         <i className="fas fa-arrow-left" /> Volver
                     </button>
                     <div className="header-info">
-                        <h1 className="page-title">Todos Nuestros Productos</h1>
+                        <h1 className="page-title">
+                            {searchQuery
+                                ? `Resultados de búsqueda: "${searchQuery}"`
+                                : "Todos Nuestros Productos"}
+                        </h1>
                         <p className="page-subtitle">
-                            Explora nuestro catálogo completo por categoría
+                            {searchQuery
+                                ? `Mostrando ${filteredProducts.length} resultado(s) para tu búsqueda`
+                                : "Explora nuestro catálogo completo por categoría"}
                         </p>
                     </div>
                 </div>
