@@ -36,7 +36,7 @@ export function Footer() {
                     </div>
                 </div>
                 <div className="footer-bottom">
-                    <p>© 2026 PaperHub. Todos los derechos reservados.</p>
+                    <p>© 2026 God Art. Todos los derechos reservados.</p>
                     <nav className="footer-legal-links">
                         <a href="#privacidad">Política de privacidad</a>
                         <span className="separator">|</span>

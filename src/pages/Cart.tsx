@@ -34,6 +34,7 @@ export const Cart = () => {
         ) {
             clearCart()
             showNotification("Carrito vaciado")
+            window.scrollTo(0, 0)
         }
     }
 

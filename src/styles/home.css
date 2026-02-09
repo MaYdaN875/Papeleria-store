@@ -256,3 +256,256 @@
 .btn-see-more:hover i {
     transform: translateY(3px);
 }
+
+/* ================================
+   RESPONSIVE DESIGN - MÓVIL
+   ================================ */
+
+@media (max-width: 1024px) {
+    .banner-principal {
+        padding: 80px 20px;
+    }
+
+    .fusion-slide-content {
+        padding: 30px 40px;
+        gap: 30px;
+    }
+
+    .fusion-slide-img {
+        max-height: 220px;
+        max-width: 320px;
+    }
+
+    .fusion-slide-text h1 {
+        font-size: 2.2rem;
+    }
+
+    .fusion-slide-text p {
+        font-size: 1rem;
+    }
+
+    .section-title {
+        font-size: 2.8rem;
+    }
+
+    .carousel-title {
+        font-size: 2.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .banner-principal {
+        padding: 60px 15px;
+    }
+
+    .fusion-carousel {
+        height: 300px;
+        min-height: 300px;
+    }
+
+    .fusion-carousel-wrapper {
+        height: 300px;
+        min-height: 300px;
+    }
+
+    .fusion-slide {
+        height: 300px;
+        min-height: 300px;
+    }
+
+    .fusion-slide-content {
+        flex-direction: column;
+        padding: 20px 20px;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .fusion-slide-text {
+        text-align: center;
+        min-width: auto;
+    }
+
+    .fusion-slide-text h1 {
+        font-size: 1.8rem;
+    }
+
+    .fusion-slide-text p {
+        font-size: 0.95rem;
+    }
+
+    .fusion-slide-img {
+        max-height: 180px;
+        max-width: 280px;
+    }
+
+    .fusion-badge {
+        font-size: 14px;
+        padding: 4px 14px;
+    }
+
+    .fusion-arrow.prev-btn {
+        left: 8px !important;
+    }
+
+    .fusion-arrow.next-btn {
+        right: 8px !important;
+    }
+
+    .products-section {
+        padding: 40px 15px 80px 15px;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        padding-top: 20px;
+        margin-bottom: 15px;
+    }
+
+    .section-title::before {
+        width: 60px;
+        height: 3px;
+    }
+
+    .section-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+    }
+
+    .carousel-title {
+        font-size: 2rem;
+        margin: 40px 0 30px 0;
+    }
+
+    .carousel-title::before {
+        width: 60px;
+        height: 3px;
+        margin-bottom: 15px;
+    }
+
+    .see-more-container {
+        padding: 40px 15px 0;
+    }
+
+    .btn-see-more {
+        padding: 12px 24px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .banner-principal {
+        padding: 40px 12px;
+    }
+
+    .fusion-carousel {
+        height: 220px;
+        min-height: 220px;
+        margin-top: 8px;
+    }
+
+    .fusion-carousel-wrapper {
+        height: 220px;
+        min-height: 220px;
+    }
+
+    .fusion-slide {
+        height: 220px;
+        min-height: 220px;
+    }
+
+    .fusion-slide-content {
+        padding: 20px 10px;
+        gap: 10px;
+    }
+
+    .fusion-slide-text h1 {
+        font-size: 1.3rem;
+        margin-bottom: 8px;
+    }
+
+    .fusion-slide-text p {
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+    }
+
+    .fusion-slide-img {
+        max-height: 140px;
+        max-width: 200px;
+    }
+
+    .fusion-badge {
+        font-size: 12px;
+        padding: 3px 10px;
+        margin-bottom: 10px;
+    }
+
+    .fusion-oldprice {
+        font-size: 14px;
+    }
+
+    .fusion-sku {
+        font-size: 13px;
+    }
+
+    .products-section {
+        padding: 30px 12px 60px 12px;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        padding-top: 15px;
+        margin-bottom: 10px;
+    }
+
+    .section-title::before {
+        width: 50px;
+        height: 2px;
+    }
+
+    .section-subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+    }
+
+    .carousel-title {
+        font-size: 1.5rem;
+        margin: 30px 0 20px 0;
+    }
+
+    .carousel-title::before {
+        width: 50px;
+        height: 2px;
+        margin-bottom: 10px;
+    }
+
+    .see-more-container {
+        padding: 30px 12px 0;
+    }
+
+    .btn-see-more {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .btn-see-more i {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .banner-principal {
+        padding: 30px 10px;
+    }
+
+    .fusion-slide-text h1 {
+        font-size: 1.1rem;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+    }
+
+    .carousel-title {
+        font-size: 1.3rem;
+    }
+}
