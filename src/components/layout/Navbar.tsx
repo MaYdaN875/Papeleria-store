@@ -1,4 +1,4 @@
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router"
 import { products } from "../../data/products"
 import { useNotification } from "../../hooks/useNotification"
@@ -60,6 +60,7 @@ export function Navbar() {
     const { message, showNotification, clearNotification } = useNotification()
     const navigate = useNavigate()
     const location = useLocation()
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     const handleContactClick = useCallback(() => {
         showNotification("¡Nos pondremos en contacto pronto!")
@@ -81,6 +82,11 @@ export function Navbar() {
         },
         [location.pathname, navigate]
     )
+
+    const handleCategoryClick = (categoryId: string) => {
+        navigate(`/all-products?category=${categoryId}`)
+        setIsMobileMenuOpen(false)
+    }
 
     return (
         <>
@@ -130,14 +136,75 @@ export function Navbar() {
 
                 <nav className="navbar" aria-label="Categorías de productos">
                     <div className="navbar-container">
-                        {CATEGORIES.map((category) => (
-                            <CategoryDropdown
-                                key={category.id}
-                                category={category}
-                            />
-                        ))}
+                        {/* Hamburguesa solo en móvil */}
+                        <button
+                            type="button"
+                            className="hamburger-menu"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Abrir menú de categorías"
+                            aria-expanded={isMobileMenuOpen}
+                        >
+                            <span className="hamburger-line" />
+                            <span className="hamburger-line" />
+                            <span className="hamburger-line" />
+                        </button>
+
+                        {/* Categorías en desktop, ocultas en móvil */}
+                        <div className="navbar-categories">
+                            {CATEGORIES.map((category) => (
+                                <CategoryDropdown
+                                    key={category.id}
+                                    category={category}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </nav>
+
+                {/* Menú deslizable en móvil */}
+                {isMobileMenuOpen && (
+                    <>
+                        <div
+                            className="mobile-menu-backdrop"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        />
+                        <div className="mobile-menu">
+                            <div className="mobile-menu-header">
+                                <h2>Categorías</h2>
+                                <button
+                                    type="button"
+                                    className="close-menu-btn"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    aria-label="Cerrar menú"
+                                >
+                                    <i className="fas fa-times" aria-hidden />
+                                </button>
+                            </div>
+                            <div className="mobile-menu-categories">
+                                {CATEGORIES.map((category) => (
+                                    <button
+                                        key={category.id}
+                                        type="button"
+                                        className="mobile-category-btn"
+                                        onClick={() =>
+                                            handleCategoryClick(category.id)
+                                        }
+                                    >
+                                        <i
+                                            className={category.icon}
+                                            aria-hidden
+                                        />
+                                        <span>{category.label}</span>
+                                        <i
+                                            className="fas fa-chevron-right"
+                                            aria-hidden
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </>
+                )}
             </header>
         </>
     )

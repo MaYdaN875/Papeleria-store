@@ -48,10 +48,35 @@ function filterProducts(productsList: Product[], filters: FilterState): Product[
     })
 }
 
+/* ================================
+   Hook para detectar viewport mobile
+   ================================ */
+function useIsMobile(): boolean {
+    const [isMobile, setIsMobile] = useState<boolean | null>(null)
+
+    useEffect(() => {
+        // Establecer el valor inicial inmediatamente
+        const checkMobile = () => window.innerWidth <= 480
+        setIsMobile(checkMobile())
+
+        // Escuchar cambios de tamaño
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 480)
+        }
+
+        window.addEventListener("resize", handleResize)
+        return () => window.removeEventListener("resize", handleResize)
+    }, [])
+
+    // Usar una fallback en el render inicial
+    return isMobile ?? window.innerWidth <= 480
+}
+
 export const AllProducts = () => {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const searchQuery = searchParams.get("search") || ""
+    const isMobile = useIsMobile()
 
     const [filters, setFilters] = useState<FilterState>({
         productos: [],
@@ -60,10 +85,21 @@ export const AllProducts = () => {
         menudeo: false,
         priceRange: [0, 1000],
     })
+    const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
+    const [isClosing, setIsClosing] = useState(false)
+
+    const handleCloseDrawer = () => {
+        setIsClosing(true)
+        setTimeout(() => {
+            setIsFilterDrawerOpen(false)
+            setIsClosing(false)
+        }, 300)
+    }
 
     useEffect(() => {
         window.scrollTo(0, 0)
         syncCartCount()
+        setIsFilterDrawerOpen(false) // Cerrar drawer al entrar a la página
     }, [])
 
     // Primero filtrar por búsqueda si existe, luego aplicar filtros adicionales
@@ -105,10 +141,46 @@ export const AllProducts = () => {
             </section>
 
             <section className="all-products-section">
-                <div className="products-layout-container">
-                    <FilterPanel
-                        onFilterChange={(newFilters) => setFilters(newFilters)}
+                {/* Barra de acciones para MÓVIL SOLAMENTE */}
+                {isMobile && (
+                    <div className="mobile-filter-bar">
+                        <button
+                            className="filter-button"
+                            onClick={() => setIsFilterDrawerOpen(!isFilterDrawerOpen)}
+                        >
+                            <i className="fas fa-filter" />
+                            <span>Filtros</span>
+                        </button>
+                    </div>
+                )}
+
+                {/* Backdrop del drawer cuando está abierto */}
+                {isMobile && isFilterDrawerOpen && (
+                    <div
+                        className={`filter-drawer-backdrop active ${isClosing ? "closing" : ""}`}
+                        onClick={() => handleCloseDrawer()}
                     />
+                )}
+
+                <div className="products-layout-container">
+                    {/* FilterPanel como drawer en móvil, sidebar en desktop */}
+                    <div
+                        className={`filter-panel-wrapper ${isFilterDrawerOpen && isMobile ? "drawer-open" : ""} ${isClosing ? "closing" : ""}`}
+                    >
+                        {/* Botón de cierre para el drawer en móvil */}
+                        {isMobile && isFilterDrawerOpen && (
+                            <button
+                                className="filter-drawer-close-btn"
+                                onClick={() => handleCloseDrawer()}
+                                aria-label="Cerrar filtros"
+                            >
+                                <i className="fas fa-times" />
+                            </button>
+                        )}
+                        <FilterPanel
+                            onFilterChange={(newFilters) => setFilters(newFilters)}
+                        />
+                    </div>
 
                     <div className="products-content-area">
                         <div className="all-products-grid" id="allProductsGrid">
