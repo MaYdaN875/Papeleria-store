@@ -66,6 +66,7 @@ export function ProductCarousel({
                 >
                     <i className="fas fa-chevron-left" aria-hidden />
                 </button>
+                <div className="carousel-viewport">
                 <div className="carousel-track">
                     {products.map((product, index) => {
                         const isActive = index === currentIndex
@@ -95,6 +96,7 @@ export function ProductCarousel({
                             </div>
                         )
                     })}
+                </div>
                 </div>
                 {currentIndex === products.length - 1 && seeMorePath ? (
                     <button
