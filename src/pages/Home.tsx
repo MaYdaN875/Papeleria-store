@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react"
 import { useNavigate } from "react-router"
 import { Carusel } from "../components/carousel"
 import {
-    ProductCard,
+    //ProductCard,
     ProductCarousel,
     type ProductCarouselSlideConfig,
 } from "../components/product"
