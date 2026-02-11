@@ -514,3 +514,15 @@
         font-size: 1.3rem;
     }
 }
+
+/* ================================
+   PADDING INFERIOR PARA NAVBAR MÓVIL
+   En móvil, agregar padding-bottom para evitar que el
+   navbar inferior se superponga al contenido
+   ================================ */
+@media (max-width: 768px) {
+    .products-section {
+        padding-bottom: calc(60px + 64px);
+        /* 60px original + 64px del navbar móvil */
+    }
+}
