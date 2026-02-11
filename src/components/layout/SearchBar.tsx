@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router"
 import { useProductSearch } from "../../hooks/useProductSearch"
 import type { Product } from "../../types/Product"
@@ -16,7 +16,17 @@ export function SearchBar({
     const [searchParams] = useSearchParams()
     const urlSearchQuery = searchParams.get("search") || ""
     const [isSearchActive, setIsSearchActive] = useState(!urlSearchQuery)
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 480)
     const inputRef = useRef<HTMLInputElement>(null)
+
+    // Detectar cambios de tamaño de pantalla
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 480)
+        }
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     const {
         searchQuery,
@@ -71,7 +81,7 @@ export function SearchBar({
                 <input
                     ref={inputRef}
                     type="text"
-                    placeholder={placeholder}
+                    placeholder={isMobile ? "Buscar productos" : placeholder}
                     id="searchInput"
                     value={displayQuery}
                     onChange={handleSearch}

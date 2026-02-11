@@ -114,6 +114,16 @@ export function Navbar() {
                     />
 
                     <div className="header-right">
+                        <Link
+                            to="/login"
+                            className="btn-login"
+                            aria-label="Iniciar sesión"
+                        >
+                            <span className="btn-login-icon">
+                                <i className="fas fa-user" aria-hidden="true" />
+                            </span>
+                            <span className="btn-login-text">Iniciar Sesión</span>
+                        </Link>
                         <button
                             type="button"
                             className="btn-cta"
