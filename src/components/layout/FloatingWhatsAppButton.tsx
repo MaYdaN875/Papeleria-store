@@ -1,7 +1,7 @@
 export function FloatingWhatsAppButton() {
     return (
         <a
-            href="https://wa.me/1234567890"
+            href="https://wa.me/3318686645"
             className="whatsapp-btn"
             target="_blank"
             rel="noreferrer"
