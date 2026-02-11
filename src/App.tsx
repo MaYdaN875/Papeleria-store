@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation } from "react-router";
-import { FloatingWhatsAppButton, Footer, Navbar } from "./components/layout";
+import { FloatingWhatsAppButton, Footer, MobileBottomNav, Navbar } from "./components/layout";
 import { AllProducts, Cart, Home, Login, ProductDetail, SignUp } from "./pages";
 
 function App() {
@@ -21,6 +21,7 @@ function App() {
       </Routes>
       {!isAuthPage && <FloatingWhatsAppButton />}
       {!isAuthPage && <Footer />}
+      {!isAuthPage && <MobileBottomNav />}
     </>
   )
 }

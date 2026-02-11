@@ -1,0 +1,213 @@
+/* ================================
+   MOBILE BOTTOM NAV (Navbar Inferior)
+   Estilos para dispositivos móviles
+   Diseño tipo Mercado Libre / Amazon
+   ================================ */
+
+.mobile-bottom-nav {
+    /* Container y posicionamiento */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+    border-top: 1px solid #e0e0e0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 90; /* Debajo del header pero encima del contenido */
+    display: none; /* Se mostrará solo en móvil */
+    padding-bottom: env(safe-area-inset-bottom, 0); /* Para iPhones con notch */
+}
+
+/* Mostrar solo en dispositivos móviles */
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        display: block;
+    }
+}
+
+/* Contenedor interno */
+.mobile-bottom-nav__container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 100%;
+    height: 64px;
+    padding: 8px 0;
+    gap: 0;
+}
+
+/* Elementos individuales del navbar */
+.mobile-bottom-nav__item {
+    /* Estructura general */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    text-decoration: none;
+    color: #666666;
+    gap: 4px;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px 8px 0 0;
+    margin: 0;
+    padding: 0 8px;
+}
+
+.mobile-bottom-nav__item:hover {
+    background-color: rgba(168, 230, 225, 0.1);
+    color: #0066ff;
+}
+
+/* Efecto activo */
+.mobile-bottom-nav__item.mobile-bottom-nav__item--active {
+    color: #0066ff;
+    font-weight: 600;
+    background-color: rgba(168, 230, 225, 0.15);
+}
+
+.mobile-bottom-nav__item.mobile-bottom-nav__item--active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 3px;
+    background-color: #0066ff;
+    border-radius: 0 0 3px 3px;
+}
+
+/* Iconos */
+.mobile-bottom-nav__item i {
+    font-size: 24px;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.mobile-bottom-nav__item:active i {
+    transform: scale(0.95);
+}
+
+/* Cuando está activo, el icono se anima */
+.mobile-bottom-nav__item.mobile-bottom-nav__item--active i {
+    animation: bounceIcon 0.4s ease;
+}
+
+/* Animación para iconos activos */
+@keyframes bounceIcon {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Etiqueta del elemento */
+.mobile-bottom-nav__label {
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60px;
+    line-height: 1.2;
+    letter-spacing: -0.3px;
+    transition: color 0.3s ease;
+}
+
+/* Badge del carrito */
+.mobile-bottom-nav__item--cart {
+    position: relative;
+}
+
+.mobile-bottom-nav__item--cart .mobile-bottom-nav__badge {
+    position: absolute;
+    top: 0;
+    right: 8px;
+    background-color: #ff6b6b;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+    animation: badgePulse 0.6s ease infinite;
+    letter-spacing: 0;
+}
+
+/* Si el carrito está vacío, no mostrar badge */
+.mobile-bottom-nav__item--cart .mobile-bottom-nav__badge[data-count="0"] {
+    display: none;
+}
+
+/* Animación del badge */
+@keyframes badgePulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Responsive: Hacer más pequeño en pantallas muy pequeñas */
+@media (max-width: 360px) {
+    .mobile-bottom-nav__container {
+        height: 56px;
+        padding: 6px 0;
+    }
+
+    .mobile-bottom-nav__item {
+        gap: 2px;
+        padding: 0 4px;
+
+        & i {
+            font-size: 20px;
+        }
+    }
+
+    .mobile-bottom-nav__label {
+        font-size: 10px;
+        max-width: 55px;
+    }
+}
+
+/* Responsive tablets: No mostrar en tablets y más grande */
+@media (min-width: 769px) {
+    .mobile-bottom-nav {
+        display: none !important;
+    }
+}
+
+/* Ajustes para devices con notch (iPhone X+) */
+@supports (padding: max(0px)) {
+    @media (max-width: 768px) {
+        .mobile-bottom-nav {
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+        }
+
+        .mobile-bottom-nav__container {
+            height: 56px;
+        }
+    }
+}
+
+/* Safari iOS - Asegurarse de que el background sea opaco */
+@supports (-webkit-touch-callout: none) {
+    .mobile-bottom-nav {
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        background-color: rgba(255, 255, 255, 0.98);
+    }
+}

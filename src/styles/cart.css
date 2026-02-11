@@ -790,4 +790,9 @@
         font-size: 11px;
         padding: 9px 10px;
     }
+
+    /* Padding inferior para navbar móvil */
+    .cart-main {
+        padding-bottom: 100px;
+    }
 }

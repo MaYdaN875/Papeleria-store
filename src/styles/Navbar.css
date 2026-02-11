@@ -451,7 +451,7 @@
         padding: 5px 8px;
         flex-direction: row;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-start;
         position: relative;
     }
 
@@ -472,16 +472,18 @@
         font-size: 18px;
     }
 
-    /* Búsqueda toma menos espacio en tablet */
+    /* Búsqueda toma CASI TODO el espacio disponible */
     .header-search {
         flex: 1;
-        max-width: 600px;
+        max-width: none;
         min-width: 100px;
+        margin-right: auto;
     }
 
     .search-box {
         padding: 7px 10px;
         border-radius: 20px;
+        width: 100%;
     }
 
     .search-box input {
@@ -501,9 +503,15 @@
     }
 
     .btn-login {
-        padding: 8px 12px;
-        font-size: 12px;
-        background: linear-gradient(135deg, #5B7C99 0%, #70a0c0 100%);
+        display: none;
+    }
+
+    .cart-icon {
+        display: none;
+    }
+
+    .cart-count {
+        display: none;
     }
 
     .header-right {
@@ -512,18 +520,6 @@
         min-width: fit-content;
         position: relative;
         right: 0;
-    }
-
-    .cart-icon {
-        font-size: 22px;
-    }
-
-    .cart-count {
-        width: 18px;
-        height: 18px;
-        font-size: 9px;
-        top: -8px;
-        right: -8px;
     }
 
     /* Navbar de categorías COMPACTO en tablet */
@@ -749,7 +745,8 @@
         padding: 6px 8px 6px 5px;
         gap: 5px;
         position: relative;
-        justify-content: space-between;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
     }
 
     .header-logo {
@@ -757,6 +754,7 @@
         flex-shrink: 0;
         position: relative;
         left: 0;
+        order: 2;
     }
 
     .header-logo h1 {
@@ -768,13 +766,16 @@
     }
 
     .header-search {
-        max-width: 100%;
+        max-width: none;
         flex: 1;
+        order: 3;
+        min-width: auto;
     }
 
     .search-box {
         padding: 7px 14px;
         font-size: 13px;
+        width: 100%;
     }
 
     .header-right {
@@ -783,27 +784,11 @@
         min-width: fit-content;
         position: relative;
         right: 0;
+        order: 4;
     }
 
     .btn-login {
-        padding: 6px 8px;
-        font-size: 18px;
-        white-space: nowrap;
-        border: none;
-        background: transparent;
-        color: #5B7C99;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-    }
-
-    .btn-login:hover {
-        background: rgba(91, 124, 153, 0.1);
+        display: none;
     }
 
     .btn-login-icon {
@@ -822,20 +807,15 @@
     }
 
     .cart-icon {
-        font-size: 20px;
-        position: relative;
+        display: none;
     }
 
     .cart-count {
-        width: 18px;
-        height: 18px;
-        font-size: 10px;
-        top: -8px;
-        right: -8px;
+        display: none;
     }
 
     .hamburger-menu {
-        display: flex;
+        display: none;
     }
 
     .navbar-categories {
@@ -847,7 +827,7 @@
         border-bottom: none;
         box-shadow: none;
         background: linear-gradient(180deg, #A8E6E1 0%, #9DDDD8 100%);
-        max-height: 20px;
+        max-height: 0;
         overflow: hidden;
     }
 
@@ -855,7 +835,7 @@
         justify-content: flex-start;
         padding: 0;
         gap: 0;
-        max-height: 20px;
+        max-height: 0;
     }
 }
 
@@ -877,7 +857,7 @@
         padding: 5px 10px 5px 8px;
         gap: 4px;
         position: relative;
-        justify-content: space-between;
+        justify-content: flex-start;
     }
 
     .header-logo {
@@ -893,20 +873,15 @@
         font-size: 16px;
     }
 
-    .btn-login {
-        padding: 5px 7px;
-        font-size: 9px;
-        white-space: nowrap;
-    }
-
     .header-search {
-        max-width: 100%;
         flex: 1;
+        max-width: none;
     }
 
     .search-box {
         padding: 6px 12px;
         font-size: 12px;
+        width: 100%;
     }
 
     .header-right {
@@ -917,24 +892,24 @@
         right: 0;
     }
 
+    .btn-login {
+        display: none;
+    }
+
+    .btn-cta {
+        display: none;
+    }
+
     .cart-icon {
-        font-size: 22px;
-        position: relative;
+        display: none;
     }
 
     .cart-count {
-        width: 18px;
-        height: 18px;
-        font-size: 9px;
-        top: -8px;
-        right: -8px;
+        display: none;
     }
 
     .hamburger-menu {
-        width: 18px;
-        height: 16px;
-        padding: 0;
-        gap: 3px;
+        display: none;
     }
 
     .hamburger-line {
@@ -943,12 +918,13 @@
     }
 
     .navbar {
-        max-height: 20px;
+        max-height: 0;
+        overflow: hidden;
     }
 
     .navbar-container {
         padding: 0;
-        max-height: 20px;
+        max-height: 0;
     }
 }
 

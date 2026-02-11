@@ -536,3 +536,13 @@
         font-size: 11px;
     }
 }
+
+/* ================================
+   PADDING INFERIOR PARA NAVBAR MÓVIL
+   Agregar espacio inferior en móvil para el navbar
+   ================================ */
+@media (max-width: 768px) {
+    .product-detail-page {
+        padding-bottom: 80px;
+    }
+}

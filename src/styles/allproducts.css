@@ -732,11 +732,12 @@
     .mobile-filter-bar {
         display: flex;
         position: sticky;
-        top: 80px;
+        top: 56px;
         z-index: 30;
         background-color: white;
         border-bottom: 2px solid #e0e0e0;
         padding: 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
     }
 
     .filter-button {
@@ -791,11 +792,11 @@
     .filter-panel-wrapper.drawer-open {
         position: fixed;
         display: block; /* Mostrado cuando está abierto */
-        top: 80px;
+        top: 56px;
         left: 0;
         width: 100%;
         max-width: 85vw;
-        height: calc(100vh - 80px);
+        height: calc(100vh - 56px);
         background-color: white;
         z-index: 50;
         overflow-y: auto;
@@ -951,5 +952,15 @@
 
     .filter-checkbox {
         font-size: 11px;
+    }
+}
+
+/* ================================
+   PADDING INFERIOR PARA NAVBAR MÓVIL
+   Agregar espacio inferior en móvil para el navbar
+   ================================ */
+@media (max-width: 768px) {
+    .main-content {
+        padding-bottom: 80px;
     }
 }
