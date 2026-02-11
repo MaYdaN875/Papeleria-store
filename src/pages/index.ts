@@ -1,6 +1,7 @@
-import { AllProducts } from "./AllProducts"
-import { Cart } from "./Cart"
-import { Home } from "./Home"
-import { ProductDetail } from "./ProductDetail"
+export { AllProducts } from "./AllProducts"
+export { Cart } from "./Cart"
+export { Home } from "./Home"
+export { Login } from "./Login"
+export { ProductDetail } from "./ProductDetail"
+export { SignUp } from "./SignUp"
 
-export { AllProducts, Cart, Home, ProductDetail }
