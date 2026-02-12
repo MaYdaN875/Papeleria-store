@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
+import { useIsMobile } from "../../hooks/useIsMobile"
+import { useTouchCarousel } from "../../hooks/useTouchCarousel"
 
 interface CarouselProps {
     type?: "offers" | "products" | "banner"
@@ -10,11 +12,23 @@ export function Carusel({ type = "offers" }: CarouselProps) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [animating, setAnimating] = useState(false)
     const [direction, setDirection] = useState(0)
+    // Hook para detectar si es dispositivo móvil (breakpoint por defecto 768px)
+    const isMobile = useIsMobile()
+    // Referencia del carousel para eventos táctiles
+    const carouselRef = useTouchCarousel({
+        onSwipeLeft: () => moveCarousel(1),
+        onSwipeRight: () => moveCarousel(-1),
+        minSwipeDistance: 50,
+    })
 
+    // Autoplay solo en dispositivos de escritorio
     useEffect(() => {
+        // Si es móvil, no activar autoplay
+        if (isMobile) return
+
         const interval = setInterval(() => moveCarousel(1), 5000)
         return () => clearInterval(interval)
-    }, [currentIndex, animating])
+    }, [currentIndex, animating, isMobile])
 
     const moveCarousel = (dir: number) => {
         if (animating) return
@@ -54,12 +68,25 @@ export function Carusel({ type = "offers" }: CarouselProps) {
         else if (direction === -1) directionClass = " slide-right"
         const slideClassName = `fusion-slide${animating ? " animating" : ""}${directionClass}`
         return (
-            <div className="carousel-container carousel-banner fusion-carousel" style={{ maxWidth: "98vw", position: "relative", minHeight: 350, background: offer.bg }}>
-                <button className="carousel-btn prev-btn fusion-arrow" style={{ left: 24 }} onClick={() => moveCarousel(-1)}>
-                    <i className="fas fa-chevron-left" />
-                </button>
-                <div className="carousel-wrapper fusion-carousel-wrapper" style={{ background: "none", minHeight: 350, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div className={slideClassName} style={{ background: "none", boxShadow: "none", width: "100%", minHeight: 350, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }} onClick={handleBannerClick} onKeyDown={(e) => e.key === "Enter" && handleBannerClick()} role="button" tabIndex={0}>
+            // Contenedor con referencia para eventos táctiles
+            <div
+                ref={carouselRef}
+                className="carousel-container carousel-banner fusion-carousel"
+                style={{ maxWidth: "98vw", position: "relative", background: offer.bg }}
+            >
+                {/* Botón anterior - oculto en móvil */}
+                {!isMobile && (
+                    <button
+                        className="carousel-btn prev-btn fusion-arrow"
+                        style={{ left: 24 }}
+                        onClick={() => moveCarousel(-1)}
+                        aria-label="Diapositiva anterior"
+                    >
+                        <i className="fas fa-chevron-left" />
+                    </button>
+                )}
+                <div className="carousel-wrapper fusion-carousel-wrapper" style={{ background: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div className={slideClassName} style={{ background: "none", boxShadow: "none", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }} onClick={handleBannerClick} onKeyDown={(e) => e.key === "Enter" && handleBannerClick()} role="button" tabIndex={0}>
                         <div className="fusion-slide-content" style={{ background: "none", boxShadow: "none", borderRadius: 0, width: "100%", maxWidth: 1400, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "40px 60px", gap: 40 }}>
                             <div className="fusion-slide-text">
                                 {offer.badge && <div className="offer-badge fusion-badge">{offer.badge}</div>}
@@ -74,18 +101,34 @@ export function Carusel({ type = "offers" }: CarouselProps) {
                         </div>
                     </div>
                 </div>
-                <button className="carousel-btn next-btn fusion-arrow" style={{ right: 24 }} onClick={() => moveCarousel(1)}>
-                    <i className="fas fa-chevron-right" />
-                </button>
+                {/* Botón siguiente - oculto en móvil */}
+                {!isMobile && (
+                    <button
+                        className="carousel-btn next-btn fusion-arrow"
+                        style={{ right: 24 }}
+                        onClick={() => moveCarousel(1)}
+                        aria-label="Siguiente diapositiva"
+                    >
+                        <i className="fas fa-chevron-right" />
+                    </button>
+                )}
             </div>
         )
     }
 
     return (
-        <div className="carousel-container">
-            <button className="carousel-btn prev-btn" onClick={() => moveCarousel(-1)}>
-                <i className="fas fa-chevron-left" />
-            </button>
+        // Contenedor con referencia para eventos táctiles
+        <div ref={carouselRef} className="carousel-container">
+            {/* Botón anterior - oculto en móvil */}
+            {!isMobile && (
+                <button
+                    className="carousel-btn prev-btn"
+                    onClick={() => moveCarousel(-1)}
+                    aria-label="Oferta anterior"
+                >
+                    <i className="fas fa-chevron-left" />
+                </button>
+            )}
             <div className="carousel-wrapper">
                 <div className="carousel-track" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
                     {offers.map((offer) => (
@@ -94,14 +137,23 @@ export function Carusel({ type = "offers" }: CarouselProps) {
                             <div className="offer-icon">{offer.icon}</div>
                             <h3>{offer.title}</h3>
                             <p className="offer-subtitle">{offer.subtitle}</p>
-                            <button type="button" className="btn-offer">Ver Ofertas</button>
+                            <button type="button" className="btn-offer">
+                                Ver Ofertas
+                            </button>
                         </div>
                     ))}
                 </div>
             </div>
-            <button className="carousel-btn next-btn" onClick={() => moveCarousel(1)}>
-                <i className="fas fa-chevron-right" />
-            </button>
+            {/* Botón siguiente - oculto en móvil */}
+            {!isMobile && (
+                <button
+                    className="carousel-btn next-btn"
+                    onClick={() => moveCarousel(1)}
+                    aria-label="Siguiente oferta"
+                >
+                    <i className="fas fa-chevron-right" />
+                </button>
+            )}
         </div>
     )
 }

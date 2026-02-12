@@ -167,17 +167,17 @@
     background: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    height: 350px;
-    min-height: 350px;
+    height: 380px;
+    min-height: 380px;
 }
 
 .fusion-carousel-wrapper {
     width: 100%;
-    overflow: visible;
+    overflow: hidden;
     border-radius: 0;
     background: none;
-    height: 350px;
-    min-height: 350px;
+    height: 380px;
+    min-height: 380px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -185,8 +185,8 @@
 
 .fusion-slide {
     width: 100%;
-    height: 350px;
-    min-height: 350px;
+    height: 380px;
+    min-height: 380px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -196,6 +196,7 @@
     opacity: 1;
     z-index: 1;
     cursor: pointer;
+    overflow: hidden;
 }
 
 .fusion-slide:hover {
@@ -1121,4 +1122,394 @@
 
 .carousel-indicators .indicator:hover {
     transform: scale(1.2);
+}
+
+/* ================================
+   CARRUSELES RESPONSIVOS - MÓVIL
+   ================================ */
+
+/* Tablets y dispositivos menores a 1024px */
+@media (max-width: 1024px) {
+    .carousel-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 18px;
+    }
+
+    .carousel-arrow {
+        width: 50px;
+        height: 50px;
+        font-size: 18px;
+    }
+
+    .fusion-arrow {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+/* Tablets y dispositivos menores a 768px - Ocultar flechas y habilitar táctil */
+@media (max-width: 768px) {
+    /* Ocultar botones de navegación con flechas en móvil */
+    .carousel-btn,
+    .carousel-arrow,
+    .carousel-button,
+    .fusion-arrow {
+        display: none !important;
+    }
+
+    /* Contenedor del carousel táctil */
+    .carousel-container,
+    .products-carousel-container,
+    .carousel-banner {
+        gap: 0;
+    }
+
+    /* Mejorar detectabilidad del swipe en móvil */
+    .carousel-wrapper,
+    .carousel-viewport,
+    .fusion-carousel-wrapper {
+        cursor: grab;
+        touch-action: pan-y;
+        user-select: none;
+    }
+
+    .carousel-wrapper:active,
+    .carousel-viewport:active,
+    .fusion-carousel-wrapper:active {
+        cursor: grabbing;
+    }
+
+    /* Suavizar transiciones en móvil */
+    .carousel-track {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Agregar feedback visual al deslizar */
+    .carousel-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        border-radius: 12px;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+        z-index: 1;
+    }
+
+    /* Indicadores más grandes en móvil para mejor interacción */
+    .carousel-indicators {
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .carousel-indicators .indicator {
+        width: 10px;
+        height: 10px;
+    }
+
+    .carousel-indicators .indicator.active {
+        width: 28px;
+        background-color: var(--color-accent);
+    }
+
+    /* Optimizar banner en móvil */
+    .fusion-slide-content {
+        padding: 20px 16px !important;
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+
+    .fusion-slide-text {
+        text-align: center;
+    }
+
+    .fusion-slide-img {
+        max-height: 200px;
+        max-width: 100%;
+    }
+
+    /* Reducir altura del banner en móvil */
+    .fusion-carousel,
+    .fusion-carousel-wrapper,
+    .fusion-slide {
+        min-height: 250px !important;
+        height: 250px !important;
+    }
+
+    /* Ofrecer mejor experiencia de scroll/swipe */
+    .offer-card {
+        min-width: 280px;
+        padding: 30px 20px;
+    }
+}
+
+/* Móviles pequeños - 480px y menores */
+@media (max-width: 480px) {
+    /* Asegurar que no hay espacios donde estaban los botones */
+    .carousel-container,
+    .products-carousel-container {
+        margin-bottom: 30px;
+    }
+
+    /* Reducir altura del banner más en móviles pequeños */
+    .fusion-carousel,
+    .fusion-carousel-wrapper,
+    .fusion-slide {
+        min-height: 200px !important;
+        height: 200px !important;
+    }
+
+    .fusion-slide-content {
+        padding: 15px 12px !important;
+    }
+
+    .fusion-slide-img {
+        max-height: 140px !important;
+    }
+
+    /* Indicadores accesibles en móviles pequeños */
+    .carousel-indicators {
+        gap: 8px;
+    }
+
+    .carousel-indicators .indicator {
+        width: 8px;
+        height: 8px;
+    }
+
+    .carousel-indicators .indicator.active {
+        width: 20px;
+    }
+
+    /* Tarjetas de ofertas más compactas */
+    .offer-card {
+        min-width: 250px;
+        padding: 20px 15px;
+        min-height: 220px;
+    }
+
+    .offer-icon {
+        font-size: 50px;
+        margin-bottom: 15px;
+    }
+
+    .offer-card h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .offer-subtitle {
+        font-size: 12px;
+        margin-bottom: 15px;
+    }
+
+    .btn-offer {
+        padding: 10px 20px;
+        font-size: 12px;
+    }
+}
+
+/* Dispositivos muy pequeños - 360px y menores */
+@media (max-width: 360px) {
+    .fusion-carousel,
+    .fusion-carousel-wrapper,
+    .fusion-slide {
+        min-height: 180px !important;
+        height: 180px !important;
+    }
+
+    .fusion-slide-content {
+        padding: 10px 8px !important;
+    }
+
+    .offer-card {
+        min-width: 220px;
+        padding: 15px 12px;
+        min-height: 200px;
+    }
+
+    .carousel-indicators .indicator {
+        width: 6px;
+        height: 6px;
+    }
+
+    .carousel-indicators .indicator.active {
+        width: 16px;
+    }
+}
+
+/* ================================
+   DESKTOP MEJORADO (1280px+)
+   ================================ */
+
+@media (min-width: 1280px) {
+    /* Banner principal más grande */
+    .fusion-carousel {
+        height: 450px !important;
+        min-height: 450px !important;
+    }
+
+    .fusion-carousel-wrapper {
+        height: 450px !important;
+        min-height: 450px !important;
+    }
+
+    .fusion-slide {
+        height: 450px !important;
+        min-height: 450px !important;
+    }
+
+    /* Contenido del banner más espacioso */
+    .fusion-slide-content {
+        padding: 50px 80px !important;
+        gap: 60px !important;
+    }
+
+    .fusion-slide-text {
+        flex: 1;
+    }
+
+    .fusion-slide-text h2 {
+        font-size: 42px;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    .banner-card-subtitle {
+        font-size: 18px;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .banner-card-discount {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: var(--color-accent);
+    }
+
+    .banner-card-oldprice {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    .banner-card-sku {
+        font-size: 14px;
+        margin-bottom: 12px;
+        color: var(--color-text-light);
+    }
+
+    .banner-card-description {
+        font-size: 15px;
+        color: var(--color-text-light);
+        line-height: 1.6;
+        max-width: 400px;
+    }
+
+    /* Imagen del banner más grande */
+    .fusion-slide-img {
+        width: auto;
+        height: 350px;
+        max-width: 500px;
+        object-fit: contain;
+    }
+
+    .offer-badge {
+        padding: 10px 24px;
+        font-size: 16px;
+        margin-bottom: 24px;
+    }
+
+    /* Carousel de ofertas */
+    .carousel-container {
+        gap: 30px;
+        margin-bottom: 50px;
+    }
+
+    .carousel-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 24px;
+    }
+
+    .carousel-btn:hover {
+        transform: scale(1.15);
+    }
+
+    /* Tarjetas de ofertas más grandes */
+    .offer-card {
+        min-width: 360px;
+        padding: 50px 40px;
+        min-height: 320px;
+        border-radius: 16px;
+    }
+
+    .offer-icon {
+        font-size: 80px;
+        margin-bottom: 24px;
+    }
+
+    .offer-card h3 {
+        font-size: 28px;
+        margin-bottom: 12px;
+    }
+
+    .offer-subtitle {
+        font-size: 16px;
+        margin-bottom: 24px;
+        line-height: 1.7;
+    }
+
+    .btn-offer {
+        padding: 14px 36px;
+        font-size: 16px;
+        border-radius: 24px;
+    }
+
+    .btn-offer:hover {
+        transform: translateY(-4px);
+    }
+
+    /* Contenedor del home carousel más espacioso */
+    .home-carousel-container {
+        gap: 30px;
+        margin-bottom: 80px;
+    }
+
+    .carousel-nav-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 22px;
+    }
+
+    .carousel-nav-btn:hover:not(:disabled) {
+        transform: scale(1.12);
+    }
+
+    .carousel-nav-btn.prev-btn {
+        order: -1;
+    }
+
+    .carousel-nav-btn.next-btn {
+        order: 3;
+    }
+
+    .home-carousel-wrapper {
+        order: 2;
+        border-radius: 16px;
+    }
+
+    .btn-see-more-carousel {
+        padding: 14px 36px;
+        font-size: 15px;
+        bottom: -50px;
+    }
+
+    .btn-see-more-carousel:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(212, 149, 107, 0.5);
+    }
 }

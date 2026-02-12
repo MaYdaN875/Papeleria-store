@@ -726,4 +726,141 @@
         padding: 7px;
         font-size: 10px;
     }
+
+    /* ================================
+       CARRUSELES DE PRODUCTOS - MÓVIL
+       ================================ */
+
+    /* Ocultar botones de navegación en móvil */
+    .carousel-nav-btn,
+    .carousel-button-prev,
+    .carousel-button-next,
+    .carousel-arrow {
+        display: none !important;
+    }
+
+    /* Mejorar detectabilidad del swipe en carruseles */
+    .home-carousel-wrapper,
+    .featured-carousel-wrapper,
+    .carousel-viewport {
+        cursor: grab;
+        touch-action: pan-y;
+        user-select: none;
+    }
+
+    .home-carousel-wrapper:active,
+    .featured-carousel-wrapper:active,
+    .carousel-viewport:active {
+        cursor: grabbing;
+    }
+
+    /* Carruseles sin espacios donde estaban los botones */
+    .home-carousel-container,
+    .featured-carousel-container {
+        gap: 0;
+        padding: 0 10px;
+    }
+
+    /* Indicadores de carrusel más accesibles en móvil */
+    .carousel-indicators {
+        margin-top: 20px;
+        gap: 8px;
+    }
+}
+
+/* ================================
+   DESKTOP MEJORADO (1280px+)
+   ================================ */
+
+@media (min-width: 1280px) {
+    /* Carrusel de productos - mostrar más items */
+    .carousel-product-card {
+        flex: 0 0 calc(33.333% - 13.33px) !important;
+        min-width: 320px !important;
+    }
+
+    /* Carrusel destacado - aumentar tamaño */
+    .featured-carousel-item {
+        flex: 0 0 calc(25% - 18.75px) !important;
+        min-width: 300px !important;
+    }
+
+    /* Tarjetas de productos más grandes */
+    .product-card {
+        border-radius: 14px;
+    }
+
+    .product-image {
+        height: 260px;
+    }
+
+    .product-placeholder {
+        font-size: 100px;
+    }
+
+    .product-info {
+        padding: 24px;
+    }
+
+    .product-info h4 {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .product-brand {
+        font-size: 15px;
+        margin-bottom: 12px;
+    }
+
+    .product-rating {
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .product-rating i {
+        font-size: 16px;
+    }
+
+    .product-badge {
+        top: 18px;
+        right: 18px;
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .product-price {
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .price-original {
+        font-size: 16px;
+    }
+
+    .price-current {
+        font-size: 24px;
+    }
+
+    .btn-add-cart {
+        padding: 14px;
+        font-size: 15px;
+        border-radius: 10px;
+    }
+
+    .btn-add-cart:hover {
+        transform: translateY(-4px);
+    }
+
+    /* Grid de todos los productos más espacioso */
+    .all-products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px;
+    }
+
+    /* Botón de ver más productos */
+    .btn-see-more-carousel {
+        padding: 13px 32px;
+        font-size: 14px;
+        bottom: -45px;
+    }
 }
