@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
+import { useIsMobile } from "../../hooks/useIsMobile"
+import { useTouchCarousel } from "../../hooks/useTouchCarousel"
 import type { Product } from "../../types/Product"
 import type { ProductCarouselSlideConfig } from "./ProductCarouselSlide"
 import { ProductCarouselSlide } from "./ProductCarouselSlide"
@@ -38,8 +40,21 @@ export function ProductCarousel({
 }: ProductCarouselProps) {
     const navigate = useNavigate()
     const [currentIndex, setCurrentIndex] = useState(0)
+    // Hook para detectar si es dispositivo móvil (breakpoint por defecto 768px)
+    const isMobile = useIsMobile()
+    // Referencia del carousel para eventos táctiles
+    const carouselRef = useTouchCarousel({
+        onSwipeLeft: () => moveCarousel(1, setCurrentIndex, products.length),
+        onSwipeRight: () =>
+            moveCarousel(-1, setCurrentIndex, products.length),
+        minSwipeDistance: 50,
+    })
 
+    // Autoplay solo en dispositivos de escritorio
     useEffect(() => {
+        // Si es móvil, no activar autoplay
+        if (isMobile) return
+
         const interval = setInterval(() => {
             setCurrentIndex((prev) => {
                 let next = prev + 1
@@ -48,55 +63,64 @@ export function ProductCarousel({
             })
         }, 5000)
         return () => clearInterval(interval)
-    }, [products.length])
+    }, [products.length, isMobile])
 
     if (products.length === 0) return null
 
     return (
         <>
             <h2 className="carousel-title">{title}</h2>
-            <div className="products-carousel-container">
-                <button
-                    type="button"
-                    className="carousel-button carousel-button-prev"
-                    onClick={() =>
-                        moveCarousel(-1, setCurrentIndex, products.length)
-                    }
-                    aria-label="Producto anterior"
-                >
-                    <i className="fas fa-chevron-left" aria-hidden />
-                </button>
+            {/* Contenedor con referencia para eventos táctiles */}
+            <div ref={carouselRef} className="products-carousel-container">
+                {/* Botón anterior - oculto en móvil */}
+                {!isMobile && (
+                    <button
+                        type="button"
+                        className="carousel-button carousel-button-prev"
+                        onClick={() =>
+                            moveCarousel(-1, setCurrentIndex, products.length)
+                        }
+                        aria-label="Producto anterior"
+                    >
+                        <i className="fas fa-chevron-left" aria-hidden />
+                    </button>
+                )}
                 <div className="carousel-viewport">
-                <div className="carousel-track">
-                    {products.map((product, index) => {
-                        const isActive = index === currentIndex
-                        const offset = index - currentIndex
-                        let badgeClass = ""
-                        if (offset > 0) badgeClass = "next"
-                        else if (offset < 0) badgeClass = "prev"
-                        const config = getItemConfig?.(product)
-                        return (
-                            <div
-                                key={product.id}
-                                className={`carousel-item ${isActive ? "active" : ""} ${badgeClass}`}
-                                style={{
-                                    transform: `translateX(${offset * 100}%) scale(${isActive ? 1 : 0.85})`,
-                                    opacity:
-                                        Math.abs(offset) > 1
-                                            ? 0
-                                            : 1 - Math.abs(offset) * 0.3,
-                                }}
-                            >
-                                <ProductCarouselSlide
-                                    product={product}
-                                    config={config}
-                                    onNavigate={onNavigate}
-                                    onAddToCart={onAddToCart}
-                                />
-                            </div>
-                        )
-                    })}
-                </div>
+                    <div className="carousel-track">
+                        {products.map((product, index) => {
+                            const isActive = index === currentIndex
+                            const offset = index - currentIndex
+                            let badgeClass = ""
+                            if (offset > 0) badgeClass = "next"
+                            else if (offset < 0) badgeClass = "prev"
+                            const config = getItemConfig?.(product)
+                            return (
+                                <div
+                                    key={product.id}
+                                    className={`carousel-item ${
+                                        isActive ? "active" : ""
+                                    } ${badgeClass}`}
+                                    style={{
+                                        transform: `translateX(${offset * 100}%) scale(${
+                                            isActive ? 1 : 0.85
+                                        })`,
+                                        opacity:
+                                            Math.abs(offset) > 1
+                                                ? 0
+                                                : 1 -
+                                                  Math.abs(offset) * 0.3,
+                                    }}
+                                >
+                                    <ProductCarouselSlide
+                                        product={product}
+                                        config={config}
+                                        onNavigate={onNavigate}
+                                        onAddToCart={onAddToCart}
+                                    />
+                                </div>
+                            )
+                        })}
+                    </div>
                 </div>
                 {currentIndex === products.length - 1 && seeMorePath ? (
                     <button
@@ -109,16 +133,22 @@ export function ProductCarousel({
                         Más
                     </button>
                 ) : (
-                    <button
-                        type="button"
-                        className="carousel-button carousel-button-next"
-                        onClick={() =>
-                            moveCarousel(1, setCurrentIndex, products.length)
-                        }
-                        aria-label="Siguiente producto"
-                    >
-                        <i className="fas fa-chevron-right" aria-hidden />
-                    </button>
+                    // Botón siguiente - oculto en móvil
+                    !isMobile && (
+                        <button
+                            type="button"
+                            className="carousel-button carousel-button-next"
+                            onClick={() =>
+                                moveCarousel(1, setCurrentIndex, products.length)
+                            }
+                            aria-label="Siguiente producto"
+                        >
+                            <i
+                                className="fas fa-chevron-right"
+                                aria-hidden
+                            />
+                        </button>
+                    )
                 )}
             </div>
             <div className="carousel-indicators">
@@ -126,7 +156,9 @@ export function ProductCarousel({
                     <button
                         key={`indicator-${index}`}
                         type="button"
-                        className={`indicator ${index === currentIndex ? "active" : ""}`}
+                        className={`indicator ${
+                            index === currentIndex ? "active" : ""
+                        }`}
                         onClick={() => setCurrentIndex(index)}
                         aria-label={`Ir al producto ${index + 1}`}
                     />

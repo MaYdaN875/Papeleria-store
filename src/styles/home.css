@@ -312,25 +312,28 @@
     }
 
     .fusion-carousel {
-        height: 300px;
-        min-height: 300px;
+        height: 380px;
+        min-height: 380px;
     }
 
     .fusion-carousel-wrapper {
-        height: 300px;
-        min-height: 300px;
+        height: 380px;
+        min-height: 380px;
+        overflow: hidden;
     }
 
     .fusion-slide {
-        height: 300px;
-        min-height: 300px;
+        height: 380px;
+        min-height: 380px;
+        overflow: hidden;
     }
 
     .fusion-slide-content {
         flex-direction: column;
-        padding: 20px 20px;
-        gap: 20px;
+        padding: 14px 14px;
+        gap: 10px;
         justify-content: center;
+        overflow: hidden;
     }
 
     .fusion-slide-text {
@@ -339,21 +342,21 @@
     }
 
     .fusion-slide-text h1 {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
     }
 
     .fusion-slide-text p {
-        font-size: 0.95rem;
+        font-size: 0.9rem;
     }
 
     .fusion-slide-img {
         max-height: 180px;
-        max-width: 280px;
+        max-width: 250px;
     }
 
     .fusion-badge {
-        font-size: 14px;
-        padding: 4px 14px;
+        font-size: 13px;
+        padding: 4px 12px;
     }
 
     .fusion-arrow.prev-btn {
@@ -403,57 +406,66 @@
 
 @media (max-width: 480px) {
     .banner-principal {
-        padding: 40px 12px;
+        padding: 30px 10px;
     }
 
     .fusion-carousel {
-        height: 220px;
-        min-height: 220px;
-        margin-top: 8px;
+        height: 380px !important;
+        min-height: 380px !important;
+        margin-top: 0 !important;
     }
 
     .fusion-carousel-wrapper {
-        height: 220px;
-        min-height: 220px;
+        height: 380px !important;
+        min-height: 380px !important;
     }
 
     .fusion-slide {
-        height: 220px;
-        min-height: 220px;
+        height: 380px !important;
+        min-height: 380px !important;
     }
 
     .fusion-slide-content {
-        padding: 20px 10px;
-        gap: 10px;
+        padding: 14px 10px !important;
+        gap: 10px !important;
+        flex-direction: column !important;
+        overflow: hidden;
+    }
+
+    .fusion-slide-text {
+        text-align: center;
+        overflow: hidden;
     }
 
     .fusion-slide-text h1 {
         font-size: 1.3rem;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
     }
 
     .fusion-slide-text p {
-        font-size: 0.85rem;
-        margin-bottom: 10px;
+        font-size: 0.8rem;
+        margin-bottom: 3px;
+        line-height: 1.15;
     }
 
     .fusion-slide-img {
-        max-height: 140px;
-        max-width: 200px;
+        max-height: 160px !important;
+        max-width: 200px !important;
+        border-radius: 10px;
     }
 
     .fusion-badge {
-        font-size: 12px;
+        font-size: 11px;
         padding: 3px 10px;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
     }
 
     .fusion-oldprice {
-        font-size: 14px;
+        font-size: 12px;
     }
 
     .fusion-sku {
-        font-size: 13px;
+        font-size: 11px;
     }
 
     .section-title {
