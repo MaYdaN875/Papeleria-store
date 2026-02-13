@@ -959,6 +959,58 @@
     flex: 1;
 }
 
+/* ================================
+   ANIMACIONES PARA EL BOTÓN "VER MÁS"
+   ================================ */
+
+@keyframes arrowBounce {
+    0% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(8px);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@keyframes buttonPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        box-shadow: 0 15px 60px rgba(150, 150, 150, 0.3);
+    }
+    100% {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background: linear-gradient(135deg, #F5F5F5 0%, #EFEFEF 100%);
+    }
+    50% {
+        background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%);
+    }
+    100% {
+        background: linear-gradient(135deg, #F5F5F5 0%, #EFEFEF 100%);
+    }
+}
+
 /* Estilos para la tarjeta "Ver Más" */
 .carousel-item.see-more-card {
     position: absolute;
@@ -1305,6 +1357,26 @@
         min-width: 280px;
         padding: 30px 20px;
     }
+
+    /* ================================
+       ANIMACIONES DEL BOTÓN "VER MÁS" EN MOBILE
+       ================================ */
+    
+    /* Aplicar animaciones solo cuando el botón está activo en mobile */
+    .carousel-item.active .see-more-button {
+        animation: buttonPulse 2s ease-in-out infinite, glowPulse 2s ease-in-out infinite;
+    }
+
+    /* Animar la flecha cuando el botón está activo */
+    .carousel-item.active .see-more-button i {
+        animation: arrowBounce 1.5s ease-in-out infinite;
+        opacity: 0.8;
+    }
+
+    /* Agregar efecto de shimmer al fondo */
+    .carousel-item.active .see-more-button {
+        animation: buttonPulse 2s ease-in-out infinite, glowPulse 2s ease-in-out infinite, shimmer 3s ease-in-out infinite;
+    }
 }
 
 /* Móviles pequeños - 480px y menores */
@@ -1370,6 +1442,21 @@
     .btn-offer {
         padding: 10px 20px;
         font-size: 12px;
+    }
+
+    /* ================================
+       ANIMACIONES DEL BOTÓN "VER MÁS" EN MÓVILES PEQUEÑOS
+       ================================ */
+    
+    /* Aplicar animaciones en móviles pequeños */
+    .carousel-item.active .see-more-button {
+        animation: buttonPulse 2s ease-in-out infinite, glowPulse 2s ease-in-out infinite, shimmer 3s ease-in-out infinite;
+    }
+
+    /* Animar la flecha con más velocidad en móviles pequeños */
+    .carousel-item.active .see-more-button i {
+        animation: arrowBounce 1.3s ease-in-out infinite;
+        opacity: 0.8;
     }
 }
 
