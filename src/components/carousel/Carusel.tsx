@@ -21,12 +21,10 @@ export function Carusel({ type = "offers" }: CarouselProps) {
         minSwipeDistance: 50,
     })
 
-    // Autoplay solo en dispositivos de escritorio
+    // Autoplay en desktop y móvil
     useEffect(() => {
-        // Si es móvil, no activar autoplay
-        if (isMobile) return
-
-        const interval = setInterval(() => moveCarousel(1), 5000)
+        // Activar autoplay con intervalo según dispositivo
+        const interval = setInterval(() => moveCarousel(1), isMobile ? 4000 : 5000)
         return () => clearInterval(interval)
     }, [currentIndex, animating, isMobile])
 

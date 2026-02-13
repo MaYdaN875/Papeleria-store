@@ -30,6 +30,11 @@ function moveCarousel(
     })
 }
 
+// Lista total de items (productos + 1 para la tarjeta "Ver Más")
+function getTotalItems(productsLength: number): number {
+    return productsLength + 1
+}
+
 export function ProductCarousel({
     title,
     products,
@@ -42,28 +47,28 @@ export function ProductCarousel({
     const [currentIndex, setCurrentIndex] = useState(0)
     // Hook para detectar si es dispositivo móvil (breakpoint por defecto 768px)
     const isMobile = useIsMobile()
+    // Total de items (productos + tarjeta "Ver Más")
+    const totalItems = getTotalItems(products.length)
     // Referencia del carousel para eventos táctiles
     const carouselRef = useTouchCarousel({
-        onSwipeLeft: () => moveCarousel(1, setCurrentIndex, products.length),
+        onSwipeLeft: () => moveCarousel(1, setCurrentIndex, totalItems),
         onSwipeRight: () =>
-            moveCarousel(-1, setCurrentIndex, products.length),
+            moveCarousel(-1, setCurrentIndex, totalItems),
         minSwipeDistance: 50,
     })
 
-    // Autoplay solo en dispositivos de escritorio
+    // Autoplay en desktop y móvil
     useEffect(() => {
-        // Si es móvil, no activar autoplay
-        if (isMobile) return
-
+        // Activar autoplay con intervalo según dispositivo
         const interval = setInterval(() => {
             setCurrentIndex((prev) => {
                 let next = prev + 1
-                if (next >= products.length) next = 0
+                if (next >= totalItems) next = 0
                 return next
             })
-        }, 5000)
+        }, isMobile ? 4000 : 5000)
         return () => clearInterval(interval)
-    }, [products.length, isMobile])
+    }, [totalItems, isMobile])
 
     if (products.length === 0) return null
 
@@ -78,7 +83,7 @@ export function ProductCarousel({
                         type="button"
                         className="carousel-button carousel-button-prev"
                         onClick={() =>
-                            moveCarousel(-1, setCurrentIndex, products.length)
+                            moveCarousel(-1, setCurrentIndex, totalItems)
                         }
                         aria-label="Producto anterior"
                     >
@@ -120,39 +125,60 @@ export function ProductCarousel({
                                 </div>
                             )
                         })}
+                        {/* Tarjeta "Ver Más" al final del carrusel */}
+                        {seeMorePath && (() => {
+                            const seeMoreIndex = products.length
+                            const isActive = seeMoreIndex === currentIndex
+                            const offset = seeMoreIndex - currentIndex
+                            return (
+                                <div
+                                    className={`carousel-item see-more-card ${
+                                        isActive ? "active" : ""
+                                    }`}
+                                    style={{
+                                        transform: `translateX(${offset * 100}%) scale(${
+                                            isActive ? 1 : 0.85
+                                        })`,
+                                        opacity:
+                                            Math.abs(offset) > 1
+                                                ? 0
+                                                : 1 -
+                                                  Math.abs(offset) * 0.3,
+                                    }}
+                                >
+                                    <button
+                                        type="button"
+                                        className="see-more-button"
+                                        onClick={() => navigate(seeMorePath)}
+                                        aria-label="Ver más productos"
+                                    >
+                                        <i className="fas fa-arrow-right" aria-hidden />
+                                        <span>Ver Más</span>
+                                    </button>
+                                </div>
+                            )
+                        })()}
                     </div>
                 </div>
-                {currentIndex === products.length - 1 && seeMorePath ? (
+                {/* Botón siguiente - oculto en móvil */}
+                {!isMobile && (
                     <button
                         type="button"
-                        className="btn-see-more-carousel"
-                        onClick={() => navigate(seeMorePath)}
-                        aria-label="Ver más productos"
+                        className="carousel-button carousel-button-next"
+                        onClick={() =>
+                            moveCarousel(1, setCurrentIndex, totalItems)
+                        }
+                        aria-label="Siguiente producto"
                     >
-                        <i className="fas fa-arrow-right" aria-hidden /> Ver
-                        Más
+                        <i
+                            className="fas fa-chevron-right"
+                            aria-hidden
+                        />
                     </button>
-                ) : (
-                    // Botón siguiente - oculto en móvil
-                    !isMobile && (
-                        <button
-                            type="button"
-                            className="carousel-button carousel-button-next"
-                            onClick={() =>
-                                moveCarousel(1, setCurrentIndex, products.length)
-                            }
-                            aria-label="Siguiente producto"
-                        >
-                            <i
-                                className="fas fa-chevron-right"
-                                aria-hidden
-                            />
-                        </button>
-                    )
                 )}
             </div>
             <div className="carousel-indicators">
-                {products.map((_, index) => (
+                {Array.from({ length: totalItems }).map((_, index) => (
                     <button
                         key={`indicator-${index}`}
                         type="button"

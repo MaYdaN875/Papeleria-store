@@ -61,6 +61,7 @@ export function Navbar() {
     const navigate = useNavigate()
     const location = useLocation()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isMenuClosing, setIsMenuClosing] = useState(false)
 
     const handleContactClick = useCallback(() => {
         showNotification("¡Nos pondremos en contacto pronto!")
@@ -84,8 +85,16 @@ export function Navbar() {
     )
 
     const handleCategoryClick = (categoryId: string) => {
+        closeMenu()
         navigate(`/all-products?category=${categoryId}`)
-        setIsMobileMenuOpen(false)
+    }
+
+    const closeMenu = () => {
+        setIsMenuClosing(true)
+        setTimeout(() => {
+            setIsMobileMenuOpen(false)
+            setIsMenuClosing(false)
+        }, 500)
     }
 
     return (
@@ -114,6 +123,16 @@ export function Navbar() {
                     />
 
                     <div className="header-right">
+                        <button
+                            type="button"
+                            className="btn-categories"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Abrir menú de categorías"
+                            aria-expanded={isMobileMenuOpen}
+                            title="Categorías"
+                        >
+                            <i className="fas fa-bars" aria-hidden="true" />
+                        </button>
                         <Link
                             to="/login"
                             className="btn-login"
@@ -146,19 +165,6 @@ export function Navbar() {
 
                 <nav className="navbar" aria-label="Categorías de productos">
                     <div className="navbar-container">
-                        {/* Hamburguesa solo en móvil */}
-                        <button
-                            type="button"
-                            className="hamburger-menu"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            aria-label="Abrir menú de categorías"
-                            aria-expanded={isMobileMenuOpen}
-                        >
-                            <span className="hamburger-line" />
-                            <span className="hamburger-line" />
-                            <span className="hamburger-line" />
-                        </button>
-
                         {/* Categorías en desktop, ocultas en móvil */}
                         <div className="navbar-categories">
                             {CATEGORIES.map((category) => (
@@ -175,16 +181,16 @@ export function Navbar() {
                 {isMobileMenuOpen && (
                     <>
                         <div
-                            className="mobile-menu-backdrop"
-                            onClick={() => setIsMobileMenuOpen(false)}
+                            className={`mobile-menu-backdrop ${isMenuClosing ? "closing" : ""}`}
+                            onClick={() => closeMenu()}
                         />
-                        <div className="mobile-menu">
-                            <div className="mobile-menu-header">
+                        <div className={`mobile-menu ${isMenuClosing ? "closing" : ""}`}>
+                            <div className={`mobile-menu-header ${isMenuClosing ? "closing" : ""}`}>
                                 <h2>Categorías</h2>
                                 <button
                                     type="button"
                                     className="close-menu-btn"
-                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    onClick={() => closeMenu()}
                                     aria-label="Cerrar menú"
                                 >
                                     <i className="fas fa-times" aria-hidden />
@@ -195,7 +201,7 @@ export function Navbar() {
                                     <button
                                         key={category.id}
                                         type="button"
-                                        className="mobile-category-btn"
+                                        className={`mobile-category-btn ${isMenuClosing ? "closing" : ""}`}
                                         onClick={() =>
                                             handleCategoryClick(category.id)
                                         }
