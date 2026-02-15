@@ -1,3 +1,7 @@
+/**
+ * Barra de búsqueda del header. Muestra sugerencias mientras se escribe; Enter navega a /all-products?search=...
+ * En móvil puede mostrar placeholder distinto. Sincronizado con query de la URL en AllProducts.
+ */
 import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router"
 import { useProductSearch } from "../../hooks/useProductSearch"

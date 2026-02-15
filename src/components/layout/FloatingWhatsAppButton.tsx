@@ -1,3 +1,4 @@
+/** Botón flotante que abre WhatsApp (wa.me) en nueva pestaña. */
 export function FloatingWhatsAppButton() {
     return (
         <a

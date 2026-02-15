@@ -1,3 +1,4 @@
+/** Toast temporal con mensaje; se cierra solo tras `duration` ms o por acción del usuario. */
 import { useEffect } from "react"
 
 export interface NotificationProps {

@@ -1,3 +1,7 @@
+/**
+ * Navbar principal: logo, buscador, botones Iniciar Sesión/Contactar, carrito y barra de categorías.
+ * En desktop muestra todo en una fila + categorías debajo; en móvil muestra menú hamburguesa y oculta botones/carrito.
+ */
 import { useCallback, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router"
 import { products } from "../../data/products"

@@ -1,3 +1,6 @@
+/**
+ * Pie de página: texto institucional, mapa embebido, enlaces legales y copyright.
+ */
 export function Footer() {
     return (
         <footer className="footer">

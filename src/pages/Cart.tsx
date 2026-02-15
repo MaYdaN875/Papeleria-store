@@ -4,8 +4,9 @@ import { useCart } from "../hooks/useCart"
 import { showNotification } from "../utils/notification"
 
 /**
- * COMPONENTE: Cart
- * Página del carrito de compras
+ * Página del carrito de compras.
+ * Lista ítems, cantidades, total; permite quitar ítems, cambiar cantidad y vaciar carrito.
+ * Redirige a inicio tras "Procesar compra" (simulado).
  */
 export const Cart = () => {
     const navigate = useNavigate()

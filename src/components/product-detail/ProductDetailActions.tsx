@@ -1,3 +1,4 @@
+/** Cantidad, botón agregar al carrito y stock. */
 import type { Product } from "../../types/Product"
 import { QuantitySelector } from "../ui/QuantitySelector"
 

@@ -1,3 +1,7 @@
+/**
+ * Tarjeta de producto: imagen, nombre, marca, rating, precio y botón agregar al carrito.
+ * Opcional badge (descuento/oferta) y precio tachado. Click en la tarjeta navega al detalle.
+ */
 import { useNavigate } from "react-router"
 import type { Product } from "../../types/Product"
 

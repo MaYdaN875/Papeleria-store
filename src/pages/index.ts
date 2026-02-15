@@ -1,3 +1,4 @@
+/** Re-exporta páginas de la app. */
 export { AllProducts } from "./AllProducts"
 export { Cart } from "./Cart"
 export { Home } from "./Home"

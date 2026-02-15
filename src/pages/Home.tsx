@@ -10,11 +10,11 @@ import { products } from "../data/products"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
 
-/* ================================
-   COMPONENTE: Home
-   Página principal con carrusel banner y carruseles de productos
-   (Destacados, Arte & Manualidades, Útiles Escolares)
-   ================================ */
+/**
+ * Página principal (inicio).
+ * Incluye banner carrusel, oferta especial y carruseles por categoría:
+ * Destacados, Arte & Manualidades, Útiles Escolares. Sincroniza contador del carrito al montar.
+ */
 
 const FEATURED_IDS = [1, 2, 3, 4, 5, 6]
 

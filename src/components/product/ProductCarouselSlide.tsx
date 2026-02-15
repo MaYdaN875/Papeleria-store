@@ -1,3 +1,6 @@
+/**
+ * Una slide del carrusel de productos: imagen, badge, precio, botón agregar. Click navega al detalle.
+ */
 import type { Product } from "../../types/Product"
 
 export type ProductCarouselSlideConfig = {

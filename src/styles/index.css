@@ -1,3 +1,4 @@
+/* Punto de entrada de estilos: imports globales, variables CSS y estilos base. */
 @import url('normalize.css');
 @import url('animations.css');
 @import url('Navbar.css');

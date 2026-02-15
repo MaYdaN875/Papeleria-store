@@ -9,11 +9,10 @@ import {
 import { getProductById } from "../data/products"
 import { addProductToCart } from "../utils/cart"
 
-/* ================================
-   PÁGINA: ProductDetail
-   Detalle de un producto individual.
-   Orquesta ProductDetailImage, Info, Actions y Shipping.
-   ================================ */
+/**
+ * Página de detalle de un producto por ID en la URL (/product/:id).
+ * Muestra imagen, info, precio, selector de cantidad, envío y botón agregar al carrito.
+ */
 
 const ORIGINAL_PRICES: Record<number, number> = {
     1: 89.99,

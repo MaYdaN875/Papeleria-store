@@ -1,3 +1,4 @@
+/** Modelo de producto usado en listados, detalle, carruseles y búsqueda. */
 export type Product = {
     id: number
     name: string

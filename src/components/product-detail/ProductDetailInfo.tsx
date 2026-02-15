@@ -1,3 +1,4 @@
+/** Bloque de información: nombre, marca, rating, precios y descripción. */
 import type { Product } from "../../types/Product"
 
 export interface ProductDetailInfoProps {

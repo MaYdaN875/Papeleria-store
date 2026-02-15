@@ -1,8 +1,8 @@
+/**
+ * Panel de filtros para AllProducts: categorías (productos), marcas, mayoreo/menudeo, rango de precio.
+ * Emite onFilterChange al cambiar cualquier filtro. Usado en sidebar (desktop) y drawer (móvil).
+ */
 import { useCallback, useState } from "react"
-
-/* ================================
-   TIPOS E INTERFACES
-   ================================ */
 
 export interface FilterState {
     productos: string[]
@@ -15,10 +15,6 @@ export interface FilterState {
 export interface FilterPanelProps {
     readonly onFilterChange: (filters: FilterState) => void
 }
-
-/* ================================
-   FUNCIONES DE DATOS
-   ================================ */
 
 const getProducts = (): string[] => {
     return [

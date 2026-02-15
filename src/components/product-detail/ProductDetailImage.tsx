@@ -1,3 +1,4 @@
+/** Imagen del producto en la página de detalle (ruta o emoji placeholder). */
 import type { Product } from "../../types/Product"
 
 export interface ProductDetailImageProps {

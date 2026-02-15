@@ -153,8 +153,8 @@
     background: var(--color-white);
     color: var(--color-primary);
     border: 1px solid var(--color-border);
-    width: 48px;
-    height: 48px;
+    width: 54px;
+    height: 54px;
     border-radius: var(--radius-full);
     cursor: pointer;
     display: flex;
@@ -163,7 +163,7 @@
     transition: var(--transition-normal);
     box-shadow: var(--shadow-sm);
     flex-shrink: 0;
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .carousel-arrow:hover:not(:disabled) {
@@ -244,6 +244,8 @@
     border: 1px solid var(--color-border-light);
     transition: var(--transition-normal);
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
 }
 
 .product-card:hover {
@@ -301,9 +303,17 @@
     color: white;
 }
 
-/* Información del producto */
+/* Información del producto: flex para que el botón quede abajo alineado */
 .product-info {
     padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.product-info .btn-add-cart {
+    margin-top: auto;
 }
 
 .product-info h4 {
@@ -361,11 +371,11 @@
     background: var(--color-primary);
     color: white;
     border: none;
-    padding: 10px 14px;
+    padding: 12px 16px;
     border-radius: var(--radius-md);
     cursor: pointer;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     transition: var(--transition-normal);
 }
 
@@ -764,9 +774,10 @@
         padding: 0 10px;
     }
 
-    /* Indicadores de carrusel más accesibles en móvil */
+    /* Indicadores más cerca del carrusel */
     .carousel-indicators {
-        margin-top: 20px;
+        margin-top: 12px;
+        margin-bottom: 6px;
         gap: 8px;
     }
 }

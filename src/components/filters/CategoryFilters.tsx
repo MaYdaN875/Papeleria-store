@@ -1,3 +1,4 @@
+/** Filtro por categoría: botones Todos, Escolares, Escritura, etc. Un solo activo; notifica onFilter(categoryId). */
 import { useState } from "react"
 
 export type CategoryFilter = {

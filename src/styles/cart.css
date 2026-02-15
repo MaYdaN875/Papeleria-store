@@ -5,7 +5,7 @@
 
 .cart-main {
   background: var(--color-light-bg);
-  padding: 24px;
+  padding: 12px 24px 48px;
   min-height: calc(100vh - 200px);
   max-width: 900px;
   margin: 0 auto;
@@ -13,7 +13,7 @@
 
 .cart-empty-container {
   text-align: center;
-  padding: 48px 24px;
+  padding: 32px 24px;
   max-width: 480px;
   margin: 0 auto;
   background: var(--color-white);

@@ -1,3 +1,7 @@
+/**
+ * Carrusel horizontal de productos con flechas y, en laptop, botón "Ver más" al final.
+ * En móvil incluye swipe y tarjeta "Ver más"; en desktop solo productos y botón Ver más a la derecha.
+ */
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
 import { useIsMobile } from "../../hooks/useIsMobile"
@@ -30,9 +34,9 @@ function moveCarousel(
     })
 }
 
-// Lista total de items (productos + 1 para la tarjeta "Ver Más")
-function getTotalItems(productsLength: number): number {
-    return productsLength + 1
+// En móvil: productos + tarjeta "Ver Más". En laptop: solo productos (el "Ver más" es el botón derecho).
+function getTotalItems(productsLength: number, isMobile: boolean): number {
+    return isMobile ? productsLength + 1 : productsLength
 }
 
 export function ProductCarousel({
@@ -45,10 +49,8 @@ export function ProductCarousel({
 }: ProductCarouselProps) {
     const navigate = useNavigate()
     const [currentIndex, setCurrentIndex] = useState(0)
-    // Hook para detectar si es dispositivo móvil (breakpoint por defecto 768px)
     const isMobile = useIsMobile()
-    // Total de items (productos + tarjeta "Ver Más")
-    const totalItems = getTotalItems(products.length)
+    const totalItems = getTotalItems(products.length, isMobile)
     // Referencia del carousel para eventos táctiles
     const carouselRef = useTouchCarousel({
         onSwipeLeft: () => moveCarousel(1, setCurrentIndex, totalItems),
@@ -125,8 +127,8 @@ export function ProductCarousel({
                                 </div>
                             )
                         })}
-                        {/* Tarjeta "Ver Más" al final del carrusel */}
-                        {seeMorePath && (() => {
+                        {/* Tarjeta "Ver Más" solo en móvil; en laptop el botón derecho hace esa función */}
+                        {seeMorePath && isMobile && (() => {
                             const seeMoreIndex = products.length
                             const isActive = seeMoreIndex === currentIndex
                             const offset = seeMoreIndex - currentIndex
@@ -160,21 +162,30 @@ export function ProductCarousel({
                         })()}
                     </div>
                 </div>
-                {/* Botón siguiente - oculto en móvil */}
+                {/* Botón siguiente: en laptop al final se convierte en "Ver más" */}
                 {!isMobile && (
-                    <button
-                        type="button"
-                        className="carousel-button carousel-button-next"
-                        onClick={() =>
-                            moveCarousel(1, setCurrentIndex, totalItems)
-                        }
-                        aria-label="Siguiente producto"
-                    >
-                        <i
-                            className="fas fa-chevron-right"
-                            aria-hidden
-                        />
-                    </button>
+                    currentIndex === totalItems - 1 && seeMorePath ? (
+                        <button
+                            type="button"
+                            className="carousel-button carousel-button-next carousel-button-vermas"
+                            onClick={() => navigate(seeMorePath)}
+                            aria-label="Ver más productos"
+                        >
+                            <span className="carousel-button-vermas-text">Ver más</span>
+                            <i className="fas fa-arrow-right" aria-hidden />
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            className="carousel-button carousel-button-next"
+                            onClick={() =>
+                                moveCarousel(1, setCurrentIndex, totalItems)
+                            }
+                            aria-label="Siguiente producto"
+                        >
+                            <i className="fas fa-chevron-right" aria-hidden />
+                        </button>
+                    )
                 )}
             </div>
             <div className="carousel-indicators">

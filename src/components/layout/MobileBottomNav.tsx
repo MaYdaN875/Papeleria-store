@@ -1,10 +1,8 @@
+/**
+ * Barra de navegación inferior en móvil: Inicio, Productos, Cuenta, Carrito.
+ * Solo visible en viewports pequeños; resalta la ruta activa.
+ */
 import { Link, useLocation } from "react-router"
-
-/* ================================
-   COMPONENTE: MobileBottomNav
-   Navbar inferior para dispositivos móviles
-   Estilo Mercado Libre/Amazon con iconos y etiquetas
-   ================================ */
 
 export function MobileBottomNav() {
     const location = useLocation()

@@ -1,3 +1,4 @@
+/** Cabecera de página con botón Volver, título y subtítulo (ej. AllProducts). */
 import { useNavigate } from "react-router"
 
 export interface PageHeaderProps {

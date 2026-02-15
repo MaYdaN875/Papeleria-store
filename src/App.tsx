@@ -1,11 +1,21 @@
+/**
+ * Raíz de la aplicación God Art.
+ * Define rutas, layout global (Navbar, Footer, botón WhatsApp, nav móvil) y
+ * comportamiento de scroll al cambiar de página. Oculta header/footer en login y signup.
+ */
+import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router";
 import { FloatingWhatsAppButton, Footer, MobileBottomNav, Navbar } from "./components/layout";
 import { AllProducts, Cart, Home, Login, ProductDetail, SignUp } from "./pages";
 
 function App() {
   const location = useLocation();
-  
-  // No mostrar navbar y footer en login y signup
+
+  /** Scroll al inicio en cada cambio de ruta (evita heredar posición de la página anterior). */
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
 
   return (

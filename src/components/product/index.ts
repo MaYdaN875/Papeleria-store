@@ -1,3 +1,4 @@
+/** Re-exporta componentes de producto (tarjeta, carrusel, slide). */
 export { ProductCard, type ProductCardBadge } from "./ProductCard"
 export {
     ProductCarousel,

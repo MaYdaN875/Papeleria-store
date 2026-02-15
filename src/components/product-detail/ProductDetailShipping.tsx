@@ -1,3 +1,4 @@
+/** Texto de envío gratis, devoluciones y garantía. */
 export function ProductDetailShipping() {
     return (
         <div className="product-detail__shipping">

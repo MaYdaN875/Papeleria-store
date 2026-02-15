@@ -1,3 +1,7 @@
+/**
+ * Desplegable de una categoría en la barra del navbar: label + ítems con iconos/colores.
+ * Hover abre el panel; click en ítem navega a /all-products?category=id. Cierra al salir o por timeout.
+ */
 import { useRef, useState } from "react"
 import { useNavigate } from "react-router"
 import "../../styles/category-dropdown.css"

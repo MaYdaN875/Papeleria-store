@@ -13,10 +13,11 @@ import { filterProductsBySearch } from "../hooks/useProductSearch"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
 
-/* ================================
-   COMPONENTE: AllProducts
-   Página completa con todos los productos y filtros por categoría
-   ================================ */
+/**
+ * Página "Todos los productos".
+ * Muestra grid de productos con filtros (categoría, marcas, precio, mayoreo/menudeo),
+ * búsqueda por URL (?search=) y vista adaptada a móvil (drawer de filtros).
+ */
 
 function getBrand(product: Product): string {
     return product.description.split(" ")[0] ?? ""
@@ -48,9 +49,7 @@ function filterProducts(productsList: Product[], filters: FilterState): Product[
     })
 }
 
-/* ================================
-   Hook para detectar viewport mobile
-   ================================ */
+/** Detecta si el viewport es móvil (≤480px) para mostrar filtros en drawer. */
 function useIsMobile(): boolean {
     const [isMobile, setIsMobile] = useState<boolean | null>(null)
 

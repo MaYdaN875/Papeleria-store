@@ -1,3 +1,7 @@
+/**
+ * Lógica del carrito: almacenamiento en localStorage, agregar/quitar ítems,
+ * sincronizar contadores en navbar y nav móvil (cartCount, mobileCartCount).
+ */
 import { showNotification } from './notification'
 
 const CART_STORAGE_KEY = 'cart'

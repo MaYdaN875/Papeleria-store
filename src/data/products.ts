@@ -1,3 +1,6 @@
+/**
+ * Catálogo de productos y helper getProductById para la página de detalle.
+ */
 import { Product } from "../types/Product"
 
 export function getProductById(id: number | string): Product | undefined {

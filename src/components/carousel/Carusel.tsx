@@ -1,3 +1,7 @@
+/**
+ * Carrusel genérico: tipo "banner" (home), "offers" o "products". Navegación por flechas e indicadores;
+ * swipe en móvil, autoplay. Renderiza slides según type.
+ */
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
 import { useIsMobile } from "../../hooks/useIsMobile"
