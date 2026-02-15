@@ -85,7 +85,7 @@ export function SearchBar({
                 <input
                     ref={inputRef}
                     type="text"
-                    placeholder={isMobile ? "Buscar productos, marcas..." : placeholder}
+                    placeholder={isMobile ? "Buscar productos..." : placeholder}
                     id="searchInput"
                     value={displayQuery}
                     onChange={handleSearch}
