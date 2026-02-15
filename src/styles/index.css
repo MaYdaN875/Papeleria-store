@@ -18,40 +18,47 @@
    ESTILOS GENERALES Y VARIABLES
    ================================ */
 
-/* Variables de color */
+/* Variables de color - Papelería moderna */
 :root {
-  /* Colores principales - Tonos cálidos y suaves */
-  --color-primary: #5B7C99;
-  /* Azul grisáceo suave */
-  --color-secondary: #A89968;
-  /* Arena/beige cálido */
-  --color-accent: #D4956B;
-  /* Terracota suave */
-  --color-success: #8BA894;
-  /* Verde grisáceo suave */
-  --color-warning: #C9A876;
-  /* Dorado arena suave */
+  /* Primarios - Teal profundo (confianza, papelería) */
+  --color-primary: #1a5f6e;
+  --color-primary-hover: #154a57;
+  --color-primary-light: #e8f2f4;
 
-  /* Colores de fondo - Degradados cálidos */
-  --color-white: #F5EFE7;
-  /* Blanco crema cálido */
-  --color-light-bg: #FAF7F2;
-  /* Fondo muy claro cálido */
-  --color-dark-bg: #4A4A4A;
-  /* Gris suave oscuro */
+  /* Secundario - Gris cálido */
+  --color-secondary: #6b5b52;
+  --color-secondary-light: #f5f2ef;
 
-  /* Colores de texto */
-  --color-text-dark: #1a1a1a;
-  --color-text-light: #666666;
-  --color-text-muted: #999999;
+  /* Acento - Coral/terracota (CTAs, ofertas) */
+  --color-accent: #c75b4a;
+  --color-accent-hover: #b04a3a;
+  --color-accent-light: #fdf0ee;
 
-  /* Otros colores */
-  --color-border: #E0E0E0;
-  --color-shadow: rgba(0, 0, 0, 0.1);
+  /* Estados */
+  --color-success: #2d8f6f;
+  --color-success-light: #e8f5f0;
+  --color-warning: #c9a227;
+  --color-warning-light: #faf5e4;
+
+  /* Fondos */
+  --color-white: #ffffff;
+  --color-light-bg: #faf8f5;
+  --color-surface: #ffffff;
+  --color-dark-bg: #2c2c2c;
+
+  /* Texto */
+  --color-text-dark: #1f2937;
+  --color-text-light: #5a6575;
+  --color-text-muted: #8b95a5;
+
+  /* Bordes y sombras */
+  --color-border: #e8e6e3;
+  --color-border-light: #f0eeeb;
+  --color-shadow: rgba(26, 95, 110, 0.08);
   --color-whatsapp: #25D366;
 
   /* Fuentes */
-  --font-family: 'Poppins', 'Inter', sans-serif;
+  --font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
   --font-size-sm: 12px;
   --font-size-base: 14px;
   --font-size-lg: 16px;
@@ -67,11 +74,18 @@
   --spacing-xl: 32px;
   --spacing-2xl: 48px;
 
+  /* Radios - Diseño suave */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
   /* Sombras */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
-  --shadow-xl: 0 12px 36px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 1px 3px rgba(26, 95, 110, 0.06);
+  --shadow-md: 0 4px 14px rgba(26, 95, 110, 0.1);
+  --shadow-lg: 0 12px 32px rgba(26, 95, 110, 0.12);
+  --shadow-xl: 0 20px 48px rgba(26, 95, 110, 0.14);
 
   /* Transiciones */
   --transition-fast: 0.2s ease;

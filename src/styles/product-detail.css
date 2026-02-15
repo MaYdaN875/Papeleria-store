@@ -19,12 +19,9 @@
 
 /* Imagen */
 .product-detail__image {
-    background: linear-gradient(
-        135deg,
-        var(--color-primary) 0%,
-        var(--color-secondary) 100%
-    );
-    border-radius: 12px;
+    background: var(--color-light-bg);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
     height: 400px;
     display: flex;
     align-items: center;
@@ -95,7 +92,7 @@
 .product-detail__price-current {
     font-size: 36px;
     font-weight: 700;
-    color: var(--color-accent);
+    color: var(--color-primary);
 }
 
 /* QuantitySelector */

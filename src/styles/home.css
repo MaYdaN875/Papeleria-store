@@ -1,540 +1,463 @@
 /* ================================
-   HOME - Banner, secciones y carruseles
-   (diseños de src/index.css)
+   HOME - Banner y secciones
+   Diseño papelería: limpio, cálido, responsive
    ================================ */
 
 /* BANNER PRINCIPAL */
 .banner-principal {
-    background: linear-gradient(180deg, #F4DCC9 0%, #F0D9C0 100%);
-    color: #1a1a1a;
-    padding: 100px 20px;
-    text-align: center;
-    animation: fadeInUp 0.6s ease;
+  background: linear-gradient(160deg, #f5f7fa 0%, #eef2f5 50%, #e8eef2 100%);
+  color: var(--color-text-dark);
+  padding: 80px 24px 100px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.carousel-banner .carousel-track {
-    gap: 40px;
+.banner-principal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(26, 95, 110, 0.06) 0%, transparent 60%);
+  pointer-events: none;
 }
 
-.banner-card {
-    display: none;
-}
-
-/* Fusion carousel (banner) */
+/* Carrusel banner (fusion) */
 .fusion-carousel {
-    background: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    height: 350px;
-    min-height: 350px;
+  background: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  height: 340px;
+  min-height: 340px;
+  position: relative;
+  z-index: 1;
 }
 
 .fusion-carousel-wrapper {
-    width: 100%;
-    overflow: visible;
-    border-radius: 0;
-    background: none;
-    height: 350px;
-    min-height: 350px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 100%;
+  overflow: visible;
+  border-radius: 0;
+  background: none;
+  height: 340px;
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fusion-slide {
-    width: 100%;
-    height: 350px;
-    min-height: 350px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    position: relative;
-    transition: transform 0.4s cubic-bezier(0.77, 0, 0.18, 1), opacity 0.4s cubic-bezier(0.77, 0, 0.18, 1);
-    opacity: 1;
-    z-index: 1;
+  width: 100%;
+  height: 340px;
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  position: relative;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease;
+  opacity: 1;
+  z-index: 1;
 }
 
 .fusion-slide-content {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 40px 60px;
-    gap: 40px;
-    background: none;
-    box-shadow: none;
-    border-radius: 0;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 48px;
+  gap: 48px;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border-light);
 }
 
 .fusion-slide-text {
-    flex: 1;
-    color: #1a1a1a;
-    text-align: left;
-    min-width: 320px;
+  flex: 1;
+  color: var(--color-text-dark);
+  text-align: left;
+  min-width: 280px;
 }
 
-.fusion-slide-img {
-    max-height: 260px;
-    max-width: 400px;
-    border-radius: 18px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-    background: #fff;
-    object-fit: contain;
+.fusion-slide-text h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin-bottom: 8px;
+  line-height: 1.25;
+}
+
+.fusion-slide-text p {
+  font-size: 1rem;
+  color: var(--color-text-light);
+  line-height: 1.5;
 }
 
 .fusion-badge {
-    background: #fff;
-    color: #1a1a1a;
-    font-weight: 700;
-    border-radius: 18px;
-    padding: 6px 18px;
-    display: inline-block;
-    margin-bottom: 18px;
-    font-size: 18px;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  display: inline-block;
+  margin-bottom: 14px;
+  font-size: 0.8rem;
 }
 
 .fusion-oldprice {
-    color: #1a1a1a;
-    opacity: 0.7;
-    font-size: 18px;
-    text-decoration: line-through;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  text-decoration: line-through;
+  margin-right: 8px;
 }
 
 .fusion-sku {
-    color: #1a1a1a;
-    opacity: 0.8;
-    font-size: 16px;
-    margin-top: 8px;
+  color: var(--color-text-light);
+  font-size: 0.875rem;
+  margin-top: 6px;
+}
+
+.fusion-slide-img {
+  max-height: 220px;
+  max-width: 320px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  background: var(--color-light-bg);
+  object-fit: contain;
 }
 
 .fusion-arrow {
-    position: absolute !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    z-index: 10;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 10;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--color-white) !important;
+  color: var(--color-primary) !important;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-normal);
+}
+
+.fusion-arrow:hover {
+  background: var(--color-primary-light) !important;
+  transform: translateY(-50%) scale(1.05) !important;
 }
 
 .fusion-arrow.prev-btn {
-    left: 24px !important;
-    right: auto;
+  left: 20px !important;
+  right: auto;
 }
 
 .fusion-arrow.next-btn {
-    right: 24px !important;
-    left: auto;
+  right: 20px !important;
+  left: auto;
 }
 
 @keyframes fusion-slide-left {
-    0% { opacity: 0; transform: translateX(80px); }
-    100% { opacity: 1; transform: translateX(0); }
+  0% { opacity: 0; transform: translateX(40px); }
+  100% { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes fusion-slide-right {
-    0% { opacity: 0; transform: translateX(-80px); }
-    100% { opacity: 1; transform: translateX(0); }
+  0% { opacity: 0; transform: translateX(-40px); }
+  100% { opacity: 1; transform: translateX(0); }
 }
 
 .fusion-slide.animating.slide-left {
-    animation: fusion-slide-left 0.4s cubic-bezier(0.77, 0, 0.18, 1);
+  animation: fusion-slide-left 0.4s ease;
 }
 
 .fusion-slide.animating.slide-right {
-    animation: fusion-slide-right 0.4s cubic-bezier(0.77, 0, 0.18, 1);
+  animation: fusion-slide-right 0.4s ease;
 }
 
-/* SECCIÓN DE PRODUCTOS - Mobile first: sin padding horizontal */
+/* SECCIÓN PRODUCTOS */
 .products-section {
-    padding: 30px 0 60px;
-    background-color: #F5E6C8;
-    overflow-x: hidden;
+  padding: 48px 0 72px;
+  background: var(--color-light-bg);
+  overflow-x: hidden;
 }
 
 @media (min-width: 768px) {
-    .products-section {
-        padding: 40px 15px 80px 15px;
-    }
+  .products-section {
+    padding: 56px 20px 80px;
+  }
 }
 
 @media (min-width: 1024px) {
-    .products-section {
-        padding: 60px 20px;
-    }
-}
-
-/* Título de las secciones */
-.section-title {
-    font-size: 3.5rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 20px;
-    letter-spacing: -1px;
-    background: linear-gradient(135deg, #D4956B 0%, #A89968 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: fadeInUp 0.6s ease;
-    position: relative;
-    padding-top: 30px;
-}
-
-.section-title::before {
-    content: '';
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 4px;
-    background: linear-gradient(90deg, #D4956B, #A89968);
-    border-radius: 2px;
-}
-
-.section-subtitle {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #5B7C99;
-    text-align: center;
-    margin-bottom: 40px;
-    letter-spacing: 0.3px;
-    animation: fadeInUp 0.6s ease 0.1s backwards;
+  .products-section {
+    padding: 64px 24px 96px;
+  }
 }
 
 /* Títulos de carruseles por categoría */
 .carousel-title {
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: #3a3a3a;
-    margin: 60px 0 40px 0;
-    text-align: center;
-    letter-spacing: -1px;
-    background: linear-gradient(135deg, #D4956B 0%, #A89968 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
-    animation: fadeInUp 0.6s ease-out;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin: 0 0 28px 0;
+  text-align: center;
+  letter-spacing: -0.02em;
+  position: relative;
+  padding-bottom: 12px;
 }
 
-.carousel-title::before {
-    content: '';
-    display: block;
-    width: 80px;
-    height: 4px;
-    background: linear-gradient(90deg, #D4956B, #A89968);
-    margin: 0 auto 20px;
-    border-radius: 2px;
+.carousel-title::after {
+  content: '';
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  border-radius: var(--radius-full);
 }
 
 /* Ver más productos */
 .see-more-container {
-    display: flex;
-    justify-content: center;
-    padding: 60px 20px 0;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px 0;
 }
 
 .btn-see-more {
-    background: linear-gradient(135deg, #B8E6D5 0%, #A8DEC9 100%);
-    color: #1a1a1a;
-    border: none;
-    padding: 14px 30px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: var(--font-size-lg);
-    transition: var(--transition-normal);
-    box-shadow: var(--shadow-md);
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  transition: var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
 }
 
 .btn-see-more:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
+  background: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-see-more:active {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
-.btn-see-more i {
-    transition: var(--transition-normal);
-}
-
-.btn-see-more:hover i {
-    transform: translateY(3px);
-}
-
-/* ================================
-   RESPONSIVE DESIGN - MÓVIL
-   ================================ */
+/* ========== RESPONSIVE HOME ========== */
 
 @media (max-width: 1024px) {
-    .banner-principal {
-        padding: 80px 20px;
-    }
+  .banner-principal {
+    padding: 60px 20px 80px;
+  }
 
-    .fusion-slide-content {
-        padding: 30px 40px;
-        gap: 30px;
-    }
+  .fusion-carousel,
+  .fusion-carousel-wrapper,
+  .fusion-slide {
+    height: 300px;
+    min-height: 300px;
+  }
 
-    .fusion-slide-img {
-        max-height: 220px;
-        max-width: 320px;
-    }
+  .fusion-slide-content {
+    padding: 24px 32px;
+    gap: 32px;
+  }
 
-    .fusion-slide-text h1 {
-        font-size: 2.2rem;
-    }
+  .fusion-slide-text h1 {
+    font-size: 1.5rem;
+  }
 
-    .fusion-slide-text p {
-        font-size: 1rem;
-    }
+  .fusion-slide-img {
+    max-height: 180px;
+    max-width: 260px;
+  }
 
-    .section-title {
-        font-size: 2.8rem;
-    }
-
-    .carousel-title {
-        font-size: 2.8rem;
-    }
+  .carousel-title {
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+  }
 }
 
 @media (max-width: 768px) {
-    .banner-principal {
-        padding: 60px 15px;
-    }
+  .banner-principal {
+    padding: 40px 16px 60px;
+  }
 
-    .fusion-carousel {
-        height: 380px;
-        min-height: 380px;
-    }
+  .fusion-carousel,
+  .fusion-carousel-wrapper,
+  .fusion-slide {
+    min-height: 430px;
+    height: auto;
+  }
 
-    .fusion-carousel-wrapper {
-        height: 380px;
-        min-height: 380px;
-        overflow: hidden;
-    }
+  .fusion-slide-content {
+    flex-direction: column;
+    padding: 20px 20px;
+    gap: 20px;
+    text-align: center;
+  }
 
-    .fusion-slide {
-        height: 380px;
-        min-height: 380px;
-        overflow: hidden;
-    }
+  .fusion-slide-text {
+    text-align: center;
+    min-width: auto;
+  }
 
-    .fusion-slide-content {
-        flex-direction: column;
-        padding: 14px 14px;
-        gap: 10px;
-        justify-content: center;
-        overflow: hidden;
-    }
+  .fusion-slide-text h1 {
+    font-size: 1.35rem;
+  }
 
-    .fusion-slide-text {
-        text-align: center;
-        min-width: auto;
-    }
+  .fusion-slide-text p {
+    font-size: 0.9rem;
+  }
 
-    .fusion-slide-text h1 {
-        font-size: 1.6rem;
-    }
+  .fusion-slide-content {
+    overflow: visible;
+  }
 
-    .fusion-slide-text p {
-        font-size: 0.9rem;
-    }
+  .fusion-slide-img {
+    max-height: 250px;
+    height: auto;
+    max-width: 100%;
+    width: auto;
+    object-fit: contain;
+    display: block;
+  }
 
-    .fusion-slide-img {
-        max-height: 180px;
-        max-width: 250px;
-    }
+  .fusion-badge {
+    font-size: 0.75rem;
+    padding: 5px 12px;
+  }
 
-    .fusion-badge {
-        font-size: 13px;
-        padding: 4px 12px;
-    }
+  .fusion-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
 
-    .fusion-arrow.prev-btn {
-        left: 8px !important;
-    }
+  .fusion-arrow.prev-btn {
+    left: 10px !important;
+  }
 
-    .fusion-arrow.next-btn {
-        right: 8px !important;
-    }
+  .fusion-arrow.next-btn {
+    right: 10px !important;
+  }
 
-    .section-title {
-        font-size: 2rem;
-        padding-top: 20px;
-        margin-bottom: 15px;
-    }
+  .carousel-title {
+    font-size: 1.35rem;
+    margin: 0 0 20px 0;
+  }
 
-    .section-title::before {
-        width: 60px;
-        height: 3px;
-    }
+  .carousel-title::after {
+    width: 40px;
+  }
 
-    .section-subtitle {
-        font-size: 0.95rem;
-        margin-bottom: 30px;
-    }
+  .see-more-container {
+    padding: 32px 16px 0;
+  }
 
-    .carousel-title {
-        font-size: 2rem;
-        margin: 40px 0 30px 0;
-    }
+  .btn-see-more {
+    padding: 11px 24px;
+    font-size: 0.95rem;
+  }
 
-    .carousel-title::before {
-        width: 60px;
-        height: 3px;
-        margin-bottom: 15px;
-    }
-
-    .see-more-container {
-        padding: 40px 15px 0;
-    }
-
-    .btn-see-more {
-        padding: 12px 24px;
-        font-size: 0.95rem;
-    }
+  .products-section {
+    padding-bottom: calc(72px + 72px);
+  }
 }
 
 @media (max-width: 480px) {
-    .banner-principal {
-        padding: 30px 10px;
-    }
+  .banner-principal {
+    padding: 24px 12px 40px;
+  }
 
-    .fusion-carousel {
-        height: 380px !important;
-        min-height: 380px !important;
-        margin-top: 0 !important;
-    }
+  .fusion-carousel,
+  .fusion-carousel-wrapper,
+  .fusion-slide {
+    min-height: 410px;
+    height: auto;
+  }
 
-    .fusion-carousel-wrapper {
-        height: 380px !important;
-        min-height: 380px !important;
-    }
+  .fusion-slide-content {
+    padding: 16px 14px;
+    gap: 14px;
+  }
 
-    .fusion-slide {
-        height: 380px !important;
-        min-height: 380px !important;
-    }
+  .fusion-slide-text h1 {
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+  }
 
-    .fusion-slide-content {
-        padding: 14px 10px !important;
-        gap: 10px !important;
-        flex-direction: column !important;
-        overflow: hidden;
-    }
+  .fusion-slide-text p {
+    font-size: 0.8rem;
+  }
 
-    .fusion-slide-text {
-        text-align: center;
-        overflow: hidden;
-    }
+  .fusion-slide-content {
+    overflow: visible;
+  }
 
-    .fusion-slide-text h1 {
-        font-size: 1.3rem;
-        margin-bottom: 4px;
-    }
+  .fusion-slide-img {
+    max-height: 230px;
+    height: auto;
+    max-width: 100%;
+    width: auto;
+    object-fit: contain;
+    display: block;
+  }
 
-    .fusion-slide-text p {
-        font-size: 0.8rem;
-        margin-bottom: 3px;
-        line-height: 1.15;
-    }
+  .fusion-badge {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+  }
 
-    .fusion-slide-img {
-        max-height: 160px !important;
-        max-width: 200px !important;
-        border-radius: 10px;
-    }
+  .fusion-oldprice {
+    font-size: 0.8rem;
+  }
 
-    .fusion-badge {
-        font-size: 11px;
-        padding: 3px 10px;
-        margin-bottom: 6px;
-    }
+  .fusion-sku {
+    font-size: 0.75rem;
+  }
 
-    .fusion-oldprice {
-        font-size: 12px;
-    }
+  .carousel-title {
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
 
-    .fusion-sku {
-        font-size: 11px;
-    }
+  .carousel-title::after {
+    width: 32px;
+    height: 2px;
+  }
 
-    .section-title {
-        font-size: 1.5rem;
-        padding-top: 15px;
-        margin-bottom: 10px;
-    }
+  .see-more-container {
+    padding: 28px 12px 0;
+  }
 
-    .section-title::before {
-        width: 50px;
-        height: 2px;
-    }
-
-    .section-subtitle {
-        font-size: 0.85rem;
-        margin-bottom: 20px;
-    }
-
-    .carousel-title {
-        font-size: 1.5rem;
-        margin: 30px 0 20px 0;
-    }
-
-    .carousel-title::before {
-        width: 50px;
-        height: 2px;
-        margin-bottom: 10px;
-    }
-
-    .see-more-container {
-        padding: 30px 12px 0;
-    }
-
-    .btn-see-more {
-        padding: 10px 20px;
-        font-size: 0.9rem;
-    }
-
-    .btn-see-more i {
-        font-size: 1rem;
-    }
+  .btn-see-more {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 360px) {
-    .banner-principal {
-        padding: 30px 10px;
-    }
+  .fusion-slide-text h1 {
+    font-size: 1rem;
+  }
 
-    .fusion-slide-text h1 {
-        font-size: 1.1rem;
-    }
-
-    .section-title {
-        font-size: 1.3rem;
-    }
-
-    .carousel-title {
-        font-size: 1.3rem;
-    }
-}
-
-/* ================================
-   PADDING INFERIOR PARA NAVBAR MÓVIL
-   En móvil, agregar padding-bottom para evitar que el
-   navbar inferior se superponga al contenido
-   ================================ */
-@media (max-width: 768px) {
-    .products-section {
-        padding-bottom: calc(60px + 64px);
-        /* 60px original + 64px del navbar móvil */
-    }
+  .carousel-title {
+    font-size: 1.1rem;
+  }
 }
