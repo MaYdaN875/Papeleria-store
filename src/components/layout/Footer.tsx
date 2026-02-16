@@ -10,7 +10,7 @@ export function Footer() {
                         <h3>Info</h3>
                         <p>
                             God Art es la experiencia premium en la venta de artículos de papelería y útiles escolares
-                            en Santa Marta. Ofrecemos una variedad de productos de calidad superior, incluyendo bolígrafos,
+                            en San Joaquín. Ofrecemos una variedad de productos de calidad superior, incluyendo bolígrafos,
                             cuadernos, marcadores, papeles especiales y artículos de memorabilia. Nuestro enfoque es
                             brindar a nuestros clientes la oportunidad de encontrar todo lo que necesitan
                             para expresar su creatividad y profesionalismo.
