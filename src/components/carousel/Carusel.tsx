@@ -25,12 +25,17 @@ export function Carusel({ type = "offers" }: CarouselProps) {
         minSwipeDistance: 50,
     })
 
-    // Autoplay en desktop y móvil
+    // Autoplay: banner siempre; ofertas/products solo en desktop (en móvil sin auto)
     useEffect(() => {
-        // Activar autoplay con intervalo según dispositivo
-        const interval = setInterval(() => moveCarousel(1), isMobile ? 4000 : 5000)
-        return () => clearInterval(interval)
-    }, [currentIndex, animating, isMobile])
+        if (type === "banner") {
+            const interval = setInterval(() => moveCarousel(1), isMobile ? 4000 : 5000)
+            return () => clearInterval(interval)
+        }
+        if (!isMobile) {
+            const interval = setInterval(() => moveCarousel(1), 5000)
+            return () => clearInterval(interval)
+        }
+    }, [currentIndex, animating, isMobile, type])
 
     const moveCarousel = (dir: number) => {
         if (animating) return

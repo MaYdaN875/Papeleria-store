@@ -59,16 +59,16 @@ export function ProductCarousel({
         minSwipeDistance: 50,
     })
 
-    // Autoplay en desktop y móvil
+    // Autoplay solo en desktop; en móvil los carruseles no se mueven solos
     useEffect(() => {
-        // Activar autoplay con intervalo según dispositivo
+        if (isMobile) return
         const interval = setInterval(() => {
             setCurrentIndex((prev) => {
                 let next = prev + 1
                 if (next >= totalItems) next = 0
                 return next
             })
-        }, isMobile ? 4000 : 5000)
+        }, 5000)
         return () => clearInterval(interval)
     }, [totalItems, isMobile])
 
