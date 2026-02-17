@@ -6,7 +6,8 @@
 import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router";
 import { FloatingWhatsAppButton, Footer, MobileBottomNav, Navbar } from "./components/layout";
-import { AllProducts, Cart, Home, Login, ProductDetail, SignUp } from "./pages";
+import { AllProducts, AdminDashboard, AdminLogin, Cart, Home, Login, ProductDetail, SignUp } from "./pages";
+import { AdminRoute } from "./components/admin/AdminRoute";
 
 function App() {
   const location = useLocation();
@@ -16,11 +17,14 @@ function App() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  const hideLayout =
+    location.pathname === "/login" ||
+    location.pathname === "/signup" ||
+    location.pathname.startsWith("/admin");
 
   return (
     <>
-      {!isAuthPage && <Navbar />}
+      {!hideLayout && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/all-products" element={<AllProducts />} />
@@ -28,10 +32,14 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Route>
       </Routes>
-      {!isAuthPage && <FloatingWhatsAppButton />}
-      {!isAuthPage && <Footer />}
-      {!isAuthPage && <MobileBottomNav />}
+      {!hideLayout && <FloatingWhatsAppButton />}
+      {!hideLayout && <Footer />}
+      {!hideLayout && <MobileBottomNav />}
     </>
   )
 }
