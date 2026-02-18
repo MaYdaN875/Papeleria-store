@@ -22,9 +22,12 @@ export interface AdminProduct {
   categoryId: number;
   price: number;
   stock: number;
+  image: string;
   mayoreo: 0 | 1;
   menudeo: 0 | 1;
   category: string;
+  isOffer: 0 | 1;
+  offerPrice: number | null;
 }
 
 interface AdminProductsResponse {
@@ -56,6 +59,54 @@ interface AdminLogoutResponse {
   message?: string;
 }
 
+interface AdminImageUploadResponse {
+  ok: boolean;
+  message?: string;
+  imageUrl?: string;
+}
+
+export interface AdminOffer {
+  productId: number;
+  productName: string;
+  category: string;
+  originalPrice: number;
+  offerPrice: number;
+  stock: number;
+}
+
+interface AdminOffersResponse {
+  ok: boolean;
+  message?: string;
+  offers?: AdminOffer[];
+}
+
+interface AdminOfferMutationResponse {
+  ok: boolean;
+  message?: string;
+  offer?: AdminOffer;
+}
+
+export interface AdminSalesProductRow {
+  productId: number;
+  productName: string;
+  totalUnits: number;
+  totalRevenue: number;
+  totalOrders: number;
+}
+
+export interface AdminSalesTodaySummary {
+  totalRevenue: number;
+  totalUnits: number;
+  totalOrders: number;
+}
+
+interface AdminSalesTodayResponse {
+  ok: boolean;
+  message?: string;
+  summary?: AdminSalesTodaySummary;
+  products?: AdminSalesProductRow[];
+}
+
 export interface AdminCategory {
   id: number;
   name: string;
@@ -77,9 +128,12 @@ interface RawAdminProduct {
   category_id?: number | string;
   price: number | string;
   stock: number | string;
+  image?: string;
   mayoreo: RawBinaryFlag;
   menudeo: RawBinaryFlag;
   category: string;
+  is_offer?: RawBinaryFlag;
+  offer_price?: number | string | null;
 }
 
 interface RawAdminCategory {
@@ -89,8 +143,31 @@ interface RawAdminCategory {
   is_active?: RawBinaryFlag;
 }
 
+interface RawAdminOffer {
+  product_id: number | string;
+  product_name: string;
+  category: string;
+  original_price: number | string;
+  offer_price: number | string;
+  stock: number | string;
+}
+
+interface RawAdminSalesTodaySummary {
+  total_revenue: number | string;
+  total_units: number | string;
+  total_orders: number | string;
+}
+
+interface RawAdminSalesProductRow {
+  product_id: number | string;
+  product_name: string;
+  total_units: number | string;
+  total_revenue: number | string;
+  total_orders: number | string;
+}
+
 /** Convierte cualquier representación booleana a 0/1 homogéneo para UI. */
-function toBinaryFlag(value: RawAdminProduct["mayoreo"]): 0 | 1 {
+function toBinaryFlag(value: RawBinaryFlag | undefined): 0 | 1 {
   return value === 1 || value === "1" || value === true ? 1 : 0;
 }
 
@@ -102,9 +179,13 @@ function normalizeAdminProduct(raw: RawAdminProduct): AdminProduct {
     categoryId: Number(raw.category_id) || 0,
     price: Number(raw.price) || 0,
     stock: Number(raw.stock) || 0,
+    image: raw.image ?? "/images/boligrafos.jpg",
     mayoreo: toBinaryFlag(raw.mayoreo),
     menudeo: toBinaryFlag(raw.menudeo),
     category: raw.category ?? "",
+    isOffer: toBinaryFlag(raw.is_offer),
+    offerPrice:
+      raw.offer_price === null || raw.offer_price === undefined ? null : Number(raw.offer_price) || 0,
   };
 }
 
@@ -114,6 +195,35 @@ function normalizeAdminCategory(raw: RawAdminCategory): AdminCategory {
     name: raw.name ?? "",
     parentId: raw.parent_id === null || raw.parent_id === undefined ? null : Number(raw.parent_id),
     isActive: toBinaryFlag(raw.is_active ?? 1),
+  };
+}
+
+function normalizeAdminOffer(raw: RawAdminOffer): AdminOffer {
+  return {
+    productId: Number(raw.product_id) || 0,
+    productName: raw.product_name ?? "",
+    category: raw.category ?? "",
+    originalPrice: Number(raw.original_price) || 0,
+    offerPrice: Number(raw.offer_price) || 0,
+    stock: Number(raw.stock) || 0,
+  };
+}
+
+function normalizeAdminSalesSummary(raw: RawAdminSalesTodaySummary): AdminSalesTodaySummary {
+  return {
+    totalRevenue: Number(raw.total_revenue) || 0,
+    totalUnits: Number(raw.total_units) || 0,
+    totalOrders: Number(raw.total_orders) || 0,
+  };
+}
+
+function normalizeAdminSalesProductRow(raw: RawAdminSalesProductRow): AdminSalesProductRow {
+  return {
+    productId: Number(raw.product_id) || 0,
+    productName: raw.product_name ?? "",
+    totalUnits: Number(raw.total_units) || 0,
+    totalRevenue: Number(raw.total_revenue) || 0,
+    totalOrders: Number(raw.total_orders) || 0,
   };
 }
 
@@ -242,6 +352,7 @@ export interface UpdateAdminProductInput {
   name: string;
   price: number;
   stock: number;
+  imageUrl: string;
   mayoreo: 0 | 1;
   menudeo: 0 | 1;
 }
@@ -251,12 +362,22 @@ export interface CreateAdminProductInput {
   name: string;
   price: number;
   stock: number;
+  imageUrl: string;
   mayoreo: 0 | 1;
   menudeo: 0 | 1;
 }
 
 export interface DeleteAdminProductInput {
   id: number;
+}
+
+export interface UpsertAdminOfferInput {
+  productId: number;
+  offerPrice: number;
+}
+
+export interface RemoveAdminOfferInput {
+  productId: number;
 }
 
 /** Actualiza un producto existente en MySQL vía endpoint PHP. */
@@ -277,7 +398,15 @@ export async function updateAdminProduct(
       "Content-Type": "application/json",
       ...buildAuthHeaders(token),
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      id: payload.id,
+      name: payload.name,
+      price: payload.price,
+      stock: payload.stock,
+      image_url: payload.imageUrl,
+      mayoreo: payload.mayoreo,
+      menudeo: payload.menudeo,
+    }),
   });
 
   if (!response.ok) {
@@ -331,6 +460,7 @@ export async function createAdminProduct(
       name: payload.name,
       price: payload.price,
       stock: payload.stock,
+      image_url: payload.imageUrl,
       mayoreo: payload.mayoreo,
       menudeo: payload.menudeo,
     }),
@@ -439,5 +569,215 @@ export async function adminLogoutRequest(token: string): Promise<AdminLogoutResp
 
   const body = (await response.json()) as AdminLogoutResponse;
   return body;
+}
+
+/** Sube una imagen del producto al servidor y devuelve su URL pública. */
+export async function uploadAdminProductImage(
+  imageFile: File,
+  token: string
+): Promise<AdminImageUploadResponse> {
+  if (!API_BASE) {
+    return {
+      ok: false,
+      message: "Falta configurar VITE_API_URL para conectar con PHP.",
+    };
+  }
+
+  const formData = new FormData();
+  formData.append("image", imageFile);
+
+  const response = await fetch(`${API_BASE}/admin_product_image_upload.php`, {
+    method: "POST",
+    headers: buildAuthHeaders(token),
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<AdminImageUploadResponse>;
+    return {
+      ok: false,
+      message: errorBody.message ?? "No se pudo subir la imagen del producto.",
+    };
+  }
+
+  const body = (await response.json()) as AdminImageUploadResponse;
+  return body;
+}
+
+/** Lista de productos que están en oferta actualmente. */
+export async function fetchAdminOffers(token: string): Promise<AdminOffersResponse> {
+  if (!API_BASE) {
+    return {
+      ok: false,
+      message: "Falta configurar VITE_API_URL para conectar con PHP.",
+    };
+  }
+
+  const response = await fetch(`${API_BASE}/admin_offers_list.php`, {
+    headers: buildAuthHeaders(token),
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<AdminOffersResponse>;
+    return {
+      ok: false,
+      message: errorBody.message ?? "No se pudieron cargar las ofertas.",
+    };
+  }
+
+  const body = (await response.json()) as {
+    ok: boolean;
+    message?: string;
+    offers?: RawAdminOffer[];
+  };
+
+  if (!body.ok) {
+    return {
+      ok: false,
+      message: body.message ?? "No se pudieron cargar las ofertas.",
+    };
+  }
+
+  return {
+    ok: true,
+    message: body.message,
+    offers: (body.offers ?? []).map(normalizeAdminOffer),
+  };
+}
+
+/** Crea o actualiza una oferta para un producto específico. */
+export async function upsertAdminOffer(
+  payload: UpsertAdminOfferInput,
+  token: string
+): Promise<AdminOfferMutationResponse> {
+  if (!API_BASE) {
+    return {
+      ok: false,
+      message: "Falta configurar VITE_API_URL para conectar con PHP.",
+    };
+  }
+
+  const response = await fetch(`${API_BASE}/admin_offer_upsert.php`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...buildAuthHeaders(token),
+    },
+    body: JSON.stringify({
+      product_id: payload.productId,
+      offer_price: payload.offerPrice,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<AdminOfferMutationResponse>;
+    return {
+      ok: false,
+      message: errorBody.message ?? "No se pudo guardar la oferta.",
+    };
+  }
+
+  const body = (await response.json()) as {
+    ok: boolean;
+    message?: string;
+    offer?: RawAdminOffer;
+  };
+
+  if (!body.ok || !body.offer) {
+    return {
+      ok: false,
+      message: body.message ?? "No se pudo guardar la oferta.",
+    };
+  }
+
+  return {
+    ok: true,
+    message: body.message ?? "Oferta guardada correctamente.",
+    offer: normalizeAdminOffer(body.offer),
+  };
+}
+
+/** Quita una oferta existente sin borrar el producto original. */
+export async function removeAdminOffer(
+  payload: RemoveAdminOfferInput,
+  token: string
+): Promise<AdminOfferMutationResponse> {
+  if (!API_BASE) {
+    return {
+      ok: false,
+      message: "Falta configurar VITE_API_URL para conectar con PHP.",
+    };
+  }
+
+  const response = await fetch(`${API_BASE}/admin_offer_remove.php`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...buildAuthHeaders(token),
+    },
+    body: JSON.stringify({
+      product_id: payload.productId,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<AdminOfferMutationResponse>;
+    return {
+      ok: false,
+      message: errorBody.message ?? "No se pudo quitar la oferta.",
+    };
+  }
+
+  const body = (await response.json()) as AdminOfferMutationResponse;
+  return body;
+}
+
+/** Consulta ventas del día para módulo de ingresos del admin. */
+export async function fetchAdminSalesToday(token: string): Promise<AdminSalesTodayResponse> {
+  if (!API_BASE) {
+    return {
+      ok: false,
+      message: "Falta configurar VITE_API_URL para conectar con PHP.",
+    };
+  }
+
+  const response = await fetch(`${API_BASE}/admin_sales_today.php`, {
+    headers: buildAuthHeaders(token),
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<AdminSalesTodayResponse>;
+    return {
+      ok: false,
+      message: errorBody.message ?? "No se pudieron cargar los ingresos del día.",
+    };
+  }
+
+  const body = (await response.json()) as {
+    ok: boolean;
+    message?: string;
+    summary?: RawAdminSalesTodaySummary;
+    products?: RawAdminSalesProductRow[];
+  };
+
+  if (!body.ok) {
+    return {
+      ok: false,
+      message: body.message ?? "No se pudieron cargar los ingresos del día.",
+    };
+  }
+
+  return {
+    ok: true,
+    message: body.message,
+    summary: normalizeAdminSalesSummary(
+      body.summary ?? {
+        total_revenue: 0,
+        total_units: 0,
+        total_orders: 0,
+      }
+    ),
+    products: (body.products ?? []).map(normalizeAdminSalesProductRow),
+  };
 }
 

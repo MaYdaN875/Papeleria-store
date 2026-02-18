@@ -16,8 +16,11 @@ try {
   $pdo = adminGetPdo();
   adminRequireSession($pdo);
 
+  $offerSql = adminOfferSqlParts($pdo, 'p', 'po');
+  $imageSql = adminImageSqlParts($pdo, 'p', 'pimg');
+
   $stmt = $pdo->query("
-    SELECT 
+    SELECT
       p.id,
       p.name,
       p.category_id,
@@ -25,20 +28,19 @@ try {
       p.stock,
       p.mayoreo,
       p.menudeo,
+      {$offerSql['select']},
+      {$imageSql['select']},
       c.name AS category
     FROM products p
     LEFT JOIN categories c ON c.id = p.category_id
+    {$offerSql['join']}
+    {$imageSql['join']}
     WHERE p.is_active = 1
     ORDER BY p.id DESC
   ");
 
   $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-  foreach ($products as &$product) {
-    $product['category_id'] = (int)$product['category_id'];
-    $product['mayoreo'] = $product['mayoreo'] ? 1 : 0;
-    $product['menudeo'] = $product['menudeo'] ? 1 : 0;
-  }
+  $products = array_map('adminNormalizeProductRow', $products);
 
   adminJsonResponse(200, [
     'ok' => true,

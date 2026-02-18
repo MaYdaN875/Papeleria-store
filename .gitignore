@@ -25,3 +25,7 @@ dist-ssr
 .env
 .env
 .env.*
+
+# Uploaded product images (server runtime)
+api/uploads/products/*
+!api/uploads/products/.gitkeep

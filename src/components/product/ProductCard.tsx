@@ -16,7 +16,11 @@ export interface ProductCardProps {
     onAddToCart: () => void
 }
 
-function StarRating({ rating }: { rating: number }) {
+function isImageSource(value: string): boolean {
+    return value.startsWith("/") || /^https?:\/\//i.test(value)
+}
+
+function StarRating({ rating }: Readonly<{ rating: number }>) {
     const full = Math.floor(rating)
     const hasHalf = rating % 1 >= 0.5
     return (
@@ -42,7 +46,7 @@ export function ProductCard({
     brand,
     rating = 5,
     onAddToCart,
-}: ProductCardProps) {
+}: Readonly<ProductCardProps>) {
     const navigate = useNavigate()
 
     const handleClick = () => navigate(`/product/${product.id}`)
@@ -53,7 +57,7 @@ export function ProductCard({
     const content = (
         <>
             <div className="product-image">
-                {product.image.startsWith("/") ? (
+                {isImageSource(product.image) ? (
                     <img src={product.image} alt={product.name} />
                 ) : (
                     <div className="product-placeholder">

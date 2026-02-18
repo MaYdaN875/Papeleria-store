@@ -12,7 +12,13 @@ Estos archivos van en tu servidor Hostinger, dentro de `public_html/api/`
 - `admin_product_create.php` - Endpoint para crear productos
 - `admin_product_update.php` - Endpoint para editar productos
 - `admin_product_delete.php` - Endpoint para eliminación física de productos
-- `setup.sql` - SQL para crear tabla `admin_users` y usuario de prueba
+- `admin_offers_list.php` - Lista productos con oferta activa
+- `admin_offer_upsert.php` - Crea o actualiza oferta por producto
+- `admin_offer_remove.php` - Quita oferta sin borrar producto
+- `admin_sales_today.php` - Resumen de ingresos/ventas del día
+- `admin_product_image_upload.php` - Sube imágenes de productos (archivo)
+- `products_list_public.php` - Catálogo público para la tienda (sin sesión admin)
+- `setup.sql` - SQL para crear tablas `admin_users`, `admin_sessions` y `product_offers`
 - `generar_hash.php` - Script temporal para generar hash de contraseñas (borrar después de usar)
 
 ## Pasos rápidos
@@ -22,8 +28,14 @@ Estos archivos van en tu servidor Hostinger, dentro de `public_html/api/`
    - Cambia `TU_USUARIO_DB` por tu usuario de base de datos
    - Cambia `TU_PASSWORD_DB` por tu contraseña de base de datos
    - (Los encuentras en: Panel Hostinger → Bases de datos → Detalles)
-3. **Ejecuta** `setup.sql` en phpMyAdmin para crear/actualizar tabla de admin y sesiones
+3. **Ejecuta** `setup.sql` en phpMyAdmin para crear/actualizar tablas de admin, sesiones y ofertas
 4. **Configura** `.env` en tu proyecto React con `VITE_API_URL=https://tu-dominio.com/api`
+
+## Subida de imágenes (nuevo)
+
+- El endpoint `admin_product_image_upload.php` guarda archivos en `public_html/api/uploads/products/`.
+- Asegúrate de que esa ruta tenga permisos de escritura en Hostinger.
+- Formatos permitidos: JPG, PNG, WEBP, GIF (máximo 5MB).
 
 ## Importante sobre seguridad de sesión
 

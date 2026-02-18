@@ -27,6 +27,20 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
     ON DELETE CASCADE
 );
 
+-- Tabla de ofertas por producto (no elimina producto original)
+CREATE TABLE IF NOT EXISTS product_offers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL UNIQUE,
+  offer_price DECIMAL(10,2) NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_product_offers_active (is_active),
+  CONSTRAINT fk_product_offers_product
+    FOREIGN KEY (product_id) REFERENCES products(id)
+    ON DELETE CASCADE
+);
+
 -- Insertar usuario admin de prueba
 -- Email: admin@godart.com
 -- Contraseña: password

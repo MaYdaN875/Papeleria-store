@@ -7,16 +7,24 @@
  * - Permitir edición rápida de producto (nombre, precio, stock, mayoreo/menudeo).
  * - Persistir cambios usando admin_product_update.php.
  */
-import { FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   adminLogoutRequest,
   createAdminProduct,
   deleteAdminProduct,
+  fetchAdminOffers,
   fetchAdminCategories,
   fetchAdminProducts,
+  fetchAdminSalesToday,
+  removeAdminOffer,
   type AdminCategory,
+  type AdminOffer,
   type AdminProduct,
+  type AdminSalesProductRow,
+  type AdminSalesTodaySummary,
+  uploadAdminProductImage,
+  upsertAdminOffer,
   updateAdminProduct,
 } from "../services/adminApi";
 
@@ -24,6 +32,7 @@ interface ProductEditFormState {
   name: string;
   price: string;
   stock: string;
+  imageUrl: string;
   mayoreo: boolean;
   menudeo: boolean;
 }
@@ -33,18 +42,46 @@ interface ProductCreateFormState {
   categoryId: string;
   price: string;
   stock: string;
+  imageUrl: string;
   mayoreo: boolean;
   menudeo: boolean;
 }
 
+type AdminSectionView = "resumen" | "productos" | "ofertas" | "ingresos";
+
+function getImageValidationError(selectedFile: File): string {
+  const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  if (!allowedMimeTypes.includes(selectedFile.type))
+    return "Formato no permitido. Usa JPG, PNG, WEBP o GIF.";
+
+  if (selectedFile.size > 5 * 1024 * 1024)
+    return "La imagen debe pesar máximo 5MB.";
+
+  return "";
+}
+
 export function AdminDashboard() {
   const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState<AdminSectionView>("resumen");
   // Estado principal de datos del dashboard.
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [offers, setOffers] = useState<AdminOffer[]>([]);
+  const [salesSummary, setSalesSummary] = useState<AdminSalesTodaySummary>({
+    totalRevenue: 0,
+    totalUnits: 0,
+    totalOrders: 0,
+  });
+  const [salesByProduct, setSalesByProduct] = useState<AdminSalesProductRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isLoadingOffers, setIsLoadingOffers] = useState(true);
+  const [isLoadingSales, setIsLoadingSales] = useState(true);
   const [error, setError] = useState("");
+  const [offerError, setOfferError] = useState("");
+  const [offerSuccess, setOfferSuccess] = useState("");
+  const [salesError, setSalesError] = useState("");
+  const [salesMessage, setSalesMessage] = useState("");
   const [adminMode, setAdminMode] = useState<"api" | "unknown">("unknown");
   const [lastSyncAt, setLastSyncAt] = useState("");
 
@@ -53,27 +90,199 @@ export function AdminDashboard() {
   const [isSavingProduct, setIsSavingProduct] = useState(false);
   const [editError, setEditError] = useState("");
   const [editSuccess, setEditSuccess] = useState("");
+  const [editImageUploadError, setEditImageUploadError] = useState("");
+  const [editImageUploadSuccess, setEditImageUploadSuccess] = useState("");
+  const [isUploadingEditImage, setIsUploadingEditImage] = useState(false);
   const [editForm, setEditForm] = useState<ProductEditFormState>({
     name: "",
     price: "",
     stock: "",
+    imageUrl: "",
     mayoreo: true,
     menudeo: true,
   });
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
   const [createError, setCreateError] = useState("");
   const [createSuccess, setCreateSuccess] = useState("");
+  const [createImageUploadError, setCreateImageUploadError] = useState("");
+  const [createImageUploadSuccess, setCreateImageUploadSuccess] = useState("");
+  const [isUploadingCreateImage, setIsUploadingCreateImage] = useState(false);
   const [isDeletingProductId, setIsDeletingProductId] = useState<number | null>(null);
   const [deleteError, setDeleteError] = useState("");
   const [deleteSuccess, setDeleteSuccess] = useState("");
+  const [isSavingOfferProductId, setIsSavingOfferProductId] = useState<number | null>(null);
+  const [lowStockThreshold, setLowStockThreshold] = useState(5);
   const [createForm, setCreateForm] = useState<ProductCreateFormState>({
     name: "",
     categoryId: "",
     price: "",
     stock: "",
+    imageUrl: "",
     mayoreo: true,
     menudeo: true,
   });
+
+  const loadOffers = useCallback(async (token: string) => {
+    setIsLoadingOffers(true);
+    setOfferError("");
+    setOfferSuccess("");
+
+    try {
+      const result = await fetchAdminOffers(token);
+      if (!result.ok) {
+        setOfferError(result.message ?? "No se pudieron cargar las ofertas.");
+        setIsLoadingOffers(false);
+        return;
+      }
+
+      setOffers(result.offers ?? []);
+      setIsLoadingOffers(false);
+    } catch (offersLoadError) {
+      console.error(offersLoadError);
+      setOfferError("No se pudo conectar con la API para cargar ofertas.");
+      setIsLoadingOffers(false);
+    }
+  }, []);
+
+  const loadSalesToday = useCallback(async (token: string) => {
+    setIsLoadingSales(true);
+    setSalesError("");
+    setSalesMessage("");
+
+    try {
+      const result = await fetchAdminSalesToday(token);
+      if (!result.ok) {
+        setSalesError(result.message ?? "No se pudieron cargar los ingresos del día.");
+        setIsLoadingSales(false);
+        return;
+      }
+
+      setSalesSummary(
+        result.summary ?? {
+          totalRevenue: 0,
+          totalUnits: 0,
+          totalOrders: 0,
+        }
+      );
+      setSalesByProduct(result.products ?? []);
+      setSalesMessage(result.message ?? "");
+      setIsLoadingSales(false);
+    } catch (salesLoadError) {
+      console.error(salesLoadError);
+      setSalesError("No se pudo conectar con la API para cargar ingresos.");
+      setIsLoadingSales(false);
+    }
+  }, []);
+
+  function getOfferActionLabel(product: AdminProduct): string {
+    if (isSavingOfferProductId === product.id) return "Guardando...";
+    return product.isOffer === 1 ? "Quitar oferta" : "Poner oferta";
+  }
+
+  function getCreateSubmitLabel(): string {
+    if (isUploadingCreateImage) return "Subiendo imagen...";
+    if (isCreatingProduct) return "Creando...";
+    return "Crear producto";
+  }
+
+  function getEditSubmitLabel(): string {
+    if (isUploadingEditImage) return "Subiendo imagen...";
+    if (isSavingProduct) return "Guardando...";
+    return "Guardar cambios";
+  }
+
+  function setImageUploadLoading(targetForm: "create" | "edit", isLoading: boolean) {
+    if (targetForm === "create") {
+      setIsUploadingCreateImage(isLoading);
+      return;
+    }
+
+    setIsUploadingEditImage(isLoading);
+  }
+
+  function setImageUploadMessage(
+    targetForm: "create" | "edit",
+    message: string,
+    messageType: "error" | "success"
+  ) {
+    if (targetForm === "create") {
+      if (messageType === "error") {
+        setCreateImageUploadError(message);
+        setCreateImageUploadSuccess("");
+      } else {
+        setCreateImageUploadSuccess(message);
+        setCreateImageUploadError("");
+      }
+      return;
+    }
+
+    if (messageType === "error") {
+      setEditImageUploadError(message);
+      setEditImageUploadSuccess("");
+      return;
+    }
+
+    setEditImageUploadSuccess(message);
+    setEditImageUploadError("");
+  }
+
+  function setImageUrlInForm(targetForm: "create" | "edit", imageUrl: string) {
+    if (targetForm === "create") {
+      setCreateForm((prevForm) => ({ ...prevForm, imageUrl }));
+      return;
+    }
+
+    setEditForm((prevForm) => ({ ...prevForm, imageUrl }));
+  }
+
+  async function handleImageFileSelection(
+    event: ChangeEvent<HTMLInputElement>,
+    targetForm: "create" | "edit"
+  ) {
+    const selectedFile = event.target.files?.[0];
+    if (!selectedFile) return;
+
+    const validationMessage = getImageValidationError(selectedFile);
+    if (validationMessage) {
+      setImageUploadMessage(targetForm, validationMessage, "error");
+      event.target.value = "";
+      return;
+    }
+
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      setImageUploadMessage(targetForm, "Sesión no válida. Vuelve a iniciar sesión.", "error");
+      event.target.value = "";
+      return;
+    }
+
+    setImageUploadLoading(targetForm, true);
+    setImageUploadMessage(targetForm, "", "error");
+
+    try {
+      const uploadResult = await uploadAdminProductImage(selectedFile, token);
+      if (!uploadResult.ok || !uploadResult.imageUrl) {
+        setImageUploadMessage(
+          targetForm,
+          uploadResult.message ?? "No se pudo subir la imagen.",
+          "error"
+        );
+        setImageUploadLoading(targetForm, false);
+        event.target.value = "";
+        return;
+      }
+
+      setImageUrlInForm(targetForm, uploadResult.imageUrl ?? "");
+      setImageUploadMessage(targetForm, "Imagen subida correctamente.", "success");
+      setImageUploadLoading(targetForm, false);
+    } catch (uploadError) {
+      console.error(uploadError);
+      setImageUploadMessage(targetForm, "No se pudo conectar con la API para subir imagen.", "error");
+      setImageUploadLoading(targetForm, false);
+    } finally {
+      event.target.value = "";
+    }
+  }
 
   useEffect(() => {
     // Si no hay token, bloquea acceso al dashboard.
@@ -145,7 +354,9 @@ export function AdminDashboard() {
 
     void loadProducts();
     void loadCategories();
-  }, [navigate]);
+    void loadOffers(safeToken);
+    void loadSalesToday(safeToken);
+  }, [loadOffers, loadSalesToday, navigate]);
 
   useEffect(() => {
     if (!createForm.categoryId && categories.length > 0) {
@@ -178,10 +389,13 @@ export function AdminDashboard() {
     setEditingProductId(product.id);
     setEditError("");
     setEditSuccess("");
+    setEditImageUploadError("");
+    setEditImageUploadSuccess("");
     setEditForm({
       name: product.name,
       price: String(product.price),
       stock: String(product.stock),
+      imageUrl: product.image ?? "",
       mayoreo: product.mayoreo === 1,
       menudeo: product.menudeo === 1,
     });
@@ -191,6 +405,8 @@ export function AdminDashboard() {
     // Cierra formulario sin persistir cambios.
     setEditingProductId(null);
     setEditError("");
+    setEditImageUploadError("");
+    setEditImageUploadSuccess("");
   }
 
   async function handleDeleteProduct(product: AdminProduct) {
@@ -221,6 +437,9 @@ export function AdminDashboard() {
       setProducts((prevProducts) =>
         prevProducts.filter((currentProduct) => currentProduct.id !== result.deletedId)
       );
+      setOffers((prevOffers) =>
+        prevOffers.filter((currentOffer) => currentOffer.productId !== result.deletedId)
+      );
 
       if (editingProductId === result.deletedId) {
         setEditingProductId(null);
@@ -232,6 +451,129 @@ export function AdminDashboard() {
       console.error(deleteProductError);
       setDeleteError("No se pudo conectar con la API para eliminar el producto.");
       setIsDeletingProductId(null);
+    }
+  }
+
+  async function handleSetOffer(product: AdminProduct) {
+    const defaultPrice = product.offerPrice ?? product.price;
+    const promptValue = globalThis.prompt(
+      `Precio de oferta para "${product.name}"`,
+      String(defaultPrice)
+    );
+    if (promptValue === null) return;
+
+    const parsedOfferPrice = Number(promptValue);
+    if (Number.isNaN(parsedOfferPrice) || parsedOfferPrice < 0) {
+      setOfferError("El precio de oferta debe ser un número válido mayor o igual a 0.");
+      setOfferSuccess("");
+      return;
+    }
+    if (parsedOfferPrice >= product.price) {
+      setOfferError("La oferta debe ser menor al precio actual del producto.");
+      setOfferSuccess("");
+      return;
+    }
+
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      setOfferError("Sesión no válida. Vuelve a iniciar sesión.");
+      setOfferSuccess("");
+      return;
+    }
+
+    setOfferError("");
+    setOfferSuccess("");
+    setIsSavingOfferProductId(product.id);
+
+    try {
+      const result = await upsertAdminOffer(
+        {
+          productId: product.id,
+          offerPrice: parsedOfferPrice,
+        },
+        token
+      );
+
+      if (!result.ok || !result.offer) {
+        setOfferError(result.message ?? "No se pudo guardar la oferta.");
+        setIsSavingOfferProductId(null);
+        return;
+      }
+
+      const updatedOffer = result.offer;
+      setOffers((prevOffers) => {
+        const existingIndex = prevOffers.findIndex(
+          (existingOffer) => existingOffer.productId === updatedOffer.productId
+        );
+        if (existingIndex === -1) return [updatedOffer, ...prevOffers];
+
+        const nextOffers = [...prevOffers];
+        nextOffers[existingIndex] = updatedOffer;
+        return nextOffers;
+      });
+
+      setProducts((prevProducts) =>
+        prevProducts.map((currentProduct) =>
+          currentProduct.id === product.id
+            ? {
+                ...currentProduct,
+                isOffer: 1,
+                offerPrice: updatedOffer.offerPrice,
+              }
+            : currentProduct
+        )
+      );
+
+      setOfferSuccess("Oferta guardada correctamente.");
+      setIsSavingOfferProductId(null);
+    } catch (offerSaveError) {
+      console.error(offerSaveError);
+      setOfferError("No se pudo conectar con la API para guardar la oferta.");
+      setIsSavingOfferProductId(null);
+    }
+  }
+
+  async function handleRemoveOffer(productId: number) {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      setOfferError("Sesión no válida. Vuelve a iniciar sesión.");
+      setOfferSuccess("");
+      return;
+    }
+
+    setOfferError("");
+    setOfferSuccess("");
+    setIsSavingOfferProductId(productId);
+
+    try {
+      const result = await removeAdminOffer({ productId }, token);
+      if (!result.ok) {
+        setOfferError(result.message ?? "No se pudo eliminar la oferta.");
+        setIsSavingOfferProductId(null);
+        return;
+      }
+
+      setOffers((prevOffers) =>
+        prevOffers.filter((currentOffer) => currentOffer.productId !== productId)
+      );
+      setProducts((prevProducts) =>
+        prevProducts.map((currentProduct) =>
+          currentProduct.id === productId
+            ? {
+                ...currentProduct,
+                isOffer: 0,
+                offerPrice: null,
+              }
+            : currentProduct
+        )
+      );
+
+      setOfferSuccess("Oferta eliminada correctamente.");
+      setIsSavingOfferProductId(null);
+    } catch (offerRemoveError) {
+      console.error(offerRemoveError);
+      setOfferError("No se pudo conectar con la API para eliminar la oferta.");
+      setIsSavingOfferProductId(null);
     }
   }
 
@@ -279,6 +621,7 @@ export function AdminDashboard() {
         name: createForm.name.trim(),
         price: parsedPrice,
         stock: parsedStock,
+        imageUrl: createForm.imageUrl.trim(),
         mayoreo: createForm.mayoreo ? 1 : 0,
         menudeo: createForm.menudeo ? 1 : 0,
       }, token);
@@ -297,6 +640,7 @@ export function AdminDashboard() {
         name: "",
         price: "",
         stock: "",
+        imageUrl: "",
         mayoreo: true,
         menudeo: true,
       }));
@@ -349,6 +693,7 @@ export function AdminDashboard() {
         name: editForm.name.trim(),
         price: parsedPrice,
         stock: parsedStock,
+        imageUrl: editForm.imageUrl.trim(),
         mayoreo: editForm.mayoreo ? 1 : 0,
         menudeo: editForm.menudeo ? 1 : 0,
       }, token);
@@ -386,8 +731,10 @@ export function AdminDashboard() {
   }
 
   const totalCategories = new Set(products.map((product) => product.category)).size;
-  const lowStockCount = products.filter((product) => product.stock <= 5).length;
+  const lowStockProducts = products.filter((product) => product.stock <= lowStockThreshold);
+  const lowStockCount = lowStockProducts.length;
   const mayoreoEnabledCount = products.filter((product) => product.mayoreo === 1).length;
+  const offersCount = products.filter((product) => product.isOffer === 1).length;
 
   return (
     <div className="admin-layout">
@@ -401,9 +748,31 @@ export function AdminDashboard() {
         <nav className="admin-sidebar-nav">
           <button
             type="button"
-            className="admin-nav-item admin-nav-item--active"
+            className={`admin-nav-item ${activeSection === "resumen" ? "admin-nav-item--active" : ""}`}
+            onClick={() => setActiveSection("resumen")}
           >
             Resumen
+          </button>
+          <button
+            type="button"
+            className={`admin-nav-item ${activeSection === "productos" ? "admin-nav-item--active" : ""}`}
+            onClick={() => setActiveSection("productos")}
+          >
+            Productos
+          </button>
+          <button
+            type="button"
+            className={`admin-nav-item ${activeSection === "ofertas" ? "admin-nav-item--active" : ""}`}
+            onClick={() => setActiveSection("ofertas")}
+          >
+            Ofertas
+          </button>
+          <button
+            type="button"
+            className={`admin-nav-item ${activeSection === "ingresos" ? "admin-nav-item--active" : ""}`}
+            onClick={() => setActiveSection("ingresos")}
+          >
+            Ingresos
           </button>
           <button
             type="button"
@@ -429,15 +798,17 @@ export function AdminDashboard() {
       </aside>
 
       <main className="admin-main">
-        <header className="admin-main-header admin-main-header--hero">
+        {activeSection === "resumen" && (
+          <>
+            <header className="admin-main-header admin-main-header--hero">
           <div className="admin-header-topline">
             <div>
               <span className="admin-header-eyebrow">Panel privado</span>
               <h1>Control de catálogo</h1>
               <p>
-                El panel ya opera con backend seguro (sesión por token).
-                Por petición del equipo, buscador/filtros por categoría quedan en pausa
-                mientras se define la nueva estructura de categorías.
+                Panel actualizado con módulos de productos, ofertas e ingresos.
+                Ahora puedes activar ofertas por producto y revisar alertas de surtido
+                antes de que se agote inventario.
               </p>
             </div>
             <div className="admin-header-actions">
@@ -459,13 +830,13 @@ export function AdminDashboard() {
           </div>
           <div className="admin-status-chips">
             <span className="admin-status-chip admin-status-chip--ok">Seguridad backend activa</span>
-            <span className="admin-status-chip">Categorías en revisión</span>
-            <span className="admin-status-chip">Buscador y filtros pospuestos</span>
+            <span className="admin-status-chip">Productos con oferta: {offersCount}</span>
+            <span className="admin-status-chip">Alertas de inventario: {lowStockCount}</span>
             {lastSyncAt && <span className="admin-status-chip">Sincronizado: {lastSyncAt}</span>}
           </div>
-        </header>
+            </header>
 
-        <section className="admin-cards-grid">
+            <section className="admin-cards-grid">
           <article className="admin-card">
             <h2>Catálogo de productos</h2>
             <p className="admin-card-number">{products.length}</p>
@@ -476,19 +847,19 @@ export function AdminDashboard() {
           </article>
 
           <article className="admin-card">
-            <h2>Categorías detectadas</h2>
-            <p className="admin-card-number">{totalCategories}</p>
+            <h2>Ofertas activas</h2>
+            <p className="admin-card-number">{offersCount}</p>
             <p className="admin-card-description">
-              Conteo temporal para referencia durante esta etapa.
+              Productos con precio promocional activo.
             </p>
-            <p className="admin-card-note">El módulo de categorías se ajustará después de cambios en la web principal.</p>
+            <p className="admin-card-note">Puedes quitarlas sin borrar el producto de la base de datos.</p>
           </article>
 
           <article className="admin-card">
             <h2>Stock bajo</h2>
             <p className="admin-card-number">{lowStockCount}</p>
             <p className="admin-card-description">
-              Productos con stock menor o igual a 5 unidades.
+              Productos con stock menor o igual a {lowStockThreshold} unidades.
             </p>
             <p className="admin-card-note">Métrica visual para decisiones rápidas de inventario.</p>
           </article>
@@ -499,18 +870,54 @@ export function AdminDashboard() {
             <p className="admin-card-description">
               Productos que actualmente permiten compra por mayoreo.
             </p>
-            <p className="admin-card-note">Este dato ayuda a validar estrategia comercial del catálogo.</p>
+            <p className="admin-card-note">Categorías detectadas en catálogo: {totalCategories}.</p>
           </article>
-        </section>
+            </section>
+          </>
+        )}
 
-        <section className="admin-info-panel">
+        {activeSection === "productos" && (
+          <section className="admin-info-panel">
           <div className="admin-panel-header">
             <h2>Gestión de productos</h2>
             <p>
-              Se mantiene foco en CRUD de productos.
-              Buscador y filtros por categoría quedan pendientes hasta cerrar cambios de categorías.
+              Módulo principal para agregar, editar, eliminar y activar ofertas.
+              También incluye alertas de inventario para surtir antes de que se agoten productos.
             </p>
           </div>
+          <div className="admin-surface-card admin-stock-alerts-panel">
+            <div className="admin-stock-alerts-header">
+              <h3>Aviso de inventario</h3>
+              <label className="admin-threshold-label">
+                <span>Stock mínimo</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  className="admin-edit-input"
+                  value={lowStockThreshold}
+                  onChange={(event) => setLowStockThreshold(Math.max(1, Number(event.target.value) || 1))}
+                />
+              </label>
+            </div>
+            {lowStockProducts.length === 0 && (
+              <p className="admin-stock-alerts-empty">
+                No hay productos en nivel crítico con el umbral actual.
+              </p>
+            )}
+            {lowStockProducts.length > 0 && (
+              <ul className="admin-stock-alerts-list">
+                {lowStockProducts.map((product) => (
+                  <li key={product.id}>
+                    <span>{product.name}</span>
+                    <strong>Stock: {product.stock}</strong>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {offerError && <p className="admin-auth-error">{offerError}</p>}
+          {offerSuccess && <p className="admin-edit-success">{offerSuccess}</p>}
           <form className="admin-create-form admin-surface-card" onSubmit={handleCreateProduct}>
             <h3>Crear producto</h3>
 
@@ -572,7 +979,39 @@ export function AdminDashboard() {
                   }
                 />
               </label>
+
+              <label className="admin-edit-label">
+                <span>Imagen (URL)</span>
+                <input
+                  type="url"
+                  className="admin-edit-input"
+                  value={createForm.imageUrl}
+                  onChange={(event) =>
+                    setCreateForm((prevForm) => ({ ...prevForm, imageUrl: event.target.value }))
+                  }
+                  placeholder="https://..."
+                />
+              </label>
+
+              <label className="admin-edit-label">
+                <span>Imagen (archivo)</span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="admin-edit-input admin-edit-input--file"
+                  onChange={(event) => void handleImageFileSelection(event, "create")}
+                  disabled={isUploadingCreateImage}
+                />
+              </label>
             </div>
+
+            {createForm.imageUrl && (
+              <div className="admin-image-preview-wrap">
+                <img src={createForm.imageUrl} alt="Vista previa de producto" className="admin-image-preview" />
+              </div>
+            )}
+            {createImageUploadError && <p className="admin-auth-error">{createImageUploadError}</p>}
+            {createImageUploadSuccess && <p className="admin-edit-success">{createImageUploadSuccess}</p>}
 
             <div className="admin-edit-checks">
               <label>
@@ -604,9 +1043,9 @@ export function AdminDashboard() {
               <button
                 type="submit"
                 className="admin-row-action-button admin-row-action-button--save"
-                disabled={isCreatingProduct || categories.length === 0}
+                disabled={isCreatingProduct || isUploadingCreateImage || categories.length === 0}
               >
-                {isCreatingProduct ? "Creando..." : "Crear producto"}
+                {getCreateSubmitLabel()}
               </button>
             </div>
           </form>
@@ -632,6 +1071,7 @@ export function AdminDashboard() {
                     <th>Stock</th>
                     <th>Mayoreo</th>
                     <th>Menudeo</th>
+                    <th>Oferta</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -645,7 +1085,9 @@ export function AdminDashboard() {
                       <td>
                         <span
                           className={`admin-stock-pill ${
-                            product.stock <= 5 ? "admin-stock-pill--low" : "admin-stock-pill--ok"
+                            product.stock <= lowStockThreshold
+                              ? "admin-stock-pill--low"
+                              : "admin-stock-pill--ok"
                           }`}
                         >
                           {product.stock}
@@ -670,6 +1112,13 @@ export function AdminDashboard() {
                         </span>
                       </td>
                       <td>
+                        {product.isOffer === 1 && product.offerPrice !== null ? (
+                          <span className="admin-offer-price">${Number(product.offerPrice).toFixed(2)}</span>
+                        ) : (
+                          <span className="admin-flag admin-flag--off">Sin oferta</span>
+                        )}
+                      </td>
+                      <td>
                         <div className="admin-row-actions">
                           <button
                             type="button"
@@ -685,6 +1134,18 @@ export function AdminDashboard() {
                             disabled={isDeletingProductId === product.id}
                           >
                             {isDeletingProductId === product.id ? "Eliminando..." : "Eliminar"}
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-row-action-button admin-row-action-button--save"
+                            onClick={() =>
+                              product.isOffer === 1
+                                ? void handleRemoveOffer(product.id)
+                                : void handleSetOffer(product)
+                            }
+                            disabled={isSavingOfferProductId === product.id}
+                          >
+                            {getOfferActionLabel(product)}
                           </button>
                         </div>
                       </td>
@@ -737,7 +1198,39 @@ export function AdminDashboard() {
                     }
                   />
                 </label>
+
+                <label className="admin-edit-label">
+                  <span>Imagen (URL)</span>
+                  <input
+                    type="url"
+                    className="admin-edit-input"
+                    value={editForm.imageUrl}
+                    onChange={(event) =>
+                      setEditForm((prevForm) => ({ ...prevForm, imageUrl: event.target.value }))
+                    }
+                    placeholder="https://..."
+                  />
+                </label>
+
+                <label className="admin-edit-label">
+                  <span>Imagen (archivo)</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="admin-edit-input admin-edit-input--file"
+                    onChange={(event) => void handleImageFileSelection(event, "edit")}
+                    disabled={isUploadingEditImage}
+                  />
+                </label>
               </div>
+
+              {editForm.imageUrl && (
+                <div className="admin-image-preview-wrap">
+                  <img src={editForm.imageUrl} alt="Vista previa de producto" className="admin-image-preview" />
+                </div>
+              )}
+              {editImageUploadError && <p className="admin-auth-error">{editImageUploadError}</p>}
+              {editImageUploadSuccess && <p className="admin-edit-success">{editImageUploadSuccess}</p>}
 
               <div className="admin-edit-checks">
                 <label>
@@ -769,15 +1262,15 @@ export function AdminDashboard() {
                 <button
                   type="submit"
                   className="admin-row-action-button admin-row-action-button--save"
-                  disabled={isSavingProduct}
+                  disabled={isSavingProduct || isUploadingEditImage}
                 >
-                  {isSavingProduct ? "Guardando..." : "Guardar cambios"}
+                  {getEditSubmitLabel()}
                 </button>
                 <button
                   type="button"
                   className="admin-row-action-button admin-row-action-button--cancel"
                   onClick={cancelEditProduct}
-                  disabled={isSavingProduct}
+                  disabled={isSavingProduct || isUploadingEditImage}
                 >
                   Cancelar
                 </button>
@@ -788,7 +1281,126 @@ export function AdminDashboard() {
           {!editingProductId && editSuccess && <p className="admin-edit-success">{editSuccess}</p>}
           {deleteError && <p className="admin-auth-error">{deleteError}</p>}
           {deleteSuccess && <p className="admin-edit-success">{deleteSuccess}</p>}
-        </section>
+          </section>
+        )}
+
+        {activeSection === "ofertas" && (
+          <section className="admin-info-panel admin-module-section">
+          <div className="admin-panel-header">
+            <h2>Ofertas</h2>
+            <p>
+              Aquí se listan todos los productos en oferta con su precio actual y precio promocional.
+              Quitar oferta no borra el producto original.
+            </p>
+          </div>
+
+          {isLoadingOffers && <p>Cargando ofertas...</p>}
+          {!isLoadingOffers && offerError && <p className="admin-auth-error">{offerError}</p>}
+          {!isLoadingOffers && !offerError && offers.length === 0 && (
+            <p>No hay productos en oferta en este momento.</p>
+          )}
+          {!isLoadingOffers && !offerError && offers.length > 0 && (
+            <div className="admin-table-wrapper admin-surface-card">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio normal</th>
+                    <th>Precio oferta</th>
+                    <th>Ahorro</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {offers.map((offer) => (
+                    <tr key={offer.productId}>
+                      <td>{offer.productName}</td>
+                      <td>{offer.category}</td>
+                      <td>${offer.originalPrice.toFixed(2)}</td>
+                      <td>
+                        <span className="admin-offer-price">${offer.offerPrice.toFixed(2)}</span>
+                      </td>
+                      <td>${Math.max(0, offer.originalPrice - offer.offerPrice).toFixed(2)}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="admin-row-action-button admin-row-action-button--danger"
+                          onClick={() => void handleRemoveOffer(offer.productId)}
+                          disabled={isSavingOfferProductId === offer.productId}
+                        >
+                          {isSavingOfferProductId === offer.productId ? "Quitando..." : "Quitar oferta"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          </section>
+        )}
+
+        {activeSection === "ingresos" && (
+          <section className="admin-info-panel admin-module-section">
+          <div className="admin-panel-header">
+            <h2>Ingresos del día</h2>
+            <p>
+              Muestra ventas totales del día, cantidad de productos vendidos y número total de
+              ventas registradas.
+            </p>
+          </div>
+
+          {isLoadingSales && <p>Cargando ingresos del día...</p>}
+          {!isLoadingSales && salesError && <p className="admin-auth-error">{salesError}</p>}
+          {!isLoadingSales && !salesError && (
+            <>
+              {salesMessage && <p className="admin-sidebar-note admin-note-dark">{salesMessage}</p>}
+              <div className="admin-sales-summary-grid">
+                <article className="admin-surface-card admin-sales-summary-card">
+                  <h3>Total vendido hoy</h3>
+                  <p>${salesSummary.totalRevenue.toFixed(2)}</p>
+                </article>
+                <article className="admin-surface-card admin-sales-summary-card">
+                  <h3>Unidades vendidas</h3>
+                  <p>{salesSummary.totalUnits}</p>
+                </article>
+                <article className="admin-surface-card admin-sales-summary-card">
+                  <h3>Ventas registradas</h3>
+                  <p>{salesSummary.totalOrders}</p>
+                </article>
+              </div>
+
+              {salesByProduct.length === 0 ? (
+                <p className="admin-sales-empty">No hay detalle de productos vendidos hoy.</p>
+              ) : (
+                <div className="admin-table-wrapper admin-surface-card">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Producto</th>
+                        <th>Cantidad vendida</th>
+                        <th>Ingresos</th>
+                        <th>Número de ventas</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {salesByProduct.map((row) => (
+                        <tr key={row.productId}>
+                          <td>{row.productName}</td>
+                          <td>{row.totalUnits}</td>
+                          <td>${row.totalRevenue.toFixed(2)}</td>
+                          <td>{row.totalOrders}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+          </section>
+        )}
       </main>
     </div>
   );

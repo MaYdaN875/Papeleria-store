@@ -324,6 +324,71 @@
   border: 1px solid var(--color-border-light);
 }
 
+.admin-module-section {
+  margin-top: 4px;
+}
+
+.admin-stock-alerts-panel {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.admin-stock-alerts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.admin-stock-alerts-header h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.admin-threshold-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+}
+
+.admin-threshold-label .admin-edit-input {
+  width: 86px;
+  padding: 6px 8px;
+}
+
+.admin-stock-alerts-empty {
+  margin-top: var(--spacing-sm);
+  color: var(--color-text-light);
+  font-size: var(--font-size-sm);
+}
+
+.admin-stock-alerts-list {
+  margin-top: var(--spacing-sm);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+}
+
+.admin-stock-alerts-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: #fff9f8;
+  border: 1px solid #f5ddd8;
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  font-size: var(--font-size-sm);
+}
+
+.admin-stock-alerts-list li strong {
+  color: #a03d2d;
+}
+
 .admin-surface-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
@@ -444,6 +509,18 @@
 .admin-stock-pill--low {
   background: var(--color-accent-light);
   color: var(--color-accent);
+}
+
+.admin-offer-price {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  padding: 2px 9px;
+  background: #e8f9ef;
+  border: 1px solid #bce7cd;
+  color: #1f7a3c;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
 }
 
 .admin-flag {
@@ -574,6 +651,27 @@
   box-shadow: 0 0 0 2px rgba(26, 95, 110, 0.12);
 }
 
+.admin-edit-input--file {
+  padding: 6px 8px;
+}
+
+.admin-image-preview-wrap {
+  margin-top: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  display: inline-flex;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  background: #fdfdfd;
+}
+
+.admin-image-preview {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
 .admin-edit-checks {
   margin-top: var(--spacing-md);
   display: flex;
@@ -598,6 +696,53 @@
   margin-top: var(--spacing-sm);
   color: var(--color-success);
   font-size: var(--font-size-sm);
+}
+
+.admin-sales-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.admin-sales-summary-card {
+  padding: var(--spacing-md);
+}
+
+.admin-sales-summary-card h3 {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  margin-bottom: 4px;
+}
+
+.admin-sales-summary-card p {
+  font-size: 28px;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.admin-sales-empty {
+  color: var(--color-text-light);
+  font-size: var(--font-size-sm);
+}
+
+.admin-note-dark {
+  color: var(--color-text-light);
+}
+
+@media (max-width: 900px) {
+  .admin-stock-alerts-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-sales-summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-stock-alerts-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 /* ================================

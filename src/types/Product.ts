@@ -3,6 +3,9 @@ export type Product = {
     id: number
     name: string
     price: number
+    originalPrice?: number
+    discountPercentage?: number
+    isOffer?: boolean
     category: string
     description: string
     image: string

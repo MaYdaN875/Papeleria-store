@@ -1,12 +1,12 @@
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import { Carusel } from "../components/carousel"
 import {
-    //ProductCard,
     ProductCarousel,
     type ProductCarouselSlideConfig,
 } from "../components/product"
-import { products } from "../data/products"
+import { products as staticProducts } from "../data/products"
+import { fetchStoreProducts } from "../services/storeApi"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
 
@@ -16,34 +16,69 @@ import { addProductToCart, syncCartCount } from "../utils/cart"
  * Destacados, Arte & Manualidades, Útiles Escolares. Sincroniza contador del carrito al montar.
  */
 
-const FEATURED_IDS = [1, 2, 3, 4, 5, 6]
-
-const CAROUSEL_CONFIG: Record<number, ProductCarouselSlideConfig> = {
-    1: { badge: { type: "discount", value: "-20%" }, originalPrice: 89.99, brand: "Staedtler" },
-    2: { badge: { type: "sale", value: "HOT" }, brand: "Moleskine" },
-    3: { badge: { type: "discount", value: "-15%" }, originalPrice: 120, brand: "Copic" },
-    4: { badge: { type: "discount", value: "-25%" }, originalPrice: 150, brand: "Faber-Castell" },
-    5: { badge: { type: "sale", value: "NUEVO" }, brand: "Canson" },
-    6: { badge: { type: "discount", value: "-10%" }, originalPrice: 55, brand: "Esselte" },
-    8: { badge: { type: "discount", value: "-18%" }, originalPrice: 110, brand: "Faber-Castell" },
-    9: { badge: { type: "sale", value: "NUEVO" }, brand: "Staedtler" },
-    10: { badge: { type: "discount", value: "-15%" }, brand: "Staedtler" },
-}
-
 function getItemConfig(product: Product): ProductCarouselSlideConfig | undefined {
-    return CAROUSEL_CONFIG[product.id]
+    const brand = product.description.split(" ")[0] ?? ""
+
+    if (!product.originalPrice || product.originalPrice <= product.price) {
+        return {
+            brand,
+        }
+    }
+
+    const discountPercent = product.discountPercentage ??
+        Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+
+    return {
+        brand,
+        originalPrice: product.originalPrice,
+        badge: discountPercent > 0
+            ? { type: "discount", value: `-${discountPercent}%` }
+            : undefined,
+    }
 }
 
 export const Home = () => {
     const navigate = useNavigate()
+    const [storeProducts, setStoreProducts] = useState<Product[] | null>(null)
 
     useEffect(() => {
         syncCartCount()
+
+        async function loadStoreProducts() {
+            try {
+                const result = await fetchStoreProducts()
+                if (result.ok && result.products) {
+                    setStoreProducts(result.products)
+                } else {
+                    setStoreProducts(null)
+                }
+            } catch (loadError) {
+                console.error(loadError)
+                setStoreProducts(null)
+            }
+        }
+
+        void loadStoreProducts()
     }, [])
 
-    const featuredProducts = products.filter((p) => FEATURED_IDS.includes(p.id))
-    const artProducts = products.filter((p) => p.category === "Arte").slice(0, 5)
-    const schoolProducts = products.filter((p) => p.category === "Escolar").slice(0, 5)
+    const baseProducts = storeProducts ?? staticProducts
+
+    const featuredProducts = useMemo(
+        () => baseProducts.slice(0, 6),
+        [baseProducts]
+    )
+    const artProducts = useMemo(() => {
+        const matches = baseProducts.filter((p) =>
+            /arte|manualidades/i.test(p.category)
+        )
+        return (matches.length > 0 ? matches : baseProducts).slice(0, 5)
+    }, [baseProducts])
+    const schoolProducts = useMemo(() => {
+        const matches = baseProducts.filter((p) =>
+            /escolar|oficina/i.test(p.category)
+        )
+        return (matches.length > 0 ? matches : baseProducts).slice(0, 5)
+    }, [baseProducts])
 
     const handleAddToCart = useCallback((name: string, price: string) => {
         addProductToCart(name, price)

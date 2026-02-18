@@ -36,6 +36,20 @@ Se implementó un módulo admin funcional conectado a Hostinger:
    - endpoints protegidos exigen token Bearer
    - logout revoca sesión con `admin_logout.php`
    - helpers centralizados en `_admin_common.php`
+11. Se implementó módulo de ofertas:
+   - activar/quitar oferta por producto
+   - listado dedicado de ofertas activas en admin
+   - cálculo y visualización de precio original, precio oferta y ahorro
+12. Se implementó módulo de ingresos:
+   - resumen del día (total vendido, unidades y número de ventas)
+   - detalle por producto cuando existen tablas de ventas
+13. Se conectó la tienda al backend:
+   - listado público desde `products_list_public.php`
+   - catálogo y detalle ya no dependen solo de `products.ts`
+14. Se implementó carga de imagen por archivo desde admin:
+   - endpoint `admin_product_image_upload.php`
+   - almacenamiento en `api/uploads/products/`
+   - opción dual en admin: URL manual o archivo local
 
 ---
 
@@ -94,6 +108,39 @@ En la tabla se da clic en `Eliminar`:
 - el frontend quita la fila de la tabla (sin recargar)
 - al consultar `products` en phpMyAdmin, el registro ya no aparece
 
+### 6) Gestionar ofertas
+
+En productos se puede usar `Poner oferta`:
+- el frontend envía precio oferta a:
+  - `POST /api/admin_offer_upsert.php`
+- el backend valida que oferta < precio actual
+- se guarda/actualiza en `product_offers`
+- la tienda muestra porcentaje real y precio tachado
+
+Para quitar oferta:
+- `POST /api/admin_offer_remove.php`
+- no borra el producto, solo desactiva la oferta
+
+### 7) Subir imagen local (archivo)
+
+En crear/editar producto:
+- se puede seleccionar archivo (`JPG`, `PNG`, `WEBP`, `GIF`, máx 5MB)
+- el frontend sube con:
+  - `POST /api/admin_product_image_upload.php` (multipart/form-data)
+- el backend guarda archivo en:
+  - `public_html/api/uploads/products/`
+- el formulario recibe URL pública y la guarda en `product_images`
+
+### 8) Tienda pública conectada a DB
+
+La tienda consulta:
+- `GET /api/products_list_public.php`
+
+Con esto:
+- productos nuevos del admin aparecen en `/all-products`
+- descuentos se reflejan en badges y precio original tachado
+- el detalle de producto usa datos reales del endpoint público
+
 ---
 
 ## Archivos clave modificados
@@ -110,10 +157,13 @@ En la tabla se da clic en `Eliminar`:
   Se implementó UI de login e integración con API de autenticación.
 
 - `src/pages/AdminDashboard.tsx`  
-  Se implementó dashboard, tabla, formulario de edición y mensajes de estado.
+  Se implementó dashboard modular (Resumen, Productos, Ofertas, Ingresos), CRUD, ofertas, alertas de stock y carga de imagen por archivo.
 
 - `src/services/adminApi.ts`  
-  Se centralizó login/listado/update y normalización de datos.
+  Se centralizó login/listado/update/create/delete, ofertas, ingresos y subida de imagen de producto.
+
+- `src/services/storeApi.ts`
+  Se conectó la tienda al endpoint público y se normalizaron precios/ofertas.
 
 - `src/styles/admin.css`  
   Se implementaron estilos del login y dashboard admin.
@@ -128,6 +178,12 @@ En la tabla se da clic en `Eliminar`:
 - `api/admin_product_delete.php`
 - `api/admin_logout.php`
 - `api/_admin_common.php`
+- `api/admin_offers_list.php`
+- `api/admin_offer_upsert.php`
+- `api/admin_offer_remove.php`
+- `api/admin_sales_today.php`
+- `api/admin_product_image_upload.php`
+- `api/products_list_public.php`
 
 Se configuraron estos endpoints con CORS por lista blanca y manejo seguro de errores.
 
@@ -152,6 +208,15 @@ Subir a `public_html/api/`:
 - `admin_categories_list.php`
 - `admin_product_create.php`
 - `admin_product_delete.php`
+- `admin_offers_list.php`
+- `admin_offer_upsert.php`
+- `admin_offer_remove.php`
+- `admin_sales_today.php`
+- `admin_product_image_upload.php`
+- `products_list_public.php`
+
+Además, asegurar carpeta:
+- `public_html/api/uploads/products/` (con permisos de escritura)
 
 Confirmar credenciales de DB:
 - en `_admin_common.php`
@@ -165,6 +230,7 @@ Confirmar credenciales de DB:
 - Hash de contraseña admin con `password_hash` / `password_verify`
 - Sesiones persistidas y revocables en backend (`admin_sessions`)
 - Endpoints protegidos con token Bearer
+- Subida de archivo con validación de tamaño y tipo MIME
 
 ---
 

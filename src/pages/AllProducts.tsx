@@ -8,8 +8,9 @@ import {
     ProductCard,
     type ProductCardBadge,
 } from "../components/product"
-import { products } from "../data/products"
+import { products as staticProducts } from "../data/products"
 import { filterProductsBySearch } from "../hooks/useProductSearch"
+import { fetchStoreProducts } from "../services/storeApi"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
 
@@ -24,11 +25,14 @@ function getBrand(product: Product): string {
 }
 
 function getBadgeForProduct(product: Product): ProductCardBadge | undefined {
-    const remainder = product.id % 3
-    if (remainder === 1) return { type: "discount", value: "-20%" }
-    if (remainder === 2) return { type: "sale", value: "HOT" }
-    if (remainder === 0) return { type: "discount", value: "-15%" }
-    return undefined
+    if (!product.originalPrice || product.originalPrice <= product.price) return undefined
+
+    const discountPercent = product.discountPercentage ??
+        Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+
+    if (discountPercent <= 0) return undefined
+
+    return { type: "discount", value: `-${discountPercent}%` }
 }
 
 function filterProducts(productsList: Product[], filters: FilterState): Product[] {
@@ -86,6 +90,9 @@ export const AllProducts = () => {
     })
     const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
     const [isClosing, setIsClosing] = useState(false)
+    const [storeProducts, setStoreProducts] = useState<Product[] | null>(null)
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true)
+    const [productsLoadError, setProductsLoadError] = useState("")
 
     const handleCloseDrawer = () => {
         setIsClosing(true)
@@ -99,14 +106,40 @@ export const AllProducts = () => {
         window.scrollTo(0, 0)
         syncCartCount()
         setIsFilterDrawerOpen(false) // Cerrar drawer al entrar a la página
+        async function loadStoreProducts() {
+            setIsLoadingProducts(true)
+            setProductsLoadError("")
+
+            try {
+                const result = await fetchStoreProducts()
+                if (!result.ok || !result.products) {
+                    setProductsLoadError(result.message ?? "No se pudo cargar catálogo desde la API.")
+                    setStoreProducts(null)
+                    setIsLoadingProducts(false)
+                    return
+                }
+
+                setStoreProducts(result.products)
+                setIsLoadingProducts(false)
+            } catch (loadError) {
+                console.error(loadError)
+                setProductsLoadError("No se pudo conectar con la API. Se muestra catálogo local.")
+                setStoreProducts(null)
+                setIsLoadingProducts(false)
+            }
+        }
+
+        void loadStoreProducts()
     }, [])
+
+    const baseProducts = storeProducts ?? staticProducts
 
     // Primero filtrar por búsqueda si existe, luego aplicar filtros adicionales
     const productsAfterSearch = useMemo(() => {
-        if (!searchQuery) return products
+        if (!searchQuery) return baseProducts
 
-        return filterProductsBySearch(products, searchQuery)
-    }, [searchQuery])
+        return filterProductsBySearch(baseProducts, searchQuery)
+    }, [baseProducts, searchQuery])
 
     const filteredProducts = useMemo(
         () => filterProducts(productsAfterSearch, filters),
@@ -155,9 +188,11 @@ export const AllProducts = () => {
 
                 {/* Backdrop del drawer cuando está abierto */}
                 {isMobile && isFilterDrawerOpen && (
-                    <div
+                    <button
+                        type="button"
                         className={`filter-drawer-backdrop active ${isClosing ? "closing" : ""}`}
                         onClick={() => handleCloseDrawer()}
+                        aria-label="Cerrar panel de filtros"
                     />
                 )}
 
@@ -182,6 +217,14 @@ export const AllProducts = () => {
                     </div>
 
                     <div className="products-content-area">
+                        {isLoadingProducts && (
+                            <p className="no-products-message">
+                                Cargando catálogo desde la base de datos...
+                            </p>
+                        )}
+                        {!isLoadingProducts && productsLoadError && (
+                            <p className="no-products-message">{productsLoadError}</p>
+                        )}
                         <div className="all-products-grid" id="allProductsGrid">
                             {filteredProducts.length === 0 ? (
                                 <p className="no-products-message">
@@ -194,6 +237,7 @@ export const AllProducts = () => {
                                         key={product.id}
                                         product={product}
                                         badge={getBadgeForProduct(product)}
+                                        originalPrice={product.originalPrice}
                                         brand={getBrand(product)}
                                         onAddToCart={() =>
                                             handleAddToCart(product)

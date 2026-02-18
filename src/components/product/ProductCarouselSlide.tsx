@@ -16,12 +16,16 @@ export interface ProductCarouselSlideProps {
     onAddToCart: (name: string, price: string) => void
 }
 
+function isImageSource(value: string): boolean {
+    return value.startsWith("/") || /^https?:\/\//i.test(value)
+}
+
 export function ProductCarouselSlide({
     product,
     config,
     onNavigate,
     onAddToCart,
-}: ProductCarouselSlideProps) {
+}: Readonly<ProductCarouselSlideProps>) {
     const { badge, originalPrice, brand } = config ?? {}
 
     return (
@@ -35,7 +39,7 @@ export function ProductCarouselSlide({
             tabIndex={0}
         >
             <div className="product-image-carousel">
-                {product.image.startsWith("/") ? (
+                {isImageSource(product.image) ? (
                     <img src={product.image} alt={product.name} />
                 ) : (
                     <div className="product-placeholder-carousel">

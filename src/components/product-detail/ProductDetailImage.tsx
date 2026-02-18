@@ -5,10 +5,14 @@ export interface ProductDetailImageProps {
     product: Product
 }
 
-export function ProductDetailImage({ product }: ProductDetailImageProps) {
+function isImageSource(value: string): boolean {
+    return value.startsWith("/") || /^https?:\/\//i.test(value)
+}
+
+export function ProductDetailImage({ product }: Readonly<ProductDetailImageProps>) {
     return (
         <div className="product-detail__image">
-            {product.image.startsWith("/") ? (
+            {isImageSource(product.image) ? (
                 <img
                     src={product.image}
                     alt={product.name}

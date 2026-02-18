@@ -7,6 +7,8 @@ import {
     ProductDetailShipping,
 } from "../components/product-detail"
 import { getProductById } from "../data/products"
+import { fetchStoreProducts } from "../services/storeApi"
+import type { Product } from "../types/Product"
 import { addProductToCart } from "../utils/cart"
 
 /**
@@ -14,24 +16,50 @@ import { addProductToCart } from "../utils/cart"
  * Muestra imagen, info, precio, selector de cantidad, envío y botón agregar al carrito.
  */
 
-const ORIGINAL_PRICES: Record<number, number> = {
-    1: 89.99,
-    3: 120,
-    4: 150,
-    6: 55,
-    8: 110,
-}
-
 export const ProductDetail = () => {
     const { id } = useParams()
     const navigate = useNavigate()
     const [quantity, setQuantity] = useState(1)
+    const [product, setProduct] = useState<Product | null>(null)
+    const [isLoadingProduct, setIsLoadingProduct] = useState(true)
 
     useEffect(() => {
         window.scrollTo(0, 0)
+        setQuantity(1)
+
+        async function loadProduct() {
+            setIsLoadingProduct(true)
+
+            const staticProduct = getProductById(id ?? "")
+            try {
+                const result = await fetchStoreProducts()
+                if (!result.ok || !result.products) {
+                    setProduct(staticProduct ?? null)
+                    setIsLoadingProduct(false)
+                    return
+                }
+
+                const numericId = Number(id ?? 0)
+                const apiProduct = result.products.find((item) => item.id === numericId)
+                setProduct(apiProduct ?? staticProduct ?? null)
+                setIsLoadingProduct(false)
+            } catch (loadError) {
+                console.error(loadError)
+                setProduct(staticProduct ?? null)
+                setIsLoadingProduct(false)
+            }
+        }
+
+        void loadProduct()
     }, [id])
 
-    const product = getProductById(id ?? "")
+    if (isLoadingProduct) {
+        return (
+            <main className="cart-main product-detail-not-found">
+                <h2>Cargando producto...</h2>
+            </main>
+        )
+    }
 
     if (!product) {
         return (
@@ -48,7 +76,7 @@ export const ProductDetail = () => {
     }
 
     const brand = product.description.split(" ")[0] ?? ""
-    const originalPrice = ORIGINAL_PRICES[product.id]
+    const originalPrice = product.originalPrice
     const rating = 4.5
     const reviews = Math.floor(product.stock * 3.5)
 
@@ -68,7 +96,7 @@ export const ProductDetail = () => {
                     onClick={() => navigate("/")}
                 >
                     <i className="fas fa-arrow-left" aria-hidden />
-                    Volver
+                    <span>Volver</span>
                 </button>
 
                 <div className="product-detail__layout">

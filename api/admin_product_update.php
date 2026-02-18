@@ -30,6 +30,7 @@ $id = isset($data['id']) ? (int)$data['id'] : 0;
 $name = trim((string)($data['name'] ?? ''));
 $price = isset($data['price']) ? (float)$data['price'] : -1;
 $stock = isset($data['stock']) ? (int)$data['stock'] : -1;
+$imageUrl = trim((string)($data['image_url'] ?? ''));
 $mayoreoRaw = $data['mayoreo'] ?? 0;
 $menudeoRaw = $data['menudeo'] ?? 0;
 $mayoreo = ($mayoreoRaw === 1 || $mayoreoRaw === '1' || $mayoreoRaw === true) ? 1 : 0;
@@ -66,7 +67,11 @@ try {
     'menudeo' => $menudeo,
   ]);
 
-  $selectStmt = $pdo->prepare('
+  adminUpsertPrimaryProductImage($pdo, $id, $imageUrl, $name);
+
+  $offerSql = adminOfferSqlParts($pdo, 'p', 'po');
+  $imageSql = adminImageSqlParts($pdo, 'p', 'pimg');
+  $selectStmt = $pdo->prepare("
     SELECT
       p.id,
       p.name,
@@ -75,12 +80,16 @@ try {
       p.stock,
       p.mayoreo,
       p.menudeo,
+      {$offerSql['select']},
+      {$imageSql['select']},
       c.name AS category
     FROM products p
     LEFT JOIN categories c ON c.id = p.category_id
+    {$offerSql['join']}
+    {$imageSql['join']}
     WHERE p.id = :id
     LIMIT 1
-  ');
+  ");
   $selectStmt->execute(['id' => $id]);
   $product = $selectStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -88,9 +97,7 @@ try {
     adminJsonResponse(404, ['ok' => false, 'message' => 'Producto no encontrado']);
   }
 
-  $product['category_id'] = (int)$product['category_id'];
-  $product['mayoreo'] = $product['mayoreo'] ? 1 : 0;
-  $product['menudeo'] = $product['menudeo'] ? 1 : 0;
+  $product = adminNormalizeProductRow($product);
 
   adminJsonResponse(200, [
     'ok' => true,

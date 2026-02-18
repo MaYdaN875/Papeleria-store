@@ -1,12 +1,15 @@
 /**
  * Navbar principal: logo, buscador y acciones principales.
- * Desktop: trigger de texto "Categorías" que despliega panel al hover.
+ * Desktop: trigger de texto "Categorías" que despliega panel al hover,
+ * con subopciones por categoría en formato acordeón.
  * Mobile: mantiene menú lateral con botón de 3 líneas.
  */
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router"
-import { products } from "../../data/products"
+import { products as staticProducts } from "../../data/products"
 import { useNotification } from "../../hooks/useNotification"
+import { fetchStoreProducts } from "../../services/storeApi"
+import type { Product } from "../../types/Product"
 import { Notification } from "../ui/Notification"
 import { SearchBar } from "./SearchBar"
 
@@ -14,28 +17,38 @@ interface NavbarCategory {
     id: string
     label: string
     icon: string
+    subOptions: string[]
 }
+
+const MOCK_SUB_OPTIONS = Array.from(
+    { length: 15 },
+    (_, index) => `Opción ${index + 1}`
+)
 
 const CATEGORIES: NavbarCategory[] = [
     {
         id: "oficina-escolares",
         label: "Oficina y Escolares",
         icon: "fas fa-briefcase",
+        subOptions: MOCK_SUB_OPTIONS,
     },
     {
         id: "arte-manualidades",
         label: "Arte y Manualidades",
         icon: "fas fa-palette",
+        subOptions: MOCK_SUB_OPTIONS,
     },
     {
         id: "mitril-regalos",
         label: "Mitril y Regalos",
         icon: "fas fa-gift",
+        subOptions: MOCK_SUB_OPTIONS,
     },
     {
         id: "servicios-digitales-impresiones",
         label: "Servicios Digitales e Impresiones",
         icon: "fas fa-print",
+        subOptions: MOCK_SUB_OPTIONS,
     },
 ]
 
@@ -45,7 +58,9 @@ export function Navbar() {
     const location = useLocation()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isMenuClosing, setIsMenuClosing] = useState(false)
+    const [searchProducts, setSearchProducts] = useState<Product[]>(staticProducts)
     const [isDesktopCategoriesOpen, setIsDesktopCategoriesOpen] = useState(false)
+    const [expandedDesktopCategoryId, setExpandedDesktopCategoryId] = useState<string | null>(null)
     const desktopCloseTimeoutRef = useRef<number | null>(null)
     const preventDesktopOpenUntilRef = useRef(0)
 
@@ -78,7 +93,26 @@ export function Navbar() {
         }
         preventDesktopOpenUntilRef.current = Date.now() + 500
         setIsDesktopCategoriesOpen(false)
+        setExpandedDesktopCategoryId(null)
         navigate(`/all-products?category=${categoryId}`)
+    }
+
+    const handleSubOptionClick = (categoryId: string, subOptionIndex: number) => {
+        if (desktopCloseTimeoutRef.current !== null) {
+            globalThis.clearTimeout(desktopCloseTimeoutRef.current)
+            desktopCloseTimeoutRef.current = null
+        }
+
+        preventDesktopOpenUntilRef.current = Date.now() + 500
+        setIsDesktopCategoriesOpen(false)
+        setExpandedDesktopCategoryId(null)
+        navigate(`/all-products?category=${categoryId}&sub=${subOptionIndex}`)
+    }
+
+    const toggleDesktopSubOptions = (categoryId: string) => {
+        setExpandedDesktopCategoryId((currentId) =>
+            currentId === categoryId ? null : categoryId
+        )
     }
 
     const openDesktopCategories = () => {
@@ -99,8 +133,23 @@ export function Navbar() {
         desktopCloseTimeoutRef.current = globalThis.setTimeout(() => {
             setIsDesktopCategoriesOpen(false)
             desktopCloseTimeoutRef.current = null
-        }, 320)
+        }, 700)
     }
+
+    useEffect(() => {
+        async function loadSearchProducts() {
+            try {
+                const result = await fetchStoreProducts()
+                if (result.ok && result.products) {
+                    setSearchProducts(result.products)
+                }
+            } catch (loadError) {
+                console.error(loadError)
+            }
+        }
+
+        void loadSearchProducts()
+    }, [])
 
     useEffect(() => {
         return () => {
@@ -117,24 +166,8 @@ export function Navbar() {
         }
         preventDesktopOpenUntilRef.current = Date.now() + 250
         setIsDesktopCategoriesOpen(false)
+        setExpandedDesktopCategoryId(null)
     }, [location.pathname, location.search])
-
-    useEffect(() => {
-        if (!isDesktopCategoriesOpen) return
-
-        const handleScrollClose = () => {
-            setIsDesktopCategoriesOpen(false)
-            if (desktopCloseTimeoutRef.current !== null) {
-                globalThis.clearTimeout(desktopCloseTimeoutRef.current)
-                desktopCloseTimeoutRef.current = null
-            }
-        }
-
-        globalThis.window?.addEventListener("scroll", handleScrollClose, { passive: true })
-        return () => {
-            globalThis.window?.removeEventListener("scroll", handleScrollClose)
-        }
-    }, [isDesktopCategoriesOpen])
 
     const closeMenu = () => {
         setIsMenuClosing(true)
@@ -167,7 +200,7 @@ export function Navbar() {
                     </div>
 
                     <SearchBar
-                        products={products}
+                        products={searchProducts}
                         placeholder="Buscar productos, marcas..."
                     />
 
@@ -213,22 +246,75 @@ export function Navbar() {
                                 </p>
                                 <div className="desktop-categories-grid">
                                     {CATEGORIES.map((category) => (
-                                        <button
+                                        <div
                                             key={category.id}
-                                            type="button"
-                                            className="desktop-category-item"
-                                            onClick={() =>
-                                                handleCategoryClick(
-                                                    category.id
-                                                )
-                                            }
+                                            className={`desktop-category-group ${
+                                                expandedDesktopCategoryId === category.id
+                                                    ? "desktop-category-group--open"
+                                                    : ""
+                                            }`}
                                         >
-                                            <i
-                                                className={category.icon}
-                                                aria-hidden="true"
-                                            />
-                                            <span>{category.label}</span>
-                                        </button>
+                                            <div className="desktop-category-row">
+                                                <button
+                                                    type="button"
+                                                    className="desktop-category-item"
+                                                    onClick={() =>
+                                                        handleCategoryClick(
+                                                            category.id
+                                                        )
+                                                    }
+                                                >
+                                                    <i
+                                                        className={category.icon}
+                                                        aria-hidden="true"
+                                                    />
+                                                    <span>{category.label}</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="desktop-category-expand-btn"
+                                                    aria-label={`Desplegar opciones de ${category.label}`}
+                                                    aria-expanded={
+                                                        expandedDesktopCategoryId ===
+                                                        category.id
+                                                    }
+                                                    onClick={() =>
+                                                        toggleDesktopSubOptions(
+                                                            category.id
+                                                        )
+                                                    }
+                                                >
+                                                    <i
+                                                        className={`fas fa-chevron-${
+                                                            expandedDesktopCategoryId ===
+                                                            category.id
+                                                                ? "up"
+                                                                : "down"
+                                                        }`}
+                                                        aria-hidden="true"
+                                                    />
+                                                </button>
+                                            </div>
+                                            <div className="desktop-suboptions-list">
+                                                {category.subOptions.map(
+                                                    (subOption, optionIndex) => (
+                                                        <button
+                                                            key={`${category.id}-${subOption}`}
+                                                            type="button"
+                                                            className="desktop-suboption-item"
+                                                            onClick={() =>
+                                                                handleSubOptionClick(
+                                                                    category.id,
+                                                                    optionIndex + 1
+                                                                )
+                                                            }
+                                                        >
+                                                            {subOption}
+                                                        </button>
+                                                    )
+                                                )}
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
