@@ -11,6 +11,22 @@ CREATE TABLE IF NOT EXISTS admin_users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabla de sesiones admin para validar token en backend
+CREATE TABLE IF NOT EXISTS admin_sessions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  admin_user_id INT NOT NULL,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_used_at DATETIME NULL,
+  revoked_at DATETIME NULL,
+  INDEX idx_admin_sessions_user (admin_user_id),
+  INDEX idx_admin_sessions_expires (expires_at),
+  CONSTRAINT fk_admin_sessions_user
+    FOREIGN KEY (admin_user_id) REFERENCES admin_users(id)
+    ON DELETE CASCADE
+);
+
 -- Insertar usuario admin de prueba
 -- Email: admin@godart.com
 -- Contraseña: password

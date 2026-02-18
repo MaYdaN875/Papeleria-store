@@ -1,0 +1,133 @@
+<?php
+/**
+ * Endpoint: admin_product_create.php
+ *
+ * Función:
+ * - Crea producto nuevo.
+ * - Requiere sesión admin válida.
+ */
+
+require_once __DIR__ . '/_admin_common.php';
+
+adminHandleCors(['POST']);
+adminRequireMethod('POST');
+
+/**
+ * Convierte texto a slug URL-friendly.
+ */
+function slugify(string $text): string {
+  $value = mb_strtolower($text, 'UTF-8');
+  if (function_exists('iconv')) {
+    $converted = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+    if ($converted !== false) {
+      $value = $converted;
+    }
+  }
+
+  $value = preg_replace('/[^a-z0-9]+/', '-', $value);
+  $value = trim((string)$value, '-');
+  return $value !== '' ? $value : 'producto';
+}
+
+$data = adminReadJsonBody();
+$categoryId = isset($data['category_id']) ? (int)$data['category_id'] : 0;
+$name = trim((string)($data['name'] ?? ''));
+$price = isset($data['price']) ? (float)$data['price'] : -1;
+$stock = isset($data['stock']) ? (int)$data['stock'] : -1;
+$mayoreoRaw = $data['mayoreo'] ?? 0;
+$menudeoRaw = $data['menudeo'] ?? 0;
+$mayoreo = ($mayoreoRaw === 1 || $mayoreoRaw === '1' || $mayoreoRaw === true) ? 1 : 0;
+$menudeo = ($menudeoRaw === 1 || $menudeoRaw === '1' || $menudeoRaw === true) ? 1 : 0;
+
+if ($categoryId <= 0 || $name === '' || $price < 0 || $stock < 0) {
+  adminJsonResponse(400, ['ok' => false, 'message' => 'Datos inválidos para crear producto']);
+}
+
+if (mb_strlen($name) > 150) {
+  adminJsonResponse(400, ['ok' => false, 'message' => 'El nombre excede el límite permitido']);
+}
+
+try {
+  $pdo = adminGetPdo();
+  adminRequireSession($pdo);
+
+  // Validación de categoría existente.
+  $categoryStmt = $pdo->prepare('SELECT id FROM categories WHERE id = :id LIMIT 1');
+  $categoryStmt->execute(['id' => $categoryId]);
+  $categoryExists = $categoryStmt->fetch(PDO::FETCH_ASSOC);
+
+  if (!$categoryExists) {
+    adminJsonResponse(400, ['ok' => false, 'message' => 'La categoría seleccionada no existe']);
+  }
+
+  // Genera slug único (evita colisión con índice unique de products.slug).
+  $baseSlug = slugify($name);
+  $slug = $baseSlug;
+  $slugSuffix = 1;
+  $slugExistsStmt = $pdo->prepare('SELECT COUNT(*) FROM products WHERE slug = :slug');
+
+  while (true) {
+    $slugExistsStmt->execute(['slug' => $slug]);
+    $existsCount = (int)$slugExistsStmt->fetchColumn();
+    if ($existsCount === 0) break;
+
+    $slugSuffix += 1;
+    $slug = $baseSlug . '-' . $slugSuffix;
+  }
+
+  $insertStmt = $pdo->prepare('
+    INSERT INTO products (
+      category_id, name, slug, description, brand, price, stock, sku, mayoreo, menudeo, is_active
+    ) VALUES (
+      :category_id, :name, :slug, NULL, NULL, :price, :stock, NULL, :mayoreo, :menudeo, 1
+    )
+  ');
+
+  $insertStmt->execute([
+    'category_id' => $categoryId,
+    'name' => $name,
+    'slug' => $slug,
+    'price' => $price,
+    'stock' => $stock,
+    'mayoreo' => $mayoreo,
+    'menudeo' => $menudeo,
+  ]);
+
+  $newId = (int)$pdo->lastInsertId();
+
+  $selectStmt = $pdo->prepare('
+    SELECT
+      p.id,
+      p.name,
+      p.category_id,
+      p.price,
+      p.stock,
+      p.mayoreo,
+      p.menudeo,
+      c.name AS category
+    FROM products p
+    LEFT JOIN categories c ON c.id = p.category_id
+    WHERE p.id = :id
+    LIMIT 1
+  ');
+  $selectStmt->execute(['id' => $newId]);
+  $product = $selectStmt->fetch(PDO::FETCH_ASSOC);
+
+  if (!$product) {
+    adminJsonResponse(500, ['ok' => false, 'message' => 'No se pudo recuperar el producto creado']);
+  }
+
+  $product['category_id'] = (int)$product['category_id'];
+  $product['mayoreo'] = $product['mayoreo'] ? 1 : 0;
+  $product['menudeo'] = $product['menudeo'] ? 1 : 0;
+
+  adminJsonResponse(200, [
+    'ok' => true,
+    'message' => 'Producto creado correctamente',
+    'product' => $product,
+  ]);
+} catch (PDOException $e) {
+  error_log('admin_product_create.php DB error: ' . $e->getMessage());
+  adminJsonResponse(500, ['ok' => false, 'message' => 'Error interno del servidor']);
+}
+

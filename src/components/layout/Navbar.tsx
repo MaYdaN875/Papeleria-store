@@ -1,62 +1,41 @@
 /**
- * Navbar principal: logo, buscador, botones Iniciar Sesión/Contactar, carrito y barra de categorías.
- * En desktop muestra todo en una fila + categorías debajo; en móvil muestra menú hamburguesa y oculta botones/carrito.
+ * Navbar principal: logo, buscador y acciones principales.
+ * Desktop: trigger de texto "Categorías" que despliega panel al hover.
+ * Mobile: mantiene menú lateral con botón de 3 líneas.
  */
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router"
 import { products } from "../../data/products"
 import { useNotification } from "../../hooks/useNotification"
-import {
-    CategoryDropdown,
-    type CategoryDropdownCategory,
-} from "../filters/CategoryDropdown"
 import { Notification } from "../ui/Notification"
 import { SearchBar } from "./SearchBar"
 
-const CATEGORIES: CategoryDropdownCategory[] = [
+interface NavbarCategory {
+    id: string
+    label: string
+    icon: string
+}
+
+const CATEGORIES: NavbarCategory[] = [
     {
-        id: "escolares",
-        label: "Útiles Escolares",
-        icon: "fas fa-book",
-        items: [
-            { name: "Cuadernos", icon: "fas fa-book", color: "#FF6B9D" },
-            { name: "Estuches", icon: "fas fa-briefcase", color: "#C44569" },
-            { name: "Gomas", icon: "fas fa-eraser", color: "#F7CE5B" },
-            { name: "Mochilas", icon: "fas fa-backpack", color: "#1A535C" },
-        ],
+        id: "oficina-escolares",
+        label: "Oficina y Escolares",
+        icon: "fas fa-briefcase",
     },
     {
-        id: "escritura",
-        label: "Escritura",
-        icon: "fas fa-pencil-alt",
-        items: [
-            { name: "Bolígrafos", icon: "fas fa-pen", color: "#4ECDC4" },
-            { name: "Lápices", icon: "fas fa-pencil", color: "#FFE66D" },
-            { name: "Marcadores", icon: "fas fa-marker", color: "#FF6B6B" },
-            { name: "Rotuladores", icon: "fas fa-highlighter", color: "#95E1D3" },
-        ],
-    },
-    {
-        id: "papeleria",
-        label: "Papelería",
-        icon: "fas fa-file",
-        items: [
-            { name: "Papel", icon: "fas fa-file", color: "#0099FF" },
-            { name: "Carpetas", icon: "fas fa-folder", color: "#00CC88" },
-            { name: "Sobres", icon: "fas fa-envelope", color: "#FF3366" },
-            { name: "Post-it", icon: "fas fa-sticky-note", color: "#FFB900" },
-        ],
-    },
-    {
-        id: "arte",
-        label: "Arte & Manualidades",
+        id: "arte-manualidades",
+        label: "Arte y Manualidades",
         icon: "fas fa-palette",
-        items: [
-            { name: "Lápices de Colores", icon: "fas fa-palette", color: "#FF006E" },
-            { name: "Pinturas", icon: "fas fa-paint-brush", color: "#FFBE0B" },
-            { name: "Lienzos", icon: "fas fa-image", color: "#FB5607" },
-            { name: "Materiales", icon: "fas fa-toolbox", color: "#8338EC" },
-        ],
+    },
+    {
+        id: "mitril-regalos",
+        label: "Mitril y Regalos",
+        icon: "fas fa-gift",
+    },
+    {
+        id: "servicios-digitales-impresiones",
+        label: "Servicios Digitales e Impresiones",
+        icon: "fas fa-print",
     },
 ]
 
@@ -66,6 +45,9 @@ export function Navbar() {
     const location = useLocation()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isMenuClosing, setIsMenuClosing] = useState(false)
+    const [isDesktopCategoriesOpen, setIsDesktopCategoriesOpen] = useState(false)
+    const desktopCloseTimeoutRef = useRef<number | null>(null)
+    const preventDesktopOpenUntilRef = useRef(0)
 
     const handleContactClick = useCallback(() => {
         showNotification("¡Nos pondremos en contacto pronto!")
@@ -89,9 +71,70 @@ export function Navbar() {
     )
 
     const handleCategoryClick = (categoryId: string) => {
-        closeMenu()
+        if (isMobileMenuOpen) closeMenu()
+        if (desktopCloseTimeoutRef.current !== null) {
+            globalThis.clearTimeout(desktopCloseTimeoutRef.current)
+            desktopCloseTimeoutRef.current = null
+        }
+        preventDesktopOpenUntilRef.current = Date.now() + 500
+        setIsDesktopCategoriesOpen(false)
         navigate(`/all-products?category=${categoryId}`)
     }
+
+    const openDesktopCategories = () => {
+        if (Date.now() < preventDesktopOpenUntilRef.current) return
+
+        if (desktopCloseTimeoutRef.current !== null) {
+            globalThis.clearTimeout(desktopCloseTimeoutRef.current)
+            desktopCloseTimeoutRef.current = null
+        }
+        setIsDesktopCategoriesOpen(true)
+    }
+
+    const closeDesktopCategoriesWithDelay = () => {
+        if (desktopCloseTimeoutRef.current !== null) {
+            globalThis.clearTimeout(desktopCloseTimeoutRef.current)
+        }
+
+        desktopCloseTimeoutRef.current = globalThis.setTimeout(() => {
+            setIsDesktopCategoriesOpen(false)
+            desktopCloseTimeoutRef.current = null
+        }, 320)
+    }
+
+    useEffect(() => {
+        return () => {
+            if (desktopCloseTimeoutRef.current !== null) {
+                globalThis.clearTimeout(desktopCloseTimeoutRef.current)
+            }
+        }
+    }, [])
+
+    useEffect(() => {
+        if (desktopCloseTimeoutRef.current !== null) {
+            globalThis.clearTimeout(desktopCloseTimeoutRef.current)
+            desktopCloseTimeoutRef.current = null
+        }
+        preventDesktopOpenUntilRef.current = Date.now() + 250
+        setIsDesktopCategoriesOpen(false)
+    }, [location.pathname, location.search])
+
+    useEffect(() => {
+        if (!isDesktopCategoriesOpen) return
+
+        const handleScrollClose = () => {
+            setIsDesktopCategoriesOpen(false)
+            if (desktopCloseTimeoutRef.current !== null) {
+                globalThis.clearTimeout(desktopCloseTimeoutRef.current)
+                desktopCloseTimeoutRef.current = null
+            }
+        }
+
+        globalThis.window?.addEventListener("scroll", handleScrollClose, { passive: true })
+        return () => {
+            globalThis.window?.removeEventListener("scroll", handleScrollClose)
+        }
+    }, [isDesktopCategoriesOpen])
 
     const closeMenu = () => {
         setIsMenuClosing(true)
@@ -112,14 +155,16 @@ export function Navbar() {
             )}
             <header className="header">
                 <div className="header-container">
-                    <Link
-                        to="/"
-                        className="header-logo"
-                        onClick={handleLogoClick}
-                    >
-                        <div className="logo-icon">🎨</div>
-                        <h1>God Art</h1>
-                    </Link>
+                    <div className="header-left">
+                        <Link
+                            to="/"
+                            className="header-logo"
+                            onClick={handleLogoClick}
+                        >
+                            <div className="logo-icon">🎨</div>
+                            <h1>God Art</h1>
+                        </Link>
+                    </div>
 
                     <SearchBar
                         products={products}
@@ -127,6 +172,67 @@ export function Navbar() {
                     />
 
                     <div className="header-right">
+                        <div
+                            className={`desktop-categories-wrapper ${isDesktopCategoriesOpen ? "is-open" : ""}`}
+                        >
+                            <button
+                                type="button"
+                                className="desktop-categories-trigger"
+                                onClick={() =>
+                                    setIsDesktopCategoriesOpen(
+                                        (isOpen) => !isOpen
+                                    )
+                                }
+                                onMouseEnter={openDesktopCategories}
+                                onMouseLeave={closeDesktopCategoriesWithDelay}
+                                aria-label="Mostrar categorías"
+                                aria-expanded={isDesktopCategoriesOpen}
+                                aria-haspopup="menu"
+                            >
+                                <span>Categorías</span>
+                                <i
+                                    className="fas fa-chevron-down"
+                                    aria-hidden="true"
+                                />
+                            </button>
+                            <div
+                                className="desktop-categories-menu"
+                                onMouseEnter={openDesktopCategories}
+                                onMouseLeave={closeDesktopCategoriesWithDelay}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Escape") {
+                                        setIsDesktopCategoriesOpen(false)
+                                    }
+                                }}
+                                tabIndex={-1}
+                                role="menu"
+                                aria-label="Categorías de productos"
+                            >
+                                <p className="desktop-categories-title">
+                                    Explorar categorías
+                                </p>
+                                <div className="desktop-categories-grid">
+                                    {CATEGORIES.map((category) => (
+                                        <button
+                                            key={category.id}
+                                            type="button"
+                                            className="desktop-category-item"
+                                            onClick={() =>
+                                                handleCategoryClick(
+                                                    category.id
+                                                )
+                                            }
+                                        >
+                                            <i
+                                                className={category.icon}
+                                                aria-hidden="true"
+                                            />
+                                            <span>{category.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                         <button
                             type="button"
                             className="btn-categories"
@@ -167,26 +273,14 @@ export function Navbar() {
                     </div>
                 </div>
 
-                <nav className="navbar" aria-label="Categorías de productos">
-                    <div className="navbar-container">
-                        {/* Categorías en desktop, ocultas en móvil */}
-                        <div className="navbar-categories">
-                            {CATEGORIES.map((category) => (
-                                <CategoryDropdown
-                                    key={category.id}
-                                    category={category}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </nav>
-
                 {/* Menú deslizable en móvil */}
                 {isMobileMenuOpen && (
                     <>
-                        <div
+                        <button
+                            type="button"
                             className={`mobile-menu-backdrop ${isMenuClosing ? "closing" : ""}`}
                             onClick={() => closeMenu()}
+                            aria-label="Cerrar menú de categorías"
                         />
                         <div className={`mobile-menu ${isMenuClosing ? "closing" : ""}`}>
                             <div className={`mobile-menu-header ${isMenuClosing ? "closing" : ""}`}>

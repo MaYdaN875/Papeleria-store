@@ -5,6 +5,7 @@ export { Home } from "./Home";
 export { Login } from "./Login";
 export { ProductDetail } from "./ProductDetail";
 export { SignUp } from "./SignUp";
+// Páginas del módulo admin (login + dashboard).
 export { AdminLogin } from "./AdminLogin";
 export { AdminDashboard } from "./AdminDashboard";
 

@@ -1,7 +1,12 @@
 /**
  * Raíz de la aplicación God Art.
  * Define rutas, layout global (Navbar, Footer, botón WhatsApp, nav móvil) y
- * comportamiento de scroll al cambiar de página. Oculta header/footer en login y signup.
+ * comportamiento de scroll al cambiar de página.
+ *
+ * Nota sobre admin:
+ * - El panel usa rutas /admin/*
+ * - En esas rutas se ocultan layout público y navegación de tienda
+ * - La protección real de acceso se delega en AdminRoute + backend PHP
  */
 import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router";
