@@ -58,5 +58,3 @@ Estos archivos van en tu servidor Hostinger, dentro de `public_html/api/`
 
 - Email: `admin@godart.com`
 - Contraseña: `G0d4rt26`
-
-**⚠️ IMPORTANTE:** Cambia la contraseña en producción usando `generar_hash.php` y actualizando el INSERT en la BD.
