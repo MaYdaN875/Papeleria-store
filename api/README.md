@@ -31,6 +31,17 @@ Estos archivos van en tu servidor Hostinger, dentro de `public_html/api/`
 3. **Ejecuta** `setup.sql` en phpMyAdmin para crear/actualizar tablas de admin, sesiones y ofertas
 4. **Configura** `.env` en tu proyecto React con `VITE_API_URL=https://tu-dominio.com/api`
 
+## Acceso al modo admin
+
+- **Local (desarrollo):**
+  - Login: `http://localhost:5173/admin/login`
+  - Dashboard: `http://localhost:5173/admin`
+- **Producción (dominio):**
+  - Login: `https://godart-papeleria.com/admin/login`
+  - Dashboard: `https://godart-papeleria.com/admin`
+
+> Si el dominio final cambia, sustituir `godart-papeleria.com` por el dominio activo del proyecto.
+
 ## Subida de imágenes (nuevo)
 
 - El endpoint `admin_product_image_upload.php` guarda archivos en `public_html/api/uploads/products/`.
@@ -46,6 +57,6 @@ Estos archivos van en tu servidor Hostinger, dentro de `public_html/api/`
 ## Credenciales por defecto (después de ejecutar setup.sql)
 
 - Email: `admin@godart.com`
-- Contraseña: `password`
+- Contraseña: `G0d4rt26`
 
 **⚠️ IMPORTANTE:** Cambia la contraseña en producción usando `generar_hash.php` y actualizando el INSERT en la BD.
