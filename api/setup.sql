@@ -41,6 +41,29 @@ CREATE TABLE IF NOT EXISTS product_offers (
     ON DELETE CASCADE
 );
 
+-- Tabla para asignar productos a carruseles del home (1, 2 o 3)
+CREATE TABLE IF NOT EXISTS home_carousel_assignments (
+  product_id INT NOT NULL PRIMARY KEY,
+  carousel_slot TINYINT NOT NULL,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_home_carousel_slot (carousel_slot),
+  CONSTRAINT chk_home_carousel_slot CHECK (carousel_slot IN (1, 2, 3)),
+  CONSTRAINT fk_home_carousel_product
+    FOREIGN KEY (product_id) REFERENCES products(id)
+    ON DELETE CASCADE
+);
+
+-- Slides del home (imagen completa para banner principal)
+CREATE TABLE IF NOT EXISTS home_slides (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  image_url VARCHAR(255) NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  display_order INT NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_home_slides_active_order (is_active, display_order)
+);
+
 -- Insertar usuario admin de prueba
 -- Email: admin@godart.com
 -- Contraseña: password

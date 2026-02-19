@@ -12,4 +12,5 @@ export type Product = {
     stock: number
     mayoreo?: boolean
     menudeo?: boolean
+    homeCarouselSlot?: number
 }

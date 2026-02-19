@@ -6,7 +6,40 @@
  * - Normalizar tipos recibidos desde MySQL/PHP (que suelen venir como string).
  * - Evitar duplicar lógica de fetch y manejo de errores en componentes.
  */
-const API_BASE = (import.meta.env.VITE_API_URL ?? "").trim().replace(/\/$/, "");
+import { buildAuthHeaders, getApiBase } from "./api/base";
+import type {
+  AdminCategory,
+  AdminHomeSlide,
+  AdminOffer,
+  AdminProduct,
+  AdminSalesProductRow,
+  AdminSalesTodaySummary,
+  CreateAdminHomeSlideInput,
+  CreateAdminProductInput,
+  DeleteAdminHomeSlideInput,
+  DeleteAdminProductInput,
+  RemoveAdminOfferInput,
+  UpdateAdminProductInput,
+  UpsertAdminOfferInput,
+} from "../types/admin";
+
+export type {
+  AdminCategory,
+  AdminHomeSlide,
+  AdminOffer,
+  AdminProduct,
+  AdminSalesProductRow,
+  AdminSalesTodaySummary,
+  CreateAdminHomeSlideInput,
+  CreateAdminProductInput,
+  DeleteAdminHomeSlideInput,
+  DeleteAdminProductInput,
+  RemoveAdminOfferInput,
+  UpdateAdminProductInput,
+  UpsertAdminOfferInput,
+} from "../types/admin";
+
+const API_BASE = getApiBase();
 
 interface AdminLoginResponse {
   ok: boolean;
@@ -14,20 +47,6 @@ interface AdminLoginResponse {
   token?: string;
   adminId?: number;
   expiresAt?: string;
-}
-
-export interface AdminProduct {
-  id: number;
-  name: string;
-  categoryId: number;
-  price: number;
-  stock: number;
-  image: string;
-  mayoreo: 0 | 1;
-  menudeo: 0 | 1;
-  category: string;
-  isOffer: 0 | 1;
-  offerPrice: number | null;
 }
 
 interface AdminProductsResponse {
@@ -65,15 +84,6 @@ interface AdminImageUploadResponse {
   imageUrl?: string;
 }
 
-export interface AdminOffer {
-  productId: number;
-  productName: string;
-  category: string;
-  originalPrice: number;
-  offerPrice: number;
-  stock: number;
-}
-
 interface AdminOffersResponse {
   ok: boolean;
   message?: string;
@@ -86,20 +96,6 @@ interface AdminOfferMutationResponse {
   offer?: AdminOffer;
 }
 
-export interface AdminSalesProductRow {
-  productId: number;
-  productName: string;
-  totalUnits: number;
-  totalRevenue: number;
-  totalOrders: number;
-}
-
-export interface AdminSalesTodaySummary {
-  totalRevenue: number;
-  totalUnits: number;
-  totalOrders: number;
-}
-
 interface AdminSalesTodayResponse {
   ok: boolean;
   message?: string;
@@ -107,11 +103,17 @@ interface AdminSalesTodayResponse {
   products?: AdminSalesProductRow[];
 }
 
-export interface AdminCategory {
-  id: number;
-  name: string;
-  parentId: number | null;
-  isActive: 0 | 1;
+interface AdminHomeSlidesResponse {
+  ok: boolean;
+  message?: string;
+  slides?: AdminHomeSlide[];
+}
+
+interface AdminHomeSlideMutationResponse {
+  ok: boolean;
+  message?: string;
+  slide?: AdminHomeSlide;
+  deletedId?: number;
 }
 
 interface AdminCategoriesResponse {
@@ -131,6 +133,7 @@ interface RawAdminProduct {
   image?: string;
   mayoreo: RawBinaryFlag;
   menudeo: RawBinaryFlag;
+  home_carousel_slot?: number | string;
   category: string;
   is_offer?: RawBinaryFlag;
   offer_price?: number | string | null;
@@ -166,6 +169,13 @@ interface RawAdminSalesProductRow {
   total_orders: number | string;
 }
 
+interface RawAdminHomeSlide {
+  id: number | string;
+  image_url: string;
+  is_active?: RawBinaryFlag;
+  display_order?: number | string;
+}
+
 /** Convierte cualquier representación booleana a 0/1 homogéneo para UI. */
 function toBinaryFlag(value: RawBinaryFlag | undefined): 0 | 1 {
   return value === 1 || value === "1" || value === true ? 1 : 0;
@@ -173,6 +183,9 @@ function toBinaryFlag(value: RawBinaryFlag | undefined): 0 | 1 {
 
 /** Normaliza respuesta cruda de PHP para usar tipos consistentes en React. */
 function normalizeAdminProduct(raw: RawAdminProduct): AdminProduct {
+  const rawSlot = Number(raw.home_carousel_slot ?? 0) || 0;
+  const homeCarouselSlot = rawSlot >= 1 && rawSlot <= 3 ? (rawSlot as 1 | 2 | 3) : 0;
+
   return {
     id: Number(raw.id) || 0,
     name: raw.name ?? "",
@@ -182,6 +195,7 @@ function normalizeAdminProduct(raw: RawAdminProduct): AdminProduct {
     image: raw.image ?? "/images/boligrafos.jpg",
     mayoreo: toBinaryFlag(raw.mayoreo),
     menudeo: toBinaryFlag(raw.menudeo),
+    homeCarouselSlot,
     category: raw.category ?? "",
     isOffer: toBinaryFlag(raw.is_offer),
     offerPrice:
@@ -227,6 +241,15 @@ function normalizeAdminSalesProductRow(raw: RawAdminSalesProductRow): AdminSales
   };
 }
 
+function normalizeAdminHomeSlide(raw: RawAdminHomeSlide): AdminHomeSlide {
+  return {
+    id: Number(raw.id) || 0,
+    imageUrl: raw.image_url ?? "",
+    isActive: toBinaryFlag(raw.is_active ?? 1),
+    displayOrder: Number(raw.display_order) || 1,
+  };
+}
+
 /** Login admin contra endpoint PHP. */
 export async function adminLoginRequest(password: string): Promise<AdminLoginResponse> {
   if (!API_BASE) {
@@ -236,7 +259,7 @@ export async function adminLoginRequest(password: string): Promise<AdminLoginRes
     };
   }
 
-  const response = await fetch(`${API_BASE}/admin_login.php`, {
+  const response = await fetch(`${API_BASE}/admin/auth/login.php`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -259,12 +282,6 @@ export async function adminLoginRequest(password: string): Promise<AdminLoginRes
   return body;
 }
 
-function buildAuthHeaders(token: string): HeadersInit {
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-}
-
 /** Obtiene lista de productos desde MySQL a través de PHP. */
 export async function fetchAdminProducts(token: string): Promise<AdminProductsResponse> {
   if (!API_BASE) {
@@ -274,7 +291,7 @@ export async function fetchAdminProducts(token: string): Promise<AdminProductsRe
     };
   }
 
-  const response = await fetch(`${API_BASE}/admin_products_list.php`, {
+  const response = await fetch(`${API_BASE}/admin/products/list.php`, {
     headers: buildAuthHeaders(token),
   });
 
@@ -315,7 +332,7 @@ export async function fetchAdminCategories(token: string): Promise<AdminCategori
     };
   }
 
-  const response = await fetch(`${API_BASE}/admin_categories_list.php`, {
+  const response = await fetch(`${API_BASE}/admin/categories/list.php`, {
     headers: buildAuthHeaders(token),
   });
 
@@ -347,39 +364,6 @@ export async function fetchAdminCategories(token: string): Promise<AdminCategori
   };
 }
 
-export interface UpdateAdminProductInput {
-  id: number;
-  name: string;
-  price: number;
-  stock: number;
-  imageUrl: string;
-  mayoreo: 0 | 1;
-  menudeo: 0 | 1;
-}
-
-export interface CreateAdminProductInput {
-  categoryId: number;
-  name: string;
-  price: number;
-  stock: number;
-  imageUrl: string;
-  mayoreo: 0 | 1;
-  menudeo: 0 | 1;
-}
-
-export interface DeleteAdminProductInput {
-  id: number;
-}
-
-export interface UpsertAdminOfferInput {
-  productId: number;
-  offerPrice: number;
-}
-
-export interface RemoveAdminOfferInput {
-  productId: number;
-}
-
 /** Actualiza un producto existente en MySQL vía endpoint PHP. */
 export async function updateAdminProduct(
   payload: UpdateAdminProductInput,
@@ -392,7 +376,7 @@ export async function updateAdminProduct(
     };
   }
 
-  const response = await fetch(`${API_BASE}/admin_product_update.php`, {
+  const response = await fetch(`${API_BASE}/admin/products/update.php`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -406,6 +390,7 @@ export async function updateAdminProduct(
       image_url: payload.imageUrl,
       mayoreo: payload.mayoreo,
       menudeo: payload.menudeo,
+      home_carousel_slot: payload.homeCarouselSlot,
     }),
   });
 
@@ -449,7 +434,7 @@ export async function createAdminProduct(
     };
   }
 
-  const response = await fetch(`${API_BASE}/admin_product_create.php`, {
+  const response = await fetch(`${API_BASE}/admin/products/create.php`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -463,6 +448,7 @@ export async function createAdminProduct(
       image_url: payload.imageUrl,
       mayoreo: payload.mayoreo,
       menudeo: payload.menudeo,
+      home_carousel_slot: payload.homeCarouselSlot,
     }),
   });
 
@@ -506,7 +492,7 @@ export async function deleteAdminProduct(
     };
   }
 
-  const response = await fetch(`${API_BASE}/admin_product_delete.php`, {
+  const response = await fetch(`${API_BASE}/admin/products/delete.php`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -552,7 +538,7 @@ export async function adminLogoutRequest(token: string): Promise<AdminLogoutResp
     };
   }
 
-  const response = await fetch(`${API_BASE}/admin_logout.php`, {
+  const response = await fetch(`${API_BASE}/admin/auth/logout.php`, {
     method: "POST",
     headers: {
       ...buildAuthHeaders(token),
@@ -586,7 +572,7 @@ export async function uploadAdminProductImage(
   const formData = new FormData();
   formData.append("image", imageFile);
 
-  const response = await fetch(`${API_BASE}/admin_product_image_upload.php`, {
+  const response = await fetch(`${API_BASE}/admin/products/image_upload.php`, {
     method: "POST",
     headers: buildAuthHeaders(token),
     body: formData,
@@ -604,6 +590,135 @@ export async function uploadAdminProductImage(
   return body;
 }
 
+/** Lista slides configurados para el banner principal del home. */
+export async function fetchAdminHomeSlides(token: string): Promise<AdminHomeSlidesResponse> {
+  if (!API_BASE) {
+    return {
+      ok: false,
+      message: "Falta configurar VITE_API_URL para conectar con PHP.",
+    };
+  }
+
+  const response = await fetch(`${API_BASE}/admin/slides/list.php`, {
+    headers: buildAuthHeaders(token),
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<AdminHomeSlidesResponse>;
+    return {
+      ok: false,
+      message: errorBody.message ?? "No se pudieron cargar los slides del home.",
+    };
+  }
+
+  const body = (await response.json()) as {
+    ok: boolean;
+    message?: string;
+    slides?: RawAdminHomeSlide[];
+  };
+
+  if (!body.ok) {
+    return {
+      ok: false,
+      message: body.message ?? "No se pudieron cargar los slides del home.",
+    };
+  }
+
+  return {
+    ok: true,
+    message: body.message,
+    slides: (body.slides ?? []).map(normalizeAdminHomeSlide),
+  };
+}
+
+/** Crea un slide del banner home con imagen completa. */
+export async function createAdminHomeSlide(
+  payload: CreateAdminHomeSlideInput,
+  token: string
+): Promise<AdminHomeSlideMutationResponse> {
+  if (!API_BASE) {
+    return {
+      ok: false,
+      message: "Falta configurar VITE_API_URL para conectar con PHP.",
+    };
+  }
+
+  const response = await fetch(`${API_BASE}/admin/slides/create.php`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...buildAuthHeaders(token),
+    },
+    body: JSON.stringify({
+      image_url: payload.imageUrl,
+      display_order: payload.displayOrder,
+      is_active: payload.isActive ?? 1,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<AdminHomeSlideMutationResponse>;
+    return {
+      ok: false,
+      message: errorBody.message ?? "No se pudo crear el slide.",
+    };
+  }
+
+  const body = (await response.json()) as {
+    ok: boolean;
+    message?: string;
+    slide?: RawAdminHomeSlide;
+  };
+
+  if (!body.ok || !body.slide) {
+    return {
+      ok: false,
+      message: body.message ?? "No se pudo crear el slide.",
+    };
+  }
+
+  return {
+    ok: true,
+    message: body.message ?? "Slide creado correctamente.",
+    slide: normalizeAdminHomeSlide(body.slide),
+  };
+}
+
+/** Elimina un slide del home por id. */
+export async function deleteAdminHomeSlide(
+  payload: DeleteAdminHomeSlideInput,
+  token: string
+): Promise<AdminHomeSlideMutationResponse> {
+  if (!API_BASE) {
+    return {
+      ok: false,
+      message: "Falta configurar VITE_API_URL para conectar con PHP.",
+    };
+  }
+
+  const response = await fetch(`${API_BASE}/admin/slides/delete.php`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...buildAuthHeaders(token),
+    },
+    body: JSON.stringify({
+      id: payload.id,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<AdminHomeSlideMutationResponse>;
+    return {
+      ok: false,
+      message: errorBody.message ?? "No se pudo eliminar el slide.",
+    };
+  }
+
+  const body = (await response.json()) as AdminHomeSlideMutationResponse;
+  return body;
+}
+
 /** Lista de productos que están en oferta actualmente. */
 export async function fetchAdminOffers(token: string): Promise<AdminOffersResponse> {
   if (!API_BASE) {
@@ -613,7 +728,7 @@ export async function fetchAdminOffers(token: string): Promise<AdminOffersRespon
     };
   }
 
-  const response = await fetch(`${API_BASE}/admin_offers_list.php`, {
+  const response = await fetch(`${API_BASE}/admin/offers/list.php`, {
     headers: buildAuthHeaders(token),
   });
 
@@ -657,7 +772,7 @@ export async function upsertAdminOffer(
     };
   }
 
-  const response = await fetch(`${API_BASE}/admin_offer_upsert.php`, {
+  const response = await fetch(`${API_BASE}/admin/offers/upsert.php`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -709,7 +824,7 @@ export async function removeAdminOffer(
     };
   }
 
-  const response = await fetch(`${API_BASE}/admin_offer_remove.php`, {
+  const response = await fetch(`${API_BASE}/admin/offers/remove.php`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -741,7 +856,7 @@ export async function fetchAdminSalesToday(token: string): Promise<AdminSalesTod
     };
   }
 
-  const response = await fetch(`${API_BASE}/admin_sales_today.php`, {
+  const response = await fetch(`${API_BASE}/admin/sales/today.php`, {
     headers: buildAuthHeaders(token),
   });
 

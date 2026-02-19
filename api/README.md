@@ -2,33 +2,40 @@
 
 Estos archivos van en tu servidor Hostinger, dentro de `public_html/api/`
 
-## Archivos incluidos
+## Estructura organizada (actual)
 
-- `_admin_common.php` - Helpers compartidos (CORS, DB, auth por token)
-- `admin_login.php` - Endpoint para login de administrador
-- `admin_logout.php` - Endpoint para cerrar sesión admin (revoca token)
-- `admin_products_list.php` - Endpoint para listar productos desde la BD
-- `admin_categories_list.php` - Endpoint para listar categorías en formularios admin
-- `admin_product_create.php` - Endpoint para crear productos
-- `admin_product_update.php` - Endpoint para editar productos
-- `admin_product_delete.php` - Endpoint para eliminación física de productos
-- `admin_offers_list.php` - Lista productos con oferta activa
-- `admin_offer_upsert.php` - Crea o actualiza oferta por producto
-- `admin_offer_remove.php` - Quita oferta sin borrar producto
-- `admin_sales_today.php` - Resumen de ingresos/ventas del día
-- `admin_product_image_upload.php` - Sube imágenes de productos (archivo)
-- `products_list_public.php` - Catálogo público para la tienda (sin sesión admin)
-- `setup.sql` - SQL para crear tablas `admin_users`, `admin_sessions` y `product_offers`
-- `generar_hash.php` - Script temporal para generar hash de contraseñas (borrar después de usar)
+- `_admin_common.php` - Cargador central de helpers (compatibilidad)
+- `core/` - Módulos por responsabilidad (`config`, `response`, `cors`, `db`, `auth`, `catalog`)
+- `admin/auth/login.php` - Login administrador
+- `admin/auth/logout.php` - Logout administrador
+- `admin/products/list.php` - Listar productos admin
+- `admin/products/create.php` - Crear producto
+- `admin/products/update.php` - Editar producto
+- `admin/products/delete.php` - Eliminar producto
+- `admin/products/image_upload.php` - Subir imagen producto
+- `admin/categories/list.php` - Listar categorías admin
+- `admin/offers/list.php` - Listar ofertas activas
+- `admin/offers/upsert.php` - Crear/actualizar oferta
+- `admin/offers/remove.php` - Quitar oferta
+- `admin/sales/today.php` - Ingresos del día
+- `admin/slides/list.php` - Listar slides de home
+- `admin/slides/create.php` - Crear slide de home
+- `admin/slides/delete.php` - Eliminar slide de home
+- `public/products.php` - Catálogo público de tienda
+- `public/slides.php` - Slides públicos para banner home
+- `setup.sql` - SQL para crear/actualizar tablas (`admin_sessions`, `product_offers`, `home_carousel_assignments`, `home_slides`)
+- `generar_hash.php` - Script temporal para hash de contraseñas (borrar después de usar)
 
 ## Pasos rápidos
 
-1. **Sube estos archivos** a `public_html/api/` en Hostinger
-2. **Edita** `_admin_common.php`:
+1. **Sube estos archivos** a `public_html/api/` en Hostinger (incluye carpeta `core/`)
+   - Puedes omitir `README.md` en servidor.
+2. **Edita** `core/config.php`:
    - Cambia `TU_USUARIO_DB` por tu usuario de base de datos
    - Cambia `TU_PASSWORD_DB` por tu contraseña de base de datos
    - (Los encuentras en: Panel Hostinger → Bases de datos → Detalles)
-3. **Ejecuta** `setup.sql` en phpMyAdmin para crear/actualizar tablas de admin, sesiones y ofertas
+3. **Ejecuta** `setup.sql` en phpMyAdmin para crear/actualizar tablas de admin, sesiones, ofertas, carruseles y slides
+   - `setup.sql` no necesita permanecer en servidor después de ejecutarse.
 4. **Configura** `.env` en tu proyecto React con `VITE_API_URL=https://tu-dominio.com/api`
 
 ## Acceso al modo admin
@@ -44,7 +51,7 @@ Estos archivos van en tu servidor Hostinger, dentro de `public_html/api/`
 
 ## Subida de imágenes (nuevo)
 
-- El endpoint `admin_product_image_upload.php` guarda archivos en `public_html/api/uploads/products/`.
+- El endpoint `admin/products/image_upload.php` guarda archivos en `public_html/api/uploads/products/`.
 - Asegúrate de que esa ruta tenga permisos de escritura en Hostinger.
 - Formatos permitidos: JPG, PNG, WEBP, GIF (máximo 5MB).
 
@@ -52,7 +59,7 @@ Estos archivos van en tu servidor Hostinger, dentro de `public_html/api/`
 
 - El login ahora crea sesión real en `admin_sessions`.
 - Los endpoints admin protegidos requieren `Authorization: Bearer <token>`.
-- El logout (`admin_logout.php`) revoca la sesión actual.
+- El logout (`admin/auth/logout.php`) revoca la sesión actual.
 
 ## Credenciales por defecto (después de ejecutar setup.sql)
 

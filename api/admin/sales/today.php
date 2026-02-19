@@ -7,40 +7,10 @@
  * - Si la BD no tiene tablas/columnas de ventas, responde vacío con mensaje.
  */
 
-require_once __DIR__ . '/_admin_common.php';
+require_once __DIR__ . '/../../_admin_common.php';
 
 adminHandleCors(['GET']);
 adminRequireMethod('GET');
-
-/**
- * Verifica existencia de tabla en el esquema actual.
- */
-function adminTableExists(PDO $pdo, string $tableName): bool {
-  $stmt = $pdo->prepare('
-    SELECT COUNT(*)
-    FROM information_schema.tables
-    WHERE table_schema = DATABASE()
-      AND table_name = :table_name
-  ');
-  $stmt->execute(['table_name' => $tableName]);
-  return (int)$stmt->fetchColumn() > 0;
-}
-
-/**
- * Obtiene nombres de columnas para una tabla.
- *
- * @return string[]
- */
-function adminTableColumns(PDO $pdo, string $tableName): array {
-  $stmt = $pdo->prepare('
-    SELECT column_name
-    FROM information_schema.columns
-    WHERE table_schema = DATABASE()
-      AND table_name = :table_name
-  ');
-  $stmt->execute(['table_name' => $tableName]);
-  return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
-}
 
 /**
  * Determina expresión SQL para total por renglón según columnas disponibles.
@@ -79,8 +49,8 @@ try {
     ]);
   }
 
-  $ordersColumns = adminTableColumns($pdo, 'orders');
-  $orderItemsColumns = adminTableColumns($pdo, 'order_items');
+  $ordersColumns = adminGetTableColumns($pdo, 'orders');
+  $orderItemsColumns = adminGetTableColumns($pdo, 'order_items');
 
   $requiredOrderColumns = ['id', 'created_at'];
   $requiredOrderItemColumns = ['order_id', 'product_id', 'quantity'];

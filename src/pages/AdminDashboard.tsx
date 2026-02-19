@@ -5,28 +5,35 @@
  * - Verificar sesión local y cargar productos desde API PHP.
  * - Mostrar estado de conexión backend (Hostinger/MySQL).
  * - Permitir edición rápida de producto (nombre, precio, stock, mayoreo/menudeo).
- * - Persistir cambios usando admin_product_update.php.
+ * - Persistir cambios usando el endpoint admin de productos (`/admin/products/update.php`).
  */
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { getImageValidationError } from "../utils/validation";
 import {
   adminLogoutRequest,
+  createAdminHomeSlide,
   createAdminProduct,
+  deleteAdminHomeSlide,
   deleteAdminProduct,
+  fetchAdminHomeSlides,
   fetchAdminOffers,
   fetchAdminCategories,
   fetchAdminProducts,
   fetchAdminSalesToday,
   removeAdminOffer,
-  type AdminCategory,
-  type AdminOffer,
-  type AdminProduct,
-  type AdminSalesProductRow,
-  type AdminSalesTodaySummary,
   uploadAdminProductImage,
   upsertAdminOffer,
   updateAdminProduct,
 } from "../services/adminApi";
+import type {
+  AdminCategory,
+  AdminHomeSlide,
+  AdminOffer,
+  AdminProduct,
+  AdminSalesProductRow,
+  AdminSalesTodaySummary,
+} from "../types/admin";
 
 interface ProductEditFormState {
   name: string;
@@ -35,6 +42,7 @@ interface ProductEditFormState {
   imageUrl: string;
   mayoreo: boolean;
   menudeo: boolean;
+  homeCarouselSlot: HomeCarouselSlotFormValue;
 }
 
 interface ProductCreateFormState {
@@ -45,20 +53,16 @@ interface ProductCreateFormState {
   imageUrl: string;
   mayoreo: boolean;
   menudeo: boolean;
+  homeCarouselSlot: HomeCarouselSlotFormValue;
 }
 
-type AdminSectionView = "resumen" | "productos" | "ofertas" | "ingresos";
-
-function getImageValidationError(selectedFile: File): string {
-  const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-  if (!allowedMimeTypes.includes(selectedFile.type))
-    return "Formato no permitido. Usa JPG, PNG, WEBP o GIF.";
-
-  if (selectedFile.size > 5 * 1024 * 1024)
-    return "La imagen debe pesar máximo 5MB.";
-
-  return "";
+interface HomeSlideCreateFormState {
+  imageUrl: string;
+  displayOrder: string;
 }
+
+type HomeCarouselSlotFormValue = "0" | "1" | "2" | "3";
+type AdminSectionView = "resumen" | "productos" | "inicio" | "ofertas" | "ingresos";
 
 export function AdminDashboard() {
   const navigate = useNavigate();
@@ -67,6 +71,7 @@ export function AdminDashboard() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [offers, setOffers] = useState<AdminOffer[]>([]);
+  const [homeSlides, setHomeSlides] = useState<AdminHomeSlide[]>([]);
   const [salesSummary, setSalesSummary] = useState<AdminSalesTodaySummary>({
     totalRevenue: 0,
     totalUnits: 0,
@@ -76,12 +81,15 @@ export function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isLoadingOffers, setIsLoadingOffers] = useState(true);
+  const [isLoadingHomeSlides, setIsLoadingHomeSlides] = useState(true);
   const [isLoadingSales, setIsLoadingSales] = useState(true);
   const [error, setError] = useState("");
   const [offerError, setOfferError] = useState("");
   const [offerSuccess, setOfferSuccess] = useState("");
   const [salesError, setSalesError] = useState("");
   const [salesMessage, setSalesMessage] = useState("");
+  const [homeSlidesError, setHomeSlidesError] = useState("");
+  const [homeSlidesSuccess, setHomeSlidesSuccess] = useState("");
   const [adminMode, setAdminMode] = useState<"api" | "unknown">("unknown");
   const [lastSyncAt, setLastSyncAt] = useState("");
 
@@ -100,6 +108,7 @@ export function AdminDashboard() {
     imageUrl: "",
     mayoreo: true,
     menudeo: true,
+    homeCarouselSlot: "0",
   });
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
   const [createError, setCreateError] = useState("");
@@ -111,6 +120,11 @@ export function AdminDashboard() {
   const [deleteError, setDeleteError] = useState("");
   const [deleteSuccess, setDeleteSuccess] = useState("");
   const [isSavingOfferProductId, setIsSavingOfferProductId] = useState<number | null>(null);
+  const [isCreatingHomeSlide, setIsCreatingHomeSlide] = useState(false);
+  const [isDeletingHomeSlideId, setIsDeletingHomeSlideId] = useState<number | null>(null);
+  const [isUploadingSlideImage, setIsUploadingSlideImage] = useState(false);
+  const [slideImageUploadError, setSlideImageUploadError] = useState("");
+  const [slideImageUploadSuccess, setSlideImageUploadSuccess] = useState("");
   const [lowStockThreshold, setLowStockThreshold] = useState(5);
   const [createForm, setCreateForm] = useState<ProductCreateFormState>({
     name: "",
@@ -120,6 +134,11 @@ export function AdminDashboard() {
     imageUrl: "",
     mayoreo: true,
     menudeo: true,
+    homeCarouselSlot: "0",
+  });
+  const [homeSlideCreateForm, setHomeSlideCreateForm] = useState<HomeSlideCreateFormState>({
+    imageUrl: "",
+    displayOrder: "1",
   });
 
   const loadOffers = useCallback(async (token: string) => {
@@ -141,6 +160,27 @@ export function AdminDashboard() {
       console.error(offersLoadError);
       setOfferError("No se pudo conectar con la API para cargar ofertas.");
       setIsLoadingOffers(false);
+    }
+  }, []);
+
+  const loadHomeSlides = useCallback(async (token: string) => {
+    setIsLoadingHomeSlides(true);
+    setHomeSlidesError("");
+
+    try {
+      const result = await fetchAdminHomeSlides(token);
+      if (!result.ok) {
+        setHomeSlidesError(result.message ?? "No se pudieron cargar los slides del home.");
+        setIsLoadingHomeSlides(false);
+        return;
+      }
+
+      setHomeSlides(result.slides ?? []);
+      setIsLoadingHomeSlides(false);
+    } catch (homeSlidesLoadError) {
+      console.error(homeSlidesLoadError);
+      setHomeSlidesError("No se pudo conectar con la API para cargar slides.");
+      setIsLoadingHomeSlides(false);
     }
   }, []);
 
@@ -355,8 +395,9 @@ export function AdminDashboard() {
     void loadProducts();
     void loadCategories();
     void loadOffers(safeToken);
+    void loadHomeSlides(safeToken);
     void loadSalesToday(safeToken);
-  }, [loadOffers, loadSalesToday, navigate]);
+  }, [loadHomeSlides, loadOffers, loadSalesToday, navigate]);
 
   useEffect(() => {
     if (!createForm.categoryId && categories.length > 0) {
@@ -398,6 +439,7 @@ export function AdminDashboard() {
       imageUrl: product.image ?? "",
       mayoreo: product.mayoreo === 1,
       menudeo: product.menudeo === 1,
+      homeCarouselSlot: String(product.homeCarouselSlot ?? 0) as HomeCarouselSlotFormValue,
     });
   }
 
@@ -583,6 +625,10 @@ export function AdminDashboard() {
     const parsedCategoryId = Number(createForm.categoryId);
     const parsedPrice = Number(createForm.price);
     const parsedStock = Number(createForm.stock);
+    const parsedHomeCarouselSlot = Number(createForm.homeCarouselSlot);
+    const homeCarouselSlot = (
+      parsedHomeCarouselSlot >= 1 && parsedHomeCarouselSlot <= 3 ? parsedHomeCarouselSlot : 0
+    ) as 0 | 1 | 2 | 3;
 
     if (!createForm.name.trim()) {
       setCreateError("El nombre del producto es obligatorio.");
@@ -624,6 +670,7 @@ export function AdminDashboard() {
         imageUrl: createForm.imageUrl.trim(),
         mayoreo: createForm.mayoreo ? 1 : 0,
         menudeo: createForm.menudeo ? 1 : 0,
+        homeCarouselSlot,
       }, token);
 
       if (!result.ok || !result.product) {
@@ -643,6 +690,7 @@ export function AdminDashboard() {
         imageUrl: "",
         mayoreo: true,
         menudeo: true,
+        homeCarouselSlot: "0",
       }));
       setIsCreatingProduct(false);
     } catch (createProductError) {
@@ -659,6 +707,10 @@ export function AdminDashboard() {
     // Validaciones básicas antes de enviar al backend.
     const parsedPrice = Number(editForm.price);
     const parsedStock = Number(editForm.stock);
+    const parsedHomeCarouselSlot = Number(editForm.homeCarouselSlot);
+    const homeCarouselSlot = (
+      parsedHomeCarouselSlot >= 1 && parsedHomeCarouselSlot <= 3 ? parsedHomeCarouselSlot : 0
+    ) as 0 | 1 | 2 | 3;
 
     if (!editForm.name.trim()) {
       setEditError("El nombre del producto es obligatorio.");
@@ -696,6 +748,7 @@ export function AdminDashboard() {
         imageUrl: editForm.imageUrl.trim(),
         mayoreo: editForm.mayoreo ? 1 : 0,
         menudeo: editForm.menudeo ? 1 : 0,
+        homeCarouselSlot,
       }, token);
 
       if (!result.ok || !result.product) {
@@ -716,6 +769,147 @@ export function AdminDashboard() {
       console.error(saveError);
       setEditError("No se pudo conectar con la API para guardar los cambios.");
       setIsSavingProduct(false);
+    }
+  }
+
+  async function handleSlideImageFileSelection(event: ChangeEvent<HTMLInputElement>) {
+    const selectedFile = event.target.files?.[0];
+    if (!selectedFile) return;
+
+    const validationMessage = getImageValidationError(selectedFile);
+    if (validationMessage) {
+      setSlideImageUploadError(validationMessage);
+      setSlideImageUploadSuccess("");
+      event.target.value = "";
+      return;
+    }
+
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      setSlideImageUploadError("Sesión no válida. Vuelve a iniciar sesión.");
+      setSlideImageUploadSuccess("");
+      event.target.value = "";
+      return;
+    }
+
+    setIsUploadingSlideImage(true);
+    setSlideImageUploadError("");
+    setSlideImageUploadSuccess("");
+
+    try {
+      const uploadResult = await uploadAdminProductImage(selectedFile, token);
+      if (!uploadResult.ok || !uploadResult.imageUrl) {
+        setSlideImageUploadError(uploadResult.message ?? "No se pudo subir la imagen del slide.");
+        setIsUploadingSlideImage(false);
+        event.target.value = "";
+        return;
+      }
+
+      setHomeSlideCreateForm((prevForm) => ({ ...prevForm, imageUrl: uploadResult.imageUrl ?? "" }));
+      setSlideImageUploadSuccess("Imagen del slide subida correctamente.");
+      setIsUploadingSlideImage(false);
+      event.target.value = "";
+    } catch (slideUploadError) {
+      console.error(slideUploadError);
+      setSlideImageUploadError("No se pudo conectar con la API para subir la imagen.");
+      setIsUploadingSlideImage(false);
+      event.target.value = "";
+    }
+  }
+
+  async function handleCreateHomeSlide(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const imageUrl = homeSlideCreateForm.imageUrl.trim();
+    const parsedDisplayOrder = Number(homeSlideCreateForm.displayOrder);
+    const displayOrder = Number.isInteger(parsedDisplayOrder) && parsedDisplayOrder > 0
+      ? parsedDisplayOrder
+      : 1;
+
+    if (!imageUrl) {
+      setHomeSlidesError("La imagen del slide es obligatoria.");
+      setHomeSlidesSuccess("");
+      return;
+    }
+
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      setHomeSlidesError("Sesión no válida. Vuelve a iniciar sesión.");
+      setHomeSlidesSuccess("");
+      return;
+    }
+
+    setIsCreatingHomeSlide(true);
+    setHomeSlidesError("");
+    setHomeSlidesSuccess("");
+
+    try {
+      const result = await createAdminHomeSlide(
+        {
+          imageUrl,
+          displayOrder,
+          isActive: 1,
+        },
+        token
+      );
+
+      if (!result.ok || !result.slide) {
+        setHomeSlidesError(result.message ?? "No se pudo crear el slide.");
+        setIsCreatingHomeSlide(false);
+        return;
+      }
+
+      const createdSlide = result.slide;
+
+      setHomeSlides((prevSlides) =>
+        [...prevSlides, createdSlide].sort(
+          (leftSlide, rightSlide) => leftSlide.displayOrder - rightSlide.displayOrder
+        )
+      );
+      setHomeSlideCreateForm({ imageUrl: "", displayOrder: "1" });
+      setSlideImageUploadError("");
+      setSlideImageUploadSuccess("");
+      setHomeSlidesSuccess("Slide creado correctamente.");
+      setIsCreatingHomeSlide(false);
+    } catch (slideCreateError) {
+      console.error(slideCreateError);
+      setHomeSlidesError("No se pudo conectar con la API para crear el slide.");
+      setIsCreatingHomeSlide(false);
+    }
+  }
+
+  async function handleDeleteHomeSlide(slideId: number) {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      setHomeSlidesError("Sesión no válida. Vuelve a iniciar sesión.");
+      setHomeSlidesSuccess("");
+      return;
+    }
+
+    const shouldDelete = globalThis.confirm(
+      "¿Seguro que quieres eliminar este slide del banner principal?"
+    );
+    if (!shouldDelete) return;
+
+    setIsDeletingHomeSlideId(slideId);
+    setHomeSlidesError("");
+    setHomeSlidesSuccess("");
+
+    try {
+      const result = await deleteAdminHomeSlide({ id: slideId }, token);
+      if (!result.ok) {
+        setHomeSlidesError(result.message ?? "No se pudo eliminar el slide.");
+        setIsDeletingHomeSlideId(null);
+        return;
+      }
+
+      setHomeSlides((prevSlides) => prevSlides.filter((slide) => slide.id !== slideId));
+      setHomeSlidesSuccess("Slide eliminado correctamente.");
+      setIsDeletingHomeSlideId(null);
+    } catch (slideDeleteError) {
+      console.error(slideDeleteError);
+      setHomeSlidesError("No se pudo conectar con la API para eliminar el slide.");
+      setIsDeletingHomeSlideId(null);
     }
   }
 
@@ -759,6 +953,13 @@ export function AdminDashboard() {
             onClick={() => setActiveSection("productos")}
           >
             Productos
+          </button>
+          <button
+            type="button"
+            className={`admin-nav-item ${activeSection === "inicio" ? "admin-nav-item--active" : ""}`}
+            onClick={() => setActiveSection("inicio")}
+          >
+            Inicio (Slides)
           </button>
           <button
             type="button"
@@ -981,6 +1182,25 @@ export function AdminDashboard() {
               </label>
 
               <label className="admin-edit-label">
+                <span>Carrusel Home</span>
+                <select
+                  className="admin-edit-input"
+                  value={createForm.homeCarouselSlot}
+                  onChange={(event) =>
+                    setCreateForm((prevForm) => ({
+                      ...prevForm,
+                      homeCarouselSlot: event.target.value as HomeCarouselSlotFormValue,
+                    }))
+                  }
+                >
+                  <option value="0">Sin carrusel</option>
+                  <option value="1">Carrusel 1 (Destacados)</option>
+                  <option value="2">Carrusel 2 (Arte y Manualidades)</option>
+                  <option value="3">Carrusel 3 (Oficina y Escolares)</option>
+                </select>
+              </label>
+
+              <label className="admin-edit-label">
                 <span>Imagen (URL)</span>
                 <input
                   type="url"
@@ -1071,6 +1291,7 @@ export function AdminDashboard() {
                     <th>Stock</th>
                     <th>Mayoreo</th>
                     <th>Menudeo</th>
+                    <th>Carrusel</th>
                     <th>Oferta</th>
                     <th>Acciones</th>
                   </tr>
@@ -1110,6 +1331,13 @@ export function AdminDashboard() {
                         >
                           {product.menudeo ? "Activo" : "No"}
                         </span>
+                      </td>
+                      <td>
+                        {product.homeCarouselSlot >= 1 && product.homeCarouselSlot <= 3 ? (
+                          <span className="admin-flag admin-flag--on">Carrusel {product.homeCarouselSlot}</span>
+                        ) : (
+                          <span className="admin-flag admin-flag--off">Sin carrusel</span>
+                        )}
                       </td>
                       <td>
                         {product.isOffer === 1 && product.offerPrice !== null ? (
@@ -1200,6 +1428,25 @@ export function AdminDashboard() {
                 </label>
 
                 <label className="admin-edit-label">
+                  <span>Carrusel Home</span>
+                  <select
+                    className="admin-edit-input"
+                    value={editForm.homeCarouselSlot}
+                    onChange={(event) =>
+                      setEditForm((prevForm) => ({
+                        ...prevForm,
+                        homeCarouselSlot: event.target.value as HomeCarouselSlotFormValue,
+                      }))
+                    }
+                  >
+                    <option value="0">Sin carrusel</option>
+                    <option value="1">Carrusel 1 (Destacados)</option>
+                    <option value="2">Carrusel 2 (Arte y Manualidades)</option>
+                    <option value="3">Carrusel 3 (Oficina y Escolares)</option>
+                  </select>
+                </label>
+
+                <label className="admin-edit-label">
                   <span>Imagen (URL)</span>
                   <input
                     type="url"
@@ -1281,6 +1528,115 @@ export function AdminDashboard() {
           {!editingProductId && editSuccess && <p className="admin-edit-success">{editSuccess}</p>}
           {deleteError && <p className="admin-auth-error">{deleteError}</p>}
           {deleteSuccess && <p className="admin-edit-success">{deleteSuccess}</p>}
+          </section>
+        )}
+
+        {activeSection === "inicio" && (
+          <section className="admin-info-panel admin-module-section">
+            <div className="admin-panel-header">
+              <h2>Inicio: Carruseles y Slide principal</h2>
+              <p>
+                Configura qué productos van al carrusel 1, 2 o 3 desde la sección de productos.
+                Aquí se administra el slide principal con imagen completa de todo el banner.
+              </p>
+            </div>
+
+            <form className="admin-create-form admin-surface-card" onSubmit={handleCreateHomeSlide}>
+              <h3>Agregar imagen al slide principal</h3>
+              <div className="admin-edit-grid">
+                <label className="admin-edit-label">
+                  <span>Imagen (URL)</span>
+                  <input
+                    type="url"
+                    className="admin-edit-input"
+                    value={homeSlideCreateForm.imageUrl}
+                    onChange={(event) =>
+                      setHomeSlideCreateForm((prevForm) => ({ ...prevForm, imageUrl: event.target.value }))
+                    }
+                    placeholder="https://..."
+                  />
+                </label>
+
+                <label className="admin-edit-label">
+                  <span>Imagen (archivo)</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="admin-edit-input admin-edit-input--file"
+                    onChange={(event) => void handleSlideImageFileSelection(event)}
+                    disabled={isUploadingSlideImage}
+                  />
+                </label>
+
+                <label className="admin-edit-label">
+                  <span>Orden de slide</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    className="admin-edit-input"
+                    value={homeSlideCreateForm.displayOrder}
+                    onChange={(event) =>
+                      setHomeSlideCreateForm((prevForm) => ({
+                        ...prevForm,
+                        displayOrder: event.target.value,
+                      }))
+                    }
+                  />
+                </label>
+              </div>
+
+              {homeSlideCreateForm.imageUrl && (
+                <div className="admin-slide-preview-wrap">
+                  <img
+                    src={homeSlideCreateForm.imageUrl}
+                    alt="Vista previa de slide principal"
+                    className="admin-slide-preview"
+                  />
+                </div>
+              )}
+
+              {slideImageUploadError && <p className="admin-auth-error">{slideImageUploadError}</p>}
+              {slideImageUploadSuccess && <p className="admin-edit-success">{slideImageUploadSuccess}</p>}
+              {homeSlidesError && <p className="admin-auth-error">{homeSlidesError}</p>}
+              {homeSlidesSuccess && <p className="admin-edit-success">{homeSlidesSuccess}</p>}
+
+              <div className="admin-edit-actions">
+                <button
+                  type="submit"
+                  className="admin-row-action-button admin-row-action-button--save"
+                  disabled={isCreatingHomeSlide || isUploadingSlideImage}
+                >
+                  {isCreatingHomeSlide ? "Guardando..." : "Guardar slide"}
+                </button>
+              </div>
+            </form>
+
+            {isLoadingHomeSlides && <p>Cargando slides del home...</p>}
+            {!isLoadingHomeSlides && homeSlides.length === 0 && !homeSlidesError && (
+              <p>No hay slides configurados todavía.</p>
+            )}
+            {!isLoadingHomeSlides && homeSlides.length > 0 && (
+              <div className="admin-home-slides-grid">
+                {homeSlides.map((slide) => (
+                  <article key={slide.id} className="admin-home-slide-card admin-surface-card">
+                    <img src={slide.imageUrl} alt={`Slide ${slide.id}`} className="admin-home-slide-image" />
+                    <div className="admin-home-slide-meta">
+                      <p>Slide #{slide.id}</p>
+                      <p>Orden: {slide.displayOrder}</p>
+                    </div>
+                    <button
+                      type="button"
+                      className="admin-row-action-button admin-row-action-button--danger"
+                      onClick={() => void handleDeleteHomeSlide(slide.id)}
+                      disabled={isDeletingHomeSlideId === slide.id}
+                    >
+                      {isDeletingHomeSlideId === slide.id ? "Eliminando..." : "Eliminar"}
+                    </button>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
         )}
 

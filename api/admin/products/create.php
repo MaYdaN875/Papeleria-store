@@ -7,7 +7,7 @@
  * - Requiere sesión admin válida.
  */
 
-require_once __DIR__ . '/_admin_common.php';
+require_once __DIR__ . '/../../_admin_common.php';
 
 adminHandleCors(['POST']);
 adminRequireMethod('POST');
@@ -35,6 +35,7 @@ $name = trim((string)($data['name'] ?? ''));
 $price = isset($data['price']) ? (float)$data['price'] : -1;
 $stock = isset($data['stock']) ? (int)$data['stock'] : -1;
 $imageUrl = trim((string)($data['image_url'] ?? ''));
+$homeCarouselSlot = isset($data['home_carousel_slot']) ? (int)$data['home_carousel_slot'] : 0;
 $mayoreoRaw = $data['mayoreo'] ?? 0;
 $menudeoRaw = $data['menudeo'] ?? 0;
 $mayoreo = ($mayoreoRaw === 1 || $mayoreoRaw === '1' || $mayoreoRaw === true) ? 1 : 0;
@@ -96,7 +97,9 @@ try {
 
   $newId = (int)$pdo->lastInsertId();
   adminUpsertPrimaryProductImage($pdo, $newId, $imageUrl, $name);
+  adminUpsertHomeCarouselAssignment($pdo, $newId, $homeCarouselSlot);
 
+  $homeCarouselSql = adminHomeCarouselSqlParts($pdo, 'p', 'hca');
   $offerSql = adminOfferSqlParts($pdo, 'p', 'po');
   $imageSql = adminImageSqlParts($pdo, 'p', 'pimg');
   $selectStmt = $pdo->prepare("
@@ -108,11 +111,13 @@ try {
       p.stock,
       p.mayoreo,
       p.menudeo,
+      {$homeCarouselSql['select']},
       {$offerSql['select']},
       {$imageSql['select']},
       c.name AS category
     FROM products p
     LEFT JOIN categories c ON c.id = p.category_id
+    {$homeCarouselSql['join']}
     {$offerSql['join']}
     {$imageSql['join']}
     WHERE p.id = :id

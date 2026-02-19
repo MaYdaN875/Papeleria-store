@@ -7,7 +7,7 @@
  * - Requiere sesión admin válida (token Bearer).
  */
 
-require_once __DIR__ . '/_admin_common.php';
+require_once __DIR__ . '/../../_admin_common.php';
 
 adminHandleCors(['GET']);
 adminRequireMethod('GET');
@@ -18,6 +18,7 @@ try {
 
   $offerSql = adminOfferSqlParts($pdo, 'p', 'po');
   $imageSql = adminImageSqlParts($pdo, 'p', 'pimg');
+  $homeCarouselSql = adminHomeCarouselSqlParts($pdo, 'p', 'hca');
 
   $stmt = $pdo->query("
     SELECT
@@ -28,11 +29,13 @@ try {
       p.stock,
       p.mayoreo,
       p.menudeo,
+      {$homeCarouselSql['select']},
       {$offerSql['select']},
       {$imageSql['select']},
       c.name AS category
     FROM products p
     LEFT JOIN categories c ON c.id = p.category_id
+    {$homeCarouselSql['join']}
     {$offerSql['join']}
     {$imageSql['join']}
     WHERE p.is_active = 1

@@ -7,7 +7,7 @@
  * - Incluye categoría y precio de oferta activo (si existe).
  */
 
-require_once __DIR__ . '/_admin_common.php';
+require_once __DIR__ . '/../_admin_common.php';
 
 adminHandleCors(['GET']);
 adminRequireMethod('GET');
@@ -31,6 +31,14 @@ try {
   ");
   $imagesTableExists = ((int)$imagesTableStmt->fetchColumn()) > 0;
 
+  $homeCarouselTableStmt = $pdo->query("
+    SELECT COUNT(*)
+    FROM information_schema.tables
+    WHERE table_schema = DATABASE()
+      AND table_name = 'home_carousel_assignments'
+  ");
+  $homeCarouselTableExists = ((int)$homeCarouselTableStmt->fetchColumn()) > 0;
+
   $imageHasIsPrimary = false;
   if ($imagesTableExists) {
     $isPrimaryColumnStmt = $pdo->query("
@@ -47,9 +55,17 @@ try {
     ? "LEFT JOIN product_offers po ON po.product_id = p.id AND po.is_active = 1"
     : "";
 
+  $homeCarouselJoin = $homeCarouselTableExists
+    ? "LEFT JOIN home_carousel_assignments hca ON hca.product_id = p.id"
+    : "";
+
   $offersSelect = $offersTableExists
     ? "CASE WHEN po.product_id IS NULL THEN 0 ELSE 1 END AS is_offer, po.offer_price,"
     : "0 AS is_offer, NULL AS offer_price,";
+
+  $homeCarouselSelect = $homeCarouselTableExists
+    ? "COALESCE(hca.carousel_slot, 0) AS home_carousel_slot,"
+    : "0 AS home_carousel_slot,";
 
   if ($imagesTableExists) {
     $imagesJoin = $imageHasIsPrimary
@@ -87,6 +103,7 @@ try {
       p.stock,
       p.mayoreo,
       p.menudeo,
+      $homeCarouselSelect
       p.price AS original_price,
       $offersSelect
       CASE
@@ -103,6 +120,7 @@ try {
     FROM products p
     LEFT JOIN categories c ON c.id = p.category_id
     $offersJoin
+    $homeCarouselJoin
     $imagesJoin
     WHERE p.is_active = 1
     ORDER BY p.id DESC
@@ -116,6 +134,8 @@ try {
     $product['stock'] = (int)$product['stock'];
     $product['mayoreo'] = $product['mayoreo'] ? 1 : 0;
     $product['menudeo'] = $product['menudeo'] ? 1 : 0;
+    $slot = isset($product['home_carousel_slot']) ? (int)$product['home_carousel_slot'] : 0;
+    $product['home_carousel_slot'] = ($slot >= 1 && $slot <= 3) ? $slot : 0;
     $product['is_offer'] = $product['is_offer'] ? 1 : 0;
     $product['original_price'] = (float)$product['original_price'];
     $product['offer_price'] = isset($product['offer_price']) ? (float)$product['offer_price'] : null;

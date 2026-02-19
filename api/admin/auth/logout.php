@@ -6,7 +6,7 @@
  * - Revoca sesión admin actual (token Bearer).
  */
 
-require_once __DIR__ . '/_admin_common.php';
+require_once __DIR__ . '/../../_admin_common.php';
 
 adminHandleCors(['POST']);
 adminRequireMethod('POST');

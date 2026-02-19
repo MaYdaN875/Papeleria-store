@@ -8,7 +8,7 @@
  * - Requiere sesión admin válida.
  */
 
-require_once __DIR__ . '/_admin_common.php';
+require_once __DIR__ . '/../../_admin_common.php';
 
 adminHandleCors(['POST']);
 adminRequireMethod('POST');
@@ -76,7 +76,7 @@ try {
   $randomSuffix = bin2hex(random_bytes(6));
   $fileName = $safeBaseName . '-' . date('YmdHis') . '-' . $randomSuffix . '.' . $extension;
 
-  $uploadDir = __DIR__ . '/uploads/products';
+  $uploadDir = dirname(__DIR__, 2) . '/uploads/products';
   if (!is_dir($uploadDir)) {
     if (!mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
       adminJsonResponse(500, ['ok' => false, 'message' => 'No se pudo crear la carpeta de imágenes']);

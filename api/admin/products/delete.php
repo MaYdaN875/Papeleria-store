@@ -8,7 +8,7 @@
  *   de llaves foráneas.
  * - Requiere sesión admin válida.
  */
-require_once __DIR__ . '/_admin_common.php';
+require_once __DIR__ . '/../../_admin_common.php';
 
 adminHandleCors(['POST']);
 adminRequireMethod('POST');

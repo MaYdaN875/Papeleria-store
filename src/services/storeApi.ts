@@ -1,6 +1,9 @@
 import type { Product } from "../types/Product"
+import type { StoreHomeSlide, StoreHomeSlidesResponse, StoreProductsResponse } from "../types/store"
+import { buildCandidateApiBases, getApiBase } from "./api/base"
 
-const API_BASE = (import.meta.env.VITE_API_URL ?? "").trim().replace(/\/$/, "")
+export type { StoreHomeSlide, StoreHomeSlidesResponse, StoreProductsResponse } from "../types/store"
+const API_BASE = getApiBase()
 
 type BinaryLike = 0 | 1 | "0" | "1" | boolean
 
@@ -13,6 +16,7 @@ interface RawStoreProduct {
     stock: number | string
     mayoreo?: BinaryLike
     menudeo?: BinaryLike
+    home_carousel_slot?: number | string
     is_offer?: BinaryLike
     original_price?: number | string
     offer_price?: number | string | null
@@ -21,23 +25,10 @@ interface RawStoreProduct {
     price?: number | string
 }
 
-interface StoreProductsResponse {
-    ok: boolean
-    message?: string
-    products?: Product[]
-}
-
-function buildCandidateApiBases(base: string): string[] {
-    const normalizedBase = base.trim().replace(/\/$/, "")
-    if (!normalizedBase) return [""]
-
-    const variants = new Set<string>([normalizedBase])
-    variants.add(normalizedBase.replace("papelería", "papeleria"))
-    variants.add(normalizedBase.replace("papeleria", "papelería"))
-    variants.add(normalizedBase.replace("://www.", "://"))
-    variants.add(normalizedBase.replace("://", "://www."))
-
-    return Array.from(variants).filter((value) => value.length > 0)
+interface RawStoreHomeSlide {
+    id: number | string
+    image_url: string
+    display_order?: number | string
 }
 
 function toBooleanFlag(value: RawStoreProduct["mayoreo"]): boolean {
@@ -77,12 +68,24 @@ function normalizeStoreProduct(raw: RawStoreProduct, apiBase: string): Product {
         stock: Number(raw.stock) || 0,
         mayoreo: toBooleanFlag(raw.mayoreo),
         menudeo: toBooleanFlag(raw.menudeo),
+        homeCarouselSlot: (() => {
+            const rawSlot = Number(raw.home_carousel_slot ?? 0) || 0
+            return rawSlot >= 1 && rawSlot <= 3 ? rawSlot : 0
+        })(),
         isOffer: toBooleanFlag(raw.is_offer),
         price: finalPrice,
         originalPrice: hasDiscount ? originalPrice : undefined,
         discountPercentage: hasDiscount
             ? Number(raw.discount_percentage) || Math.round(((originalPrice - finalPrice) / originalPrice) * 100)
             : undefined,
+    }
+}
+
+function normalizeStoreHomeSlide(raw: RawStoreHomeSlide, apiBase: string): StoreHomeSlide {
+    return {
+        id: Number(raw.id) || 0,
+        imageUrl: resolveStoreImageUrl(raw.image_url, apiBase),
+        displayOrder: Number(raw.display_order) || 1,
     }
 }
 
@@ -99,7 +102,7 @@ export async function fetchStoreProducts(): Promise<StoreProductsResponse> {
 
     for (const base of candidateBases) {
         try {
-            const response = await fetch(`${base}/products_list_public.php`)
+            const response = await fetch(`${base}/public/products.php`)
 
             if (!response.ok) {
                 const errorBody = (await response.json().catch(() => ({}))) as Partial<StoreProductsResponse>
@@ -135,5 +138,57 @@ export async function fetchStoreProducts(): Promise<StoreProductsResponse> {
     return {
         ok: false,
         message: `No se pudo conectar a la API de tienda. ${lastNetworkError}`,
+    }
+}
+
+export async function fetchStoreHomeSlides(): Promise<StoreHomeSlidesResponse> {
+    const candidateBases = buildCandidateApiBases(API_BASE)
+    if (candidateBases.length === 0 || !candidateBases[0]) {
+        return {
+            ok: false,
+            message: "VITE_API_URL no está configurada.",
+        }
+    }
+
+    let lastNetworkError = ""
+
+    for (const base of candidateBases) {
+        try {
+            const response = await fetch(`${base}/public/slides.php`)
+
+            if (!response.ok) {
+                const errorBody = (await response.json().catch(() => ({}))) as Partial<StoreHomeSlidesResponse>
+                return {
+                    ok: false,
+                    message: errorBody.message ?? "No se pudieron cargar los slides de home.",
+                }
+            }
+
+            const body = (await response.json()) as {
+                ok: boolean
+                message?: string
+                slides?: RawStoreHomeSlide[]
+            }
+
+            if (!body.ok) {
+                return {
+                    ok: false,
+                    message: body.message ?? "No se pudieron cargar los slides de home.",
+                }
+            }
+
+            return {
+                ok: true,
+                message: body.message,
+                slides: (body.slides ?? []).map((slide) => normalizeStoreHomeSlide(slide, base)),
+            }
+        } catch (error) {
+            lastNetworkError = error instanceof Error ? error.message : "Error de red desconocido"
+        }
+    }
+
+    return {
+        ok: false,
+        message: `No se pudo conectar a la API de slides. ${lastNetworkError}`,
     }
 }

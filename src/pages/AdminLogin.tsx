@@ -3,7 +3,7 @@
  *
  * Qué hace:
  * - Recibe la contraseña del admin.
- * - Llama al endpoint PHP de login (admin_login.php) vía adminApi.ts.
+ * - Llama al endpoint PHP de login (`/admin/auth/login.php`) vía adminApi.ts.
  * - Si el login es correcto, guarda token en localStorage y redirige a /admin.
  *
  * Datos guardados en localStorage:

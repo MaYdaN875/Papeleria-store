@@ -7,7 +7,7 @@
  * - No elimina productos originales; solo expone productos en oferta.
  */
 
-require_once __DIR__ . '/_admin_common.php';
+require_once __DIR__ . '/../../_admin_common.php';
 
 adminHandleCors(['GET']);
 adminRequireMethod('GET');
