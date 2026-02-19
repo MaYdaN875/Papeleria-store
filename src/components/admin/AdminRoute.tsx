@@ -2,7 +2,7 @@
  * Ruta protegida para el panel de administración.
  *
  * Flujo:
- * 1) AdminLogin guarda "adminToken" en localStorage tras login correcto.
+ * 1) AdminLogin guarda "adminToken" en sessionStorage tras login correcto.
  * 2) Esta ruta revisa ese token.
  * 3) Si no existe, redirige a /admin/login.
  *
@@ -11,9 +11,10 @@
  * - Los endpoints PHP deben validar sesión/token en producción.
  */
 import { Navigate, Outlet } from "react-router";
+import { getAdminToken } from "../../utils/adminSession";
 
 export function AdminRoute() {
-  const hasToken = globalThis.window?.localStorage?.getItem("adminToken");
+  const hasToken = getAdminToken();
 
   if (!hasToken) {
     return <Navigate to="/admin/login" replace />;

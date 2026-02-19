@@ -576,6 +576,15 @@
   color: var(--color-secondary);
 }
 
+.admin-row-action-button--ghost {
+  background: #eef3f5;
+  color: #275f9d;
+}
+
+.admin-row-action-button--ghost:hover {
+  background: #e2ebef;
+}
+
 .admin-row-action-button--danger {
   background: #fde9e6;
   color: #a03d2d;
@@ -652,7 +661,67 @@
 }
 
 .admin-edit-input--file {
-  padding: 6px 8px;
+  padding: 8px;
+  border: 1px dashed #86aab2;
+  background: linear-gradient(180deg, #f8fcfd 0%, #f2f8f9 100%);
+  color: #2b3a3d;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.admin-edit-input--file:hover {
+  border-color: var(--color-primary);
+  background: linear-gradient(180deg, #f4fbfd 0%, #eaf6f8 100%);
+  box-shadow: 0 8px 16px rgba(26, 95, 110, 0.12);
+  transform: translateY(-1px);
+}
+
+.admin-edit-input--file:focus {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 2px rgba(26, 95, 110, 0.14),
+    0 8px 16px rgba(26, 95, 110, 0.12);
+}
+
+.admin-edit-input--file::file-selector-button {
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  margin-right: 10px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.admin-edit-input--file:hover::file-selector-button {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(26, 95, 110, 0.22);
+}
+
+.admin-edit-input--file:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+  border-color: #c8d7db;
+  background: #f4f6f7;
+  box-shadow: none;
+  transform: none;
+}
+
+.admin-edit-input--file:disabled::file-selector-button {
+  cursor: not-allowed;
+  background: #8da3a9;
+  box-shadow: none;
+  transform: none;
 }
 
 .admin-image-preview-wrap {

@@ -2,21 +2,23 @@
  * Pantalla de acceso al panel de administración.
  *
  * Qué hace:
- * - Recibe la contraseña del admin.
+ * - Recibe usuario/correo y contraseña del admin.
  * - Llama al endpoint PHP de login (`/admin/auth/login.php`) vía adminApi.ts.
- * - Si el login es correcto, guarda token en localStorage y redirige a /admin.
+ * - Si el login es correcto, guarda token en sessionStorage y redirige a /admin.
  *
- * Datos guardados en localStorage:
+ * Datos guardados en sessionStorage:
  * - adminToken: token devuelto por backend (usado por rutas protegidas).
- * - isAdmin: bandera legacy para compatibilidad con partes previas del panel.
  * - adminMode: "api" para indicar que el acceso fue validado por backend.
+ * - adminUser: identificador del usuario autenticado.
  */
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { adminLoginRequest } from "../services/adminApi";
+import { getAdminToken, setAdminSession } from "../utils/adminSession";
 
 export function AdminLogin() {
   // Estado del formulario y feedback visual.
+  const [userIdentifier, setUserIdentifier] = useState("admin@godart.com");
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [error, setError] = useState("");
@@ -25,7 +27,7 @@ export function AdminLogin() {
 
   useEffect(() => {
     // Si ya existe token, evita mostrar login y manda directo al dashboard.
-    const hasToken = localStorage.getItem("adminToken");
+    const hasToken = getAdminToken();
     if (hasToken) {
       navigate("/admin", { replace: true });
     }
@@ -36,9 +38,16 @@ export function AdminLogin() {
     setIsSubmitting(true);
     setError("");
 
+    const normalizedUserIdentifier = userIdentifier.trim();
+    if (!normalizedUserIdentifier) {
+      setError("El usuario o correo es obligatorio.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       // Login contra backend PHP.
-      const result = await adminLoginRequest(password);
+      const result = await adminLoginRequest(normalizedUserIdentifier, password);
 
       if (!result.ok || !result.token) {
         setError(result.message ?? "No se pudo iniciar sesión.");
@@ -46,9 +55,7 @@ export function AdminLogin() {
         return;
       }
 
-      localStorage.setItem("adminToken", result.token);
-      localStorage.setItem("isAdmin", "true");
-      localStorage.setItem("adminMode", "api");
+      setAdminSession(result.token, normalizedUserIdentifier);
       navigate("/admin", { replace: true });
     } catch (loginError) {
       console.error(loginError);
@@ -76,6 +83,18 @@ export function AdminLogin() {
         </p>
 
         <form onSubmit={handleSubmit} className="admin-auth-form">
+          <label className="admin-auth-label">
+            <span>Usuario o correo</span>
+            <input
+              type="text"
+              className="admin-auth-input"
+              value={userIdentifier}
+              onChange={(event) => setUserIdentifier(event.target.value)}
+              placeholder="admin@godart.com"
+              autoComplete="username"
+            />
+          </label>
+
           <label className="admin-auth-label">
             <span>Clave de administrador</span>
             <div className="admin-auth-password-wrap">

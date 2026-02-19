@@ -13,18 +13,24 @@ adminHandleCors(['POST']);
 adminRequireMethod('POST');
 
 $data = adminReadJsonBody();
-$email = trim((string)($data['email'] ?? ''));
+$identifier = trim((string)($data['email'] ?? $data['user'] ?? $data['username'] ?? ''));
 $password = (string)($data['password'] ?? '');
 
-if ($email === '' || $password === '') {
-  adminJsonResponse(400, ['ok' => false, 'message' => 'Faltan email o contraseña']);
+if ($identifier === '' || $password === '') {
+  adminJsonResponse(400, ['ok' => false, 'message' => 'Faltan usuario/correo o contraseña']);
 }
 
 try {
   $pdo = adminGetPdo();
 
-  $stmt = $pdo->prepare('SELECT id, password_hash FROM admin_users WHERE email = :email LIMIT 1');
-  $stmt->execute(['email' => $email]);
+  $stmt = $pdo->prepare('
+    SELECT id, password_hash
+    FROM admin_users
+    WHERE email = :identifier
+      OR SUBSTRING_INDEX(email, "@", 1) = :identifier
+    LIMIT 1
+  ');
+  $stmt->execute(['identifier' => $identifier]);
   $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
   if (!$user || !password_verify($password, $user['password_hash'])) {

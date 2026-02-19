@@ -16,6 +16,8 @@ export interface FilterPanelProps {
     readonly onFilterChange: (filters: FilterState) => void
 }
 
+const DEFAULT_MAX_PRICE_FILTER = 100000
+
 const getProducts = (): string[] => {
     return [
         "Bolígrafos",
@@ -162,7 +164,7 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
         brands: [],
         mayoreo: false,
         menudeo: false,
-        priceRange: [0, 1000],
+        priceRange: [0, DEFAULT_MAX_PRICE_FILTER],
     })
 
     const filterProducts = getProducts()
@@ -397,22 +399,22 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
                                     id="price-max"
                                     type="number"
                                     min="0"
-                                    placeholder="1000"
+                                    placeholder={String(DEFAULT_MAX_PRICE_FILTER)}
                                     value={
-                                        filters.priceRange[1] === 1000
+                                        filters.priceRange[1] === DEFAULT_MAX_PRICE_FILTER
                                             ? ""
                                             : filters.priceRange[1]
                                     }
                                     onChange={(e) => {
                                         const value =
                                             e.target.value === ""
-                                                ? 1000
+                                                ? DEFAULT_MAX_PRICE_FILTER
                                                 : Number(e.target.value)
                                         handlePriceChange("max", value)
                                     }}
                                     onBlur={(e) => {
                                         if (e.target.value === "")
-                                            handlePriceChange("max", 1000)
+                                            handlePriceChange("max", DEFAULT_MAX_PRICE_FILTER)
                                     }}
                                     className="price-input"
                                 />

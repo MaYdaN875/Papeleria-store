@@ -9,22 +9,21 @@
  */
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { getImageValidationError } from "../utils/validation";
 import {
   adminLogoutRequest,
   createAdminHomeSlide,
   createAdminProduct,
   deleteAdminHomeSlide,
   deleteAdminProduct,
+  fetchAdminCategories,
   fetchAdminHomeSlides,
   fetchAdminOffers,
-  fetchAdminCategories,
   fetchAdminProducts,
   fetchAdminSalesToday,
   removeAdminOffer,
+  updateAdminProduct,
   uploadAdminProductImage,
   upsertAdminOffer,
-  updateAdminProduct,
 } from "../services/adminApi";
 import type {
   AdminCategory,
@@ -34,6 +33,8 @@ import type {
   AdminSalesProductRow,
   AdminSalesTodaySummary,
 } from "../types/admin";
+import { getImageValidationError } from "../utils/validation";
+import { clearAdminSession, getAdminMode, getAdminToken } from "../utils/adminSession";
 
 interface ProductEditFormState {
   name: string;
@@ -62,7 +63,9 @@ interface HomeSlideCreateFormState {
 }
 
 type HomeCarouselSlotFormValue = "0" | "1" | "2" | "3";
+type HomeCarouselSlotValue = 0 | 1 | 2 | 3;
 type AdminSectionView = "resumen" | "productos" | "inicio" | "ofertas" | "ingresos";
+const MAX_PRODUCTS_PER_HOME_CAROUSEL = 6;
 
 export function AdminDashboard() {
   const navigate = useNavigate();
@@ -120,6 +123,9 @@ export function AdminDashboard() {
   const [deleteError, setDeleteError] = useState("");
   const [deleteSuccess, setDeleteSuccess] = useState("");
   const [isSavingOfferProductId, setIsSavingOfferProductId] = useState<number | null>(null);
+  const [isSavingCarouselProductId, setIsSavingCarouselProductId] = useState<number | null>(null);
+  const [carouselError, setCarouselError] = useState("");
+  const [carouselSuccess, setCarouselSuccess] = useState("");
   const [isCreatingHomeSlide, setIsCreatingHomeSlide] = useState(false);
   const [isDeletingHomeSlideId, setIsDeletingHomeSlideId] = useState<number | null>(null);
   const [isUploadingSlideImage, setIsUploadingSlideImage] = useState(false);
@@ -219,6 +225,29 @@ export function AdminDashboard() {
     return product.isOffer === 1 ? "Quitar oferta" : "Poner oferta";
   }
 
+  function getCarouselActionLabel(product: AdminProduct): string {
+    if (isSavingCarouselProductId === product.id) return "Guardando...";
+    if (product.homeCarouselSlot >= 1 && product.homeCarouselSlot <= 3) {
+      return `Mover (C${product.homeCarouselSlot})`;
+    }
+    return "Asignar carrusel";
+  }
+
+  function getCarouselCapacityError(
+    slot: HomeCarouselSlotValue,
+    excludedProductId?: number
+  ): string {
+    if (slot === 0) return "";
+
+    const assignedCount = products.filter((currentProduct) => {
+      if (excludedProductId && currentProduct.id === excludedProductId) return false;
+      return Number(currentProduct.homeCarouselSlot ?? 0) === slot;
+    }).length;
+
+    if (assignedCount < MAX_PRODUCTS_PER_HOME_CAROUSEL) return "";
+    return `El Carrusel ${slot} ya tiene ${MAX_PRODUCTS_PER_HOME_CAROUSEL} productos. Quita o mueve uno antes de asignar.`;
+  }
+
   function getCreateSubmitLabel(): string {
     if (isUploadingCreateImage) return "Subiendo imagen...";
     if (isCreatingProduct) return "Creando...";
@@ -289,7 +318,7 @@ export function AdminDashboard() {
       return;
     }
 
-    const token = localStorage.getItem("adminToken");
+    const token = getAdminToken();
     if (!token) {
       setImageUploadMessage(targetForm, "Sesión no válida. Vuelve a iniciar sesión.", "error");
       event.target.value = "";
@@ -326,7 +355,7 @@ export function AdminDashboard() {
 
   useEffect(() => {
     // Si no hay token, bloquea acceso al dashboard.
-    const token = localStorage.getItem("adminToken");
+    const token = getAdminToken();
     if (!token) {
       navigate("/admin/login", { replace: true });
       return;
@@ -338,7 +367,7 @@ export function AdminDashboard() {
       setError("");
 
       // Modo guardado desde login (actualmente "api" cuando valida backend).
-      const mode = localStorage.getItem("adminMode");
+      const mode = getAdminMode();
       if (mode === "api") {
         setAdminMode(mode);
       } else {
@@ -410,7 +439,7 @@ export function AdminDashboard() {
 
   async function handleLogout() {
     // Cierre de sesión local: limpia token y estado admin.
-    const token = localStorage.getItem("adminToken");
+    const token = getAdminToken();
     if (token) {
       try {
         await adminLogoutRequest(token);
@@ -419,9 +448,7 @@ export function AdminDashboard() {
       }
     }
 
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("isAdmin");
-    localStorage.removeItem("adminMode");
+    clearAdminSession();
     navigate("/admin/login", { replace: true });
   }
 
@@ -462,7 +489,7 @@ export function AdminDashboard() {
     setIsDeletingProductId(product.id);
 
     try {
-      const token = localStorage.getItem("adminToken");
+      const token = getAdminToken();
       if (!token) {
         setDeleteError("Sesión no válida. Vuelve a iniciar sesión.");
         setIsDeletingProductId(null);
@@ -516,7 +543,7 @@ export function AdminDashboard() {
       return;
     }
 
-    const token = localStorage.getItem("adminToken");
+    const token = getAdminToken();
     if (!token) {
       setOfferError("Sesión no válida. Vuelve a iniciar sesión.");
       setOfferSuccess("");
@@ -576,7 +603,7 @@ export function AdminDashboard() {
   }
 
   async function handleRemoveOffer(productId: number) {
-    const token = localStorage.getItem("adminToken");
+    const token = getAdminToken();
     if (!token) {
       setOfferError("Sesión no válida. Vuelve a iniciar sesión.");
       setOfferSuccess("");
@@ -619,6 +646,81 @@ export function AdminDashboard() {
     }
   }
 
+  async function handleAssignCarousel(product: AdminProduct) {
+    const promptValue = globalThis.prompt(
+      `Carrusel para "${product.name}"\n\n0 = Sin carrusel\n1 = Carrusel 1 (Destacados)\n2 = Carrusel 2 (Arte y Manualidades)\n3 = Carrusel 3 (Oficina y Escolares)`,
+      String(product.homeCarouselSlot ?? 0)
+    );
+    if (promptValue === null) return;
+
+    const parsedSlot = Number(promptValue);
+    if (!Number.isInteger(parsedSlot) || parsedSlot < 0 || parsedSlot > 3) {
+      setCarouselError("Debes ingresar 0, 1, 2 o 3.");
+      setCarouselSuccess("");
+      return;
+    }
+
+    const capacityError = getCarouselCapacityError(
+      parsedSlot as HomeCarouselSlotValue,
+      product.id
+    );
+    if (capacityError) {
+      setCarouselError(capacityError);
+      setCarouselSuccess("");
+      return;
+    }
+
+    const token = getAdminToken();
+    if (!token) {
+      setCarouselError("Sesión no válida. Vuelve a iniciar sesión.");
+      setCarouselSuccess("");
+      return;
+    }
+
+    setCarouselError("");
+    setCarouselSuccess("");
+    setIsSavingCarouselProductId(product.id);
+
+    try {
+      const result = await updateAdminProduct(
+        {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          stock: product.stock,
+          imageUrl: "",
+          mayoreo: product.mayoreo ? 1 : 0,
+          menudeo: product.menudeo ? 1 : 0,
+          homeCarouselSlot: parsedSlot as HomeCarouselSlotValue,
+        },
+        token
+      );
+
+      if (!result.ok || !result.product) {
+        setCarouselError(result.message ?? "No se pudo actualizar el carrusel del producto.");
+        setIsSavingCarouselProductId(null);
+        return;
+      }
+
+      const updatedProduct = result.product;
+      setProducts((prevProducts) =>
+        prevProducts.map((currentProduct) =>
+          currentProduct.id === updatedProduct.id ? updatedProduct : currentProduct
+        )
+      );
+
+      const slotLabel = updatedProduct.homeCarouselSlot === 0
+        ? "sin carrusel"
+        : `Carrusel ${updatedProduct.homeCarouselSlot}`;
+      setCarouselSuccess(`Producto actualizado: ${slotLabel}.`);
+      setIsSavingCarouselProductId(null);
+    } catch (carouselUpdateError) {
+      console.error(carouselUpdateError);
+      setCarouselError("No se pudo conectar con la API para asignar carrusel.");
+      setIsSavingCarouselProductId(null);
+    }
+  }
+
   async function handleCreateProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -628,7 +730,7 @@ export function AdminDashboard() {
     const parsedHomeCarouselSlot = Number(createForm.homeCarouselSlot);
     const homeCarouselSlot = (
       parsedHomeCarouselSlot >= 1 && parsedHomeCarouselSlot <= 3 ? parsedHomeCarouselSlot : 0
-    ) as 0 | 1 | 2 | 3;
+    ) as HomeCarouselSlotValue;
 
     if (!createForm.name.trim()) {
       setCreateError("El nombre del producto es obligatorio.");
@@ -650,12 +752,18 @@ export function AdminDashboard() {
       return;
     }
 
+    const capacityError = getCarouselCapacityError(homeCarouselSlot);
+    if (capacityError) {
+      setCreateError(capacityError);
+      return;
+    }
+
     setIsCreatingProduct(true);
     setCreateError("");
     setCreateSuccess("");
 
     try {
-      const token = localStorage.getItem("adminToken");
+      const token = getAdminToken();
       if (!token) {
         setCreateError("Sesión no válida. Vuelve a iniciar sesión.");
         setIsCreatingProduct(false);
@@ -710,7 +818,7 @@ export function AdminDashboard() {
     const parsedHomeCarouselSlot = Number(editForm.homeCarouselSlot);
     const homeCarouselSlot = (
       parsedHomeCarouselSlot >= 1 && parsedHomeCarouselSlot <= 3 ? parsedHomeCarouselSlot : 0
-    ) as 0 | 1 | 2 | 3;
+    ) as HomeCarouselSlotValue;
 
     if (!editForm.name.trim()) {
       setEditError("El nombre del producto es obligatorio.");
@@ -727,12 +835,18 @@ export function AdminDashboard() {
       return;
     }
 
+    const capacityError = getCarouselCapacityError(homeCarouselSlot, editingProductId);
+    if (capacityError) {
+      setEditError(capacityError);
+      return;
+    }
+
     setIsSavingProduct(true);
     setEditError("");
     setEditSuccess("");
 
     try {
-      const token = localStorage.getItem("adminToken");
+      const token = getAdminToken();
       if (!token) {
         setEditError("Sesión no válida. Vuelve a iniciar sesión.");
         setIsSavingProduct(false);
@@ -784,7 +898,7 @@ export function AdminDashboard() {
       return;
     }
 
-    const token = localStorage.getItem("adminToken");
+    const token = getAdminToken();
     if (!token) {
       setSlideImageUploadError("Sesión no válida. Vuelve a iniciar sesión.");
       setSlideImageUploadSuccess("");
@@ -832,7 +946,7 @@ export function AdminDashboard() {
       return;
     }
 
-    const token = localStorage.getItem("adminToken");
+    const token = getAdminToken();
     if (!token) {
       setHomeSlidesError("Sesión no válida. Vuelve a iniciar sesión.");
       setHomeSlidesSuccess("");
@@ -879,7 +993,7 @@ export function AdminDashboard() {
   }
 
   async function handleDeleteHomeSlide(slideId: number) {
-    const token = localStorage.getItem("adminToken");
+    const token = getAdminToken();
     if (!token) {
       setHomeSlidesError("Sesión no válida. Vuelve a iniciar sesión.");
       setHomeSlidesSuccess("");
@@ -1119,6 +1233,8 @@ export function AdminDashboard() {
           </div>
           {offerError && <p className="admin-auth-error">{offerError}</p>}
           {offerSuccess && <p className="admin-edit-success">{offerSuccess}</p>}
+          {carouselError && <p className="admin-auth-error">{carouselError}</p>}
+          {carouselSuccess && <p className="admin-edit-success">{carouselSuccess}</p>}
           <form className="admin-create-form admin-surface-card" onSubmit={handleCreateProduct}>
             <h3>Crear producto</h3>
 
@@ -1362,6 +1478,14 @@ export function AdminDashboard() {
                             disabled={isDeletingProductId === product.id}
                           >
                             {isDeletingProductId === product.id ? "Eliminando..." : "Eliminar"}
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-row-action-button admin-row-action-button--ghost"
+                            onClick={() => void handleAssignCarousel(product)}
+                            disabled={isSavingCarouselProductId === product.id}
+                          >
+                            {getCarouselActionLabel(product)}
                           </button>
                           <button
                             type="button"

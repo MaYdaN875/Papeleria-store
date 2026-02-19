@@ -251,7 +251,7 @@ function normalizeAdminHomeSlide(raw: RawAdminHomeSlide): AdminHomeSlide {
 }
 
 /** Login admin contra endpoint PHP. */
-export async function adminLoginRequest(password: string): Promise<AdminLoginResponse> {
+export async function adminLoginRequest(userIdentifier: string, password: string): Promise<AdminLoginResponse> {
   if (!API_BASE) {
     return {
       ok: false,
@@ -265,7 +265,7 @@ export async function adminLoginRequest(password: string): Promise<AdminLoginRes
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      email: "admin@godart.com",
+      user: userIdentifier,
       password,
     }),
   });

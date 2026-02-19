@@ -14,6 +14,20 @@ import { fetchStoreProducts } from "../services/storeApi"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
 
+const DEFAULT_MAX_PRICE_FILTER = 100000
+const ALL_PRODUCTS_SKELETON_IDS = [
+    "skeleton-1",
+    "skeleton-2",
+    "skeleton-3",
+    "skeleton-4",
+    "skeleton-5",
+    "skeleton-6",
+    "skeleton-7",
+    "skeleton-8",
+    "skeleton-9",
+    "skeleton-10",
+] as const
+
 /**
  * Página "Todos los productos".
  * Muestra grid de productos con filtros (categoría, marcas, precio, mayoreo/menudeo),
@@ -86,11 +100,12 @@ export const AllProducts = () => {
         brands: [],
         mayoreo: false,
         menudeo: false,
-        priceRange: [0, 1000],
+        priceRange: [0, DEFAULT_MAX_PRICE_FILTER],
     })
     const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
     const [isClosing, setIsClosing] = useState(false)
-    const [storeProducts, setStoreProducts] = useState<Product[] | null>(null)
+    const [storeProducts, setStoreProducts] = useState<Product[]>([])
+    const [shouldUseStaticFallback, setShouldUseStaticFallback] = useState(false)
     const [isLoadingProducts, setIsLoadingProducts] = useState(true)
     const [productsLoadError, setProductsLoadError] = useState("")
 
@@ -114,17 +129,20 @@ export const AllProducts = () => {
                 const result = await fetchStoreProducts()
                 if (!result.ok || !result.products) {
                     setProductsLoadError(result.message ?? "No se pudo cargar catálogo desde la API.")
-                    setStoreProducts(null)
+                    setStoreProducts([])
+                    setShouldUseStaticFallback(true)
                     setIsLoadingProducts(false)
                     return
                 }
 
                 setStoreProducts(result.products)
+                setShouldUseStaticFallback(false)
                 setIsLoadingProducts(false)
             } catch (loadError) {
                 console.error(loadError)
                 setProductsLoadError("No se pudo conectar con la API. Se muestra catálogo local.")
-                setStoreProducts(null)
+                setStoreProducts([])
+                setShouldUseStaticFallback(true)
                 setIsLoadingProducts(false)
             }
         }
@@ -132,7 +150,7 @@ export const AllProducts = () => {
         void loadStoreProducts()
     }, [])
 
-    const baseProducts = storeProducts ?? staticProducts
+    const baseProducts = shouldUseStaticFallback ? staticProducts : storeProducts
 
     // Primero filtrar por búsqueda si existe, luego aplicar filtros adicionales
     const productsAfterSearch = useMemo(() => {
@@ -145,6 +163,7 @@ export const AllProducts = () => {
         () => filterProducts(productsAfterSearch, filters),
         [productsAfterSearch, filters]
     )
+    const hasNoFilteredProducts = !isLoadingProducts && filteredProducts.length === 0
 
     const handleAddToCart = useCallback((product: Product) => {
         addProductToCart(product.name, product.price.toFixed(2))
@@ -226,12 +245,24 @@ export const AllProducts = () => {
                             <p className="no-products-message">{productsLoadError}</p>
                         )}
                         <div className="all-products-grid" id="allProductsGrid">
-                            {filteredProducts.length === 0 ? (
+                            {isLoadingProducts && ALL_PRODUCTS_SKELETON_IDS.map((skeletonId) => (
+                                <article key={skeletonId} className="product-card-skeleton">
+                                    <div className="product-card-skeleton-image product-skeleton-shimmer" />
+                                    <div className="product-card-skeleton-content">
+                                        <div className="product-card-skeleton-line product-skeleton-shimmer" />
+                                        <div className="product-card-skeleton-line product-card-skeleton-line--short product-skeleton-shimmer" />
+                                        <div className="product-card-skeleton-price product-skeleton-shimmer" />
+                                        <div className="product-card-skeleton-button product-skeleton-shimmer" />
+                                    </div>
+                                </article>
+                            ))}
+                            {hasNoFilteredProducts && (
                                 <p className="no-products-message">
                                     No hay productos que coincidan con los
                                     filtros seleccionados.
                                 </p>
-                            ) : (
+                            )}
+                            {!isLoadingProducts && filteredProducts.length > 0 && (
                                 filteredProducts.map((product) => (
                                     <ProductCard
                                         key={product.id}

@@ -17,9 +17,23 @@ import { AdminRoute } from "./components/admin/AdminRoute";
 function App() {
   const location = useLocation();
 
+  /** Evita que el navegador restaure scroll al recargar (queremos iniciar arriba siempre). */
+  useEffect(() => {
+    if (!("scrollRestoration" in globalThis.history)) return;
+
+    const previousScrollRestoration = globalThis.history.scrollRestoration;
+    globalThis.history.scrollRestoration = "manual";
+    return () => {
+      globalThis.history.scrollRestoration = previousScrollRestoration;
+    };
+  }, []);
+
   /** Scroll al inicio en cada cambio de ruta (evita heredar posición de la página anterior). */
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Doble ajuste para evitar que algunos navegadores reapliquen posición guardada al recargar.
+    globalThis.scrollTo(0, 0);
+    const scrollResetTimeout = globalThis.setTimeout(() => globalThis.scrollTo(0, 0), 0);
+    return () => globalThis.clearTimeout(scrollResetTimeout);
   }, [location.pathname]);
 
   const hideLayout =

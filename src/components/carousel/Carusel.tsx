@@ -8,24 +8,25 @@ import { useIsMobile } from "../../hooks/useIsMobile"
 import { useTouchCarousel } from "../../hooks/useTouchCarousel"
 
 interface CarouselProps {
-    type?: "offers" | "products" | "banner"
-    bannerSlides?: CarouselBannerSlide[]
+    readonly type?: "offers" | "products" | "banner"
+    readonly bannerSlides?: CarouselBannerSlide[]
+    readonly showDefaultBannerFallback?: boolean
 }
 
 export interface CarouselBannerSlide {
-    id: number
-    title: string
-    subtitle?: string
-    price?: string
-    oldPrice?: string
-    sku?: string
-    image: string
-    bg?: string
-    badge?: string
-    description?: string
-    icon?: string
-    fullImage?: boolean
-    redirectPath?: string
+    readonly id: number
+    readonly title: string
+    readonly subtitle?: string
+    readonly price?: string
+    readonly oldPrice?: string
+    readonly sku?: string
+    readonly image: string
+    readonly bg?: string
+    readonly badge?: string
+    readonly description?: string
+    readonly icon?: string
+    readonly fullImage?: boolean
+    readonly redirectPath?: string
 }
 
 const defaultBannerOffers: CarouselBannerSlide[] = [
@@ -38,7 +39,11 @@ const defaultBannerOffers: CarouselBannerSlide[] = [
     { id: 7, title: "Estuche Completo para Artistas", subtitle: "Todo lo que necesitas en un set", price: "A: $1,299.99", oldPrice: "De: $1,899.00", sku: "SKU: 543210", image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&h=500&fit=crop", bg: "linear-gradient(180deg, #A8E6E1 0%, #F4DCC9 100%)", badge: "PROMOCIÓN", description: "Incluye lápices, marcadores y más.", icon: "🎨" },
 ]
 
-export function Carusel({ type = "offers", bannerSlides = [] }: CarouselProps) {
+export function Carusel({
+    type = "offers",
+    bannerSlides = [],
+    showDefaultBannerFallback = true,
+}: CarouselProps) {
     const navigate = useNavigate()
     const [currentIndex, setCurrentIndex] = useState(0)
     const [animating, setAnimating] = useState(false)
@@ -57,7 +62,10 @@ export function Carusel({ type = "offers", bannerSlides = [] }: CarouselProps) {
         { id: 2, icon: "🎁", title: "Ofertas en Regalos", subtitle: "Sets especiales de regalo para ocasiones", badge: "-25%" },
         { id: 3, icon: "📚", title: "Útiles Escolares", subtitle: "Imprescindibles para tu regreso a clases", badge: "-20%" },
     ]
-    const bannerOffers = bannerSlides.length > 0 ? bannerSlides : defaultBannerOffers
+    let bannerOffers: CarouselBannerSlide[] = bannerSlides
+    if (bannerSlides.length === 0) {
+        bannerOffers = showDefaultBannerFallback ? defaultBannerOffers : []
+    }
     const totalItems = type === "banner" ? bannerOffers.length : offers.length
 
     // Autoplay: banner siempre; ofertas/products solo en desktop (en móvil sin auto)
