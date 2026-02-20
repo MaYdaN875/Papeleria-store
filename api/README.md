@@ -44,8 +44,8 @@ Estos archivos van en tu servidor Hostinger, dentro de `public_html/api/`
   - Login: `http://localhost:5173/admin/login`
   - Dashboard: `http://localhost:5173/admin`
 - **Producción (dominio):**
-  - Login: `https://godart-papeleria.com/admin/login`
-  - Dashboard: `https://godart-papeleria.com/admin`
+  - Login: `https://godart-papelería.com/admin/login`
+  - Dashboard: `https://godart-papelería.com/admin`
 
 > Si el dominio final cambia, sustituir `godart-papeleria.com` por el dominio activo del proyecto.
 
