@@ -8,8 +8,18 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router"
 import { products as staticProducts } from "../../data/products"
 import { useNotification } from "../../hooks/useNotification"
+import { logoutStoreCustomer } from "../../services/customerApi"
+import { signOutFirebaseSession } from "../../services/firebaseAuth"
 import { fetchStoreProducts } from "../../services/storeApi"
 import type { Product } from "../../types/Product"
+import { syncCartCount } from "../../utils/cart"
+import {
+    clearStoreSession,
+    getStoreAuthChangedEventName,
+    getStoreUser,
+    getStoreUserProvider,
+    getStoreUserToken,
+} from "../../utils/storeSession"
 import { Notification } from "../ui/Notification"
 import { SearchBar } from "./SearchBar"
 
@@ -52,6 +62,20 @@ const CATEGORIES: NavbarCategory[] = [
     },
 ]
 
+function buildStoreUserLabel(fullName: string): string {
+    const normalizedName = fullName.trim()
+    if (!normalizedName) return "Mi cuenta"
+    if (normalizedName.length <= 24) return normalizedName
+
+    const [firstName, lastName] = normalizedName.split(/\s+/)
+    if (firstName && lastName) {
+        const firstAndLastName = `${firstName} ${lastName}`
+        if (firstAndLastName.length <= 24) return firstAndLastName
+    }
+
+    return `${normalizedName.slice(0, 21)}...`
+}
+
 export function Navbar() {
     const { message, showNotification, clearNotification } = useNotification()
     const navigate = useNavigate()
@@ -59,9 +83,10 @@ export function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isMenuClosing, setIsMenuClosing] = useState(false)
     const [searchProducts, setSearchProducts] = useState<Product[]>(staticProducts)
+    const [storeUserName, setStoreUserName] = useState("")
     const [isDesktopCategoriesOpen, setIsDesktopCategoriesOpen] = useState(false)
     const [expandedDesktopCategoryId, setExpandedDesktopCategoryId] = useState<string | null>(null)
-    const desktopCloseTimeoutRef = useRef<number | null>(null)
+    const desktopCloseTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null)
     const preventDesktopOpenUntilRef = useRef(0)
 
     const handleContactClick = useCallback(() => {
@@ -133,7 +158,7 @@ export function Navbar() {
         desktopCloseTimeoutRef.current = globalThis.setTimeout(() => {
             setIsDesktopCategoriesOpen(false)
             desktopCloseTimeoutRef.current = null
-        }, 700)
+        }, 330)
     }
 
     useEffect(() => {
@@ -150,6 +175,26 @@ export function Navbar() {
 
         void loadSearchProducts()
     }, [])
+
+    useEffect(() => {
+        const refreshStoreUser = () => {
+            const currentUser = getStoreUser()
+            setStoreUserName(currentUser?.name ?? "")
+        }
+
+        refreshStoreUser()
+        globalThis.addEventListener("storage", refreshStoreUser)
+        globalThis.addEventListener(getStoreAuthChangedEventName(), refreshStoreUser)
+
+        return () => {
+            globalThis.removeEventListener("storage", refreshStoreUser)
+            globalThis.removeEventListener(getStoreAuthChangedEventName(), refreshStoreUser)
+        }
+    }, [])
+
+    useEffect(() => {
+        syncCartCount()
+    }, [location.pathname, storeUserName])
 
     useEffect(() => {
         return () => {
@@ -175,6 +220,22 @@ export function Navbar() {
             setIsMobileMenuOpen(false)
             setIsMenuClosing(false)
         }, 500)
+    }
+
+    const hasStoreSession = storeUserName.trim() !== ""
+    const storeUserLabel = hasStoreSession ? buildStoreUserLabel(storeUserName) : "Iniciar Sesión"
+
+    const handleStoreLogout = async () => {
+        const provider = getStoreUserProvider()
+        const token = getStoreUserToken()
+        if (provider === "firebase") {
+            await signOutFirebaseSession()
+        } else if (token) {
+            await logoutStoreCustomer(token)
+        }
+        clearStoreSession()
+        showNotification("Sesión de cliente cerrada.")
+        navigate("/")
     }
 
     return (
@@ -332,20 +393,33 @@ export function Navbar() {
                         <Link
                             to="/login"
                             className="btn-login"
-                            aria-label="Iniciar sesión"
+                            aria-label={hasStoreSession ? "Ver cuenta" : "Iniciar sesión"}
+                            title={hasStoreSession ? storeUserName : "Iniciar sesión"}
                         >
                             <span className="btn-login-icon">
                                 <i className="fas fa-user" aria-hidden="true" />
                             </span>
-                            <span className="btn-login-text">Iniciar Sesión</span>
+                            <span className="btn-login-text">
+                                {storeUserLabel}
+                            </span>
                         </Link>
-                        <button
-                            type="button"
-                            className="btn-cta"
-                            onClick={handleContactClick}
-                        >
-                            Contactar
-                        </button>
+                        {hasStoreSession ? (
+                            <button
+                                type="button"
+                                className="btn-cta"
+                                onClick={() => void handleStoreLogout()}
+                            >
+                                Cerrar sesión
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                className="btn-cta"
+                                onClick={handleContactClick}
+                            >
+                                Contactar
+                            </button>
+                        )}
                         <Link
                             to="/cart"
                             className="cart-icon"

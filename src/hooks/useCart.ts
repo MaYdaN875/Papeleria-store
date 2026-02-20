@@ -1,8 +1,17 @@
 import { useCallback, useEffect, useState } from "react"
-import type { CartItem } from "../utils/cart"
+import {
+    getActiveCartItems,
+    saveActiveCartItems,
+    syncCartCount,
+    type CartItem,
+} from "../utils/cart"
+import { getStoreAuthChangedEventName } from "../utils/storeSession"
 
-const CART_STORAGE_KEY = "cart"
 const CART_COUNT_ID = "cartCount"
+
+function removeCartItemById(items: CartItem[], id: number): CartItem[] {
+    return items.filter((item) => item.id !== id)
+}
 
 /**
  * Hook para gestionar el estado del carrito (localStorage).
@@ -14,30 +23,28 @@ export function useCart() {
     const [isFirstLoad, setIsFirstLoad] = useState(true)
 
     const loadCart = useCallback(() => {
-        const cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]")
-        const updatedCart = cart.map((item: CartItem) => ({
-            ...item,
-            quantity: item.quantity || 1,
-        }))
-        setCartItems(updatedCart)
+        setCartItems(getActiveCartItems())
         setIsFirstLoad(false)
     }, [])
 
     useEffect(() => {
         loadCart()
 
-        window.addEventListener("storage", loadCart)
-        window.addEventListener("cartUpdated", loadCart)
+        globalThis.addEventListener("storage", loadCart)
+        globalThis.addEventListener("cartUpdated", loadCart)
+        globalThis.addEventListener(getStoreAuthChangedEventName(), loadCart)
 
         return () => {
-            window.removeEventListener("storage", loadCart)
-            window.removeEventListener("cartUpdated", loadCart)
+            globalThis.removeEventListener("storage", loadCart)
+            globalThis.removeEventListener("cartUpdated", loadCart)
+            globalThis.removeEventListener(getStoreAuthChangedEventName(), loadCart)
         }
     }, [loadCart])
 
     useEffect(() => {
         if (!isFirstLoad) {
-            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems))
+            saveActiveCartItems(cartItems)
+            syncCartCount()
         }
 
         const cartCount = document.getElementById(CART_COUNT_ID)
@@ -50,10 +57,7 @@ export function useCart() {
     const removeItem = useCallback((id: number) => {
         setRemovingId(id)
         setTimeout(() => {
-            setCartItems((prev) => {
-                const updated = prev.filter((item) => item.id !== id)
-                return updated
-            })
+            setCartItems((prev) => removeCartItemById(prev, id))
             setRemovingId(null)
         }, 300)
     }, [])

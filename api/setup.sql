@@ -64,6 +64,32 @@ CREATE TABLE IF NOT EXISTS home_slides (
   INDEX idx_home_slides_active_order (is_active, display_order)
 );
 
+-- Usuarios clientes (tienda)
+CREATE TABLE IF NOT EXISTS customer_users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Sesiones de clientes para login en tienda
+CREATE TABLE IF NOT EXISTS customer_sessions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  customer_user_id INT NOT NULL,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_used_at DATETIME NULL,
+  revoked_at DATETIME NULL,
+  INDEX idx_customer_sessions_user (customer_user_id),
+  INDEX idx_customer_sessions_expires (expires_at),
+  CONSTRAINT fk_customer_sessions_user
+    FOREIGN KEY (customer_user_id) REFERENCES customer_users(id)
+    ON DELETE CASCADE
+);
+
 -- Insertar usuario admin de prueba
 -- Email: admin@godart.com
 -- Contraseña: password

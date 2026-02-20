@@ -11,4 +11,5 @@ require_once __DIR__ . '/core/response.php';
 require_once __DIR__ . '/core/cors.php';
 require_once __DIR__ . '/core/db.php';
 require_once __DIR__ . '/core/auth.php';
+require_once __DIR__ . '/core/customer_auth.php';
 require_once __DIR__ . '/core/catalog.php';
