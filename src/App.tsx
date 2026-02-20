@@ -1,7 +1,7 @@
 /**
  * Raíz de la aplicación God Art.
- * Define rutas, layout global (Navbar, Footer, botón WhatsApp, nav móvil) y
- * comportamiento de scroll al cambiar de página.
+ * Define BrowserRouter, rutas, layout global (Navbar, Footer, botón WhatsApp, nav móvil)
+ * y comportamiento de scroll al cambiar de página.
  *
  * Nota sobre admin:
  * - El panel usa rutas /admin/*
@@ -9,31 +9,27 @@
  * - La protección real de acceso se delega en AdminRoute + backend PHP
  */
 import { useEffect } from "react";
-import { Route, Routes, useLocation } from "react-router";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import { FloatingWhatsAppButton, Footer, MobileBottomNav, Navbar } from "./components/layout";
 import { AllProducts, AdminDashboard, AdminLogin, Cart, Home, Login, ProductDetail, SignUp } from "./pages";
 import { AdminRoute } from "./components/admin/AdminRoute";
 
-function App() {
+function AppContent() {
   const location = useLocation();
 
-  /** Evita que el navegador restaure scroll al recargar (queremos iniciar arriba siempre). */
+  /** Evita que el navegador restaure scroll al recargar. */
   useEffect(() => {
     if (!("scrollRestoration" in globalThis.history)) return;
-
-    const previousScrollRestoration = globalThis.history.scrollRestoration;
+    const prev = globalThis.history.scrollRestoration;
     globalThis.history.scrollRestoration = "manual";
-    return () => {
-      globalThis.history.scrollRestoration = previousScrollRestoration;
-    };
+    return () => { globalThis.history.scrollRestoration = prev; };
   }, []);
 
-  /** Scroll al inicio en cada cambio de ruta (evita heredar posición de la página anterior). */
+  /** Scroll al inicio en cada cambio de ruta. */
   useEffect(() => {
-    // Doble ajuste para evitar que algunos navegadores reapliquen posición guardada al recargar.
     globalThis.scrollTo(0, 0);
-    const scrollResetTimeout = globalThis.setTimeout(() => globalThis.scrollTo(0, 0), 0);
-    return () => globalThis.clearTimeout(scrollResetTimeout);
+    const t = globalThis.setTimeout(() => globalThis.scrollTo(0, 0), 0);
+    return () => globalThis.clearTimeout(t);
   }, [location.pathname]);
 
   const hideLayout =
@@ -60,7 +56,15 @@ function App() {
       {!hideLayout && <Footer />}
       {!hideLayout && <MobileBottomNav />}
     </>
-  )
+  );
 }
 
-export default App
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  );
+}
+
+export default App;
