@@ -1,9 +1,10 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { registerStoreCustomer } from "../services/customerApi";
 import { syncCartCount } from "../utils/cart";
 import { setStoreSession } from "../utils/storeSession";
 import "../styles/signup.css";
+import "../styles/password-recovery.css";
 
 export function SignUp() {
   const navigate = useNavigate();
@@ -15,16 +16,42 @@ export function SignUp() {
   const [phone, setPhone] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registerCooldownSeconds, setRegisterCooldownSeconds] = useState(0);
 
   const passwordMatch = useMemo(() => {
     if (!confirmPassword) return true;
     return password === confirmPassword;
   }, [confirmPassword, password]);
+  let signUpButtonLabel = "Crear Cuenta";
+  if (isSubmitting) {
+    signUpButtonLabel = "Creando cuenta...";
+  } else if (registerCooldownSeconds > 0) {
+    signUpButtonLabel = `Intenta en ${registerCooldownSeconds}s`;
+  }
+
+  useEffect(() => {
+    if (registerCooldownSeconds <= 0) return;
+
+    const timeoutId = globalThis.setTimeout(() => {
+      setRegisterCooldownSeconds((current) => (current > 0 ? current - 1 : 0));
+    }, 1000);
+
+    return () => {
+      globalThis.clearTimeout(timeoutId);
+    };
+  }, [registerCooldownSeconds]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (registerCooldownSeconds > 0) {
+      setError(`Demasiados intentos. Espera ${registerCooldownSeconds}s para reintentar.`);
+      return;
+    }
+
     setError("");
+    setSuccessMessage("");
     setIsSubmitting(true);
 
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
@@ -52,21 +79,49 @@ export function SignUp() {
       return;
     }
 
-    const result = await registerStoreCustomer({
-      name: fullName,
-      email: email.trim().toLowerCase(),
-      password,
-    });
+    let result: Awaited<ReturnType<typeof registerStoreCustomer>>;
+    try {
+      result = await registerStoreCustomer({
+        name: fullName,
+        email: email.trim().toLowerCase(),
+        password,
+      });
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "No se pudo crear la cuenta.");
+      setIsSubmitting(false);
+      return;
+    }
 
-    if (!result.ok || !result.token || !result.user) {
+    if (!result.ok) {
+      if ((result.retryAfterSeconds ?? 0) > 0) {
+        setRegisterCooldownSeconds(Math.ceil(result.retryAfterSeconds ?? 0));
+      }
+      if (result.requiresEmailVerification) {
+        setError("");
+        setSuccessMessage(
+          result.message ?? "Ese correo ya existe y requiere verificación. Reenviamos el enlace."
+        );
+        setIsSubmitting(false);
+        return;
+      }
       setError(result.message ?? "No se pudo crear la cuenta.");
       setIsSubmitting(false);
       return;
     }
 
-    setStoreSession(result.token, result.user);
-    syncCartCount();
-    navigate("/", { replace: true });
+    if (result.token && result.user) {
+      setStoreSession(result.token, result.user);
+      syncCartCount();
+      navigate("/", { replace: true });
+      return;
+    }
+
+    setSuccessMessage(
+      result.message ?? "Cuenta creada. Revisa tu correo y verifica tu cuenta para iniciar sesión."
+    );
+    setPassword("");
+    setConfirmPassword("");
+    setIsSubmitting(false);
   }
 
   return (
@@ -236,14 +291,17 @@ export function SignUp() {
                 </span>
               </label>
 
-              {error && <p className="error-text">{error}</p>}
+              {error && <p className="password-feedback password-feedback--error">{error}</p>}
+              {successMessage && (
+                <p className="password-feedback password-feedback--success">{successMessage}</p>
+              )}
 
               <button
                 type="submit"
                 className="signup-btn"
-                disabled={!passwordMatch || !agreeTerms || isSubmitting}
+                disabled={!passwordMatch || !agreeTerms || isSubmitting || registerCooldownSeconds > 0}
               >
-                {isSubmitting ? "Creando cuenta..." : "Crear Cuenta"}
+                {signUpButtonLabel}
               </button>
             </form>
 

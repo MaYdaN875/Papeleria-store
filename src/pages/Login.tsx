@@ -1,6 +1,11 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { fetchStoreCustomerSession, loginStoreCustomer, logoutStoreCustomer } from "../services/customerApi";
+import {
+  fetchStoreCustomerSession,
+  loginStoreCustomer,
+  logoutStoreCustomer,
+  resendStoreEmailVerification,
+} from "../services/customerApi";
 import { isFirebaseAuthEnabled, signInWithGoogleFirebase, signOutFirebaseSession } from "../services/firebaseAuth";
 import { syncCartCount } from "../utils/cart";
 import {
@@ -11,6 +16,7 @@ import {
   setStoreSession,
 } from "../utils/storeSession";
 import "../styles/login.css";
+import "../styles/password-recovery.css";
 
 export function Login() {
   const navigate = useNavigate();
@@ -20,6 +26,10 @@ export function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [infoMessage, setInfoMessage] = useState("");
+  const [loginCooldownSeconds, setLoginCooldownSeconds] = useState(0);
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
+  const [showResendVerification, setShowResendVerification] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(() => !!getStoreUserToken());
   const [sessionUserName, setSessionUserName] = useState(() => getStoreUser()?.name ?? "");
   const [sessionUserEmail, setSessionUserEmail] = useState(() => getStoreUser()?.email ?? "");
@@ -61,12 +71,37 @@ export function Login() {
     void verifySession();
   }, []);
 
+  useEffect(() => {
+    if (loginCooldownSeconds <= 0) return;
+
+    const timeoutId = globalThis.setTimeout(() => {
+      setLoginCooldownSeconds((current) => (current > 0 ? current - 1 : 0));
+    }, 1000);
+
+    return () => {
+      globalThis.clearTimeout(timeoutId);
+    };
+  }, [loginCooldownSeconds]);
+
   const hasActiveSession = !!sessionUserEmail;
+  let loginButtonLabel = "Iniciar Sesión";
+  if (isSubmitting) {
+    loginButtonLabel = "Entrando...";
+  } else if (loginCooldownSeconds > 0) {
+    loginButtonLabel = `Intenta en ${loginCooldownSeconds}s`;
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (loginCooldownSeconds > 0) {
+      setError(`Demasiados intentos. Espera ${loginCooldownSeconds}s para reintentar.`);
+      return;
+    }
+
     setIsSubmitting(true);
     setError("");
+    setInfoMessage("");
+    setShowResendVerification(false);
 
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail || !password.trim()) {
@@ -81,6 +116,12 @@ export function Login() {
     });
 
     if (!result.ok || !result.token || !result.user) {
+      if ((result.retryAfterSeconds ?? 0) > 0) {
+        setLoginCooldownSeconds(Math.ceil(result.retryAfterSeconds ?? 0));
+      }
+      if (result.requiresEmailVerification) {
+        setShowResendVerification(true);
+      }
       setError(result.message ?? "No se pudo iniciar sesión.");
       setIsSubmitting(false);
       return;
@@ -92,6 +133,31 @@ export function Login() {
     });
     syncCartCount();
     navigate("/", { replace: true });
+  }
+
+  async function handleResendVerification() {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setError("Ingresa tu correo para reenviar la verificacion.");
+      return;
+    }
+
+    setIsResendingVerification(true);
+    setError("");
+    setInfoMessage("");
+
+    const result = await resendStoreEmailVerification({ email: normalizedEmail });
+    if (!result.ok) {
+      if ((result.retryAfterSeconds ?? 0) > 0) {
+        setLoginCooldownSeconds(Math.ceil(result.retryAfterSeconds ?? 0));
+      }
+      setError(result.message ?? "No se pudo reenviar el correo de verificacion.");
+      setIsResendingVerification(false);
+      return;
+    }
+
+    setInfoMessage(result.message ?? "Si aplica, enviamos un nuevo enlace de verificacion.");
+    setIsResendingVerification(false);
   }
 
   async function handleGoogleLogin() {
@@ -245,15 +311,36 @@ export function Login() {
                     />
                     <span>Recuérdame</span>
                   </label>
-                  <button type="button" className="forgot-password-btn" disabled>
+                  <button
+                    type="button"
+                    className="forgot-password-btn"
+                    onClick={() => navigate("/forgot-password")}
+                  >
                     ¿Olvidaste tu contraseña?
                   </button>
                 </div>
 
-                {error && <p className="error-text">{error}</p>}
+                {error && <p className="password-feedback password-feedback--error">{error}</p>}
+                {infoMessage && (
+                  <p className="password-feedback password-feedback--success">{infoMessage}</p>
+                )}
+                {showResendVerification && (
+                  <button
+                    type="button"
+                    className="forgot-password-btn"
+                    onClick={() => void handleResendVerification()}
+                    disabled={isResendingVerification || loginCooldownSeconds > 0}
+                  >
+                    {isResendingVerification ? "Reenviando..." : "Reenviar correo de verificación"}
+                  </button>
+                )}
 
-                <button type="submit" className="login-btn" disabled={isSubmitting || isCheckingSession}>
-                  {isSubmitting ? "Entrando..." : "Iniciar Sesión"}
+                <button
+                  type="submit"
+                  className="login-btn"
+                  disabled={isSubmitting || isCheckingSession || loginCooldownSeconds > 0}
+                >
+                  {loginButtonLabel}
                 </button>
 
                 {isFirebaseEnabled && (

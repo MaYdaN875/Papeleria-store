@@ -9,6 +9,8 @@ export interface StoreCustomerUser {
 export interface StoreCustomerAuthResponse {
   ok: boolean;
   message?: string;
+  retryAfterSeconds?: number;
+  requiresEmailVerification?: boolean;
   token?: string;
   expiresAt?: string;
   user?: StoreCustomerUser;
@@ -23,4 +25,16 @@ export interface StoreCustomerSessionResponse {
 export interface StoreCustomerLogoutResponse {
   ok: boolean;
   message?: string;
+}
+
+export interface StorePasswordResetResponse {
+  ok: boolean;
+  message?: string;
+  retryAfterSeconds?: number;
+}
+
+export interface StoreEmailVerificationResponse {
+  ok: boolean;
+  message?: string;
+  retryAfterSeconds?: number;
 }

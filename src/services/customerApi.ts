@@ -1,7 +1,9 @@
 import { buildCandidateApiBases, getApiBase } from "./api/base";
 import type {
   StoreCustomerAuthResponse,
+  StoreEmailVerificationResponse,
   StoreCustomerLogoutResponse,
+  StorePasswordResetResponse,
   StoreCustomerSessionResponse,
 } from "../types/customer";
 
@@ -11,6 +13,20 @@ interface RawStoreCustomerUser {
   id: number | string;
   name: string;
   email: string;
+}
+
+function parseRetryAfterSeconds(response: Response, bodyRetryAfterSeconds?: number): number | undefined {
+  if (typeof bodyRetryAfterSeconds === "number" && bodyRetryAfterSeconds > 0) {
+    return Math.ceil(bodyRetryAfterSeconds);
+  }
+
+  const retryAfterHeader = response.headers.get("Retry-After");
+  if (!retryAfterHeader) return undefined;
+
+  const parsed = Number(retryAfterHeader);
+  if (Number.isFinite(parsed) && parsed > 0) return Math.ceil(parsed);
+
+  return undefined;
 }
 
 function normalizeUser(raw: RawStoreCustomerUser) {
@@ -53,6 +69,8 @@ export async function registerStoreCustomer(input: {
     const { response, body } = await requestWithBaseFallback<{
       ok?: boolean;
       message?: string;
+      retryAfterSeconds?: number;
+      requiresEmailVerification?: boolean;
       token?: string;
       expiresAt?: string;
       user?: RawStoreCustomerUser;
@@ -66,11 +84,15 @@ export async function registerStoreCustomer(input: {
       return {
         ok: false,
         message: body.message ?? "No se pudo completar el registro.",
+        retryAfterSeconds: parseRetryAfterSeconds(response, body.retryAfterSeconds),
+        requiresEmailVerification: body.requiresEmailVerification ?? false,
       };
     }
 
     return {
       ok: true,
+      message: body.message,
+      requiresEmailVerification: body.requiresEmailVerification ?? false,
       token: body.token,
       expiresAt: body.expiresAt,
       user: body.user ? normalizeUser(body.user) : undefined,
@@ -91,6 +113,8 @@ export async function loginStoreCustomer(input: {
     const { response, body } = await requestWithBaseFallback<{
       ok?: boolean;
       message?: string;
+      retryAfterSeconds?: number;
+      requiresEmailVerification?: boolean;
       token?: string;
       expiresAt?: string;
       user?: RawStoreCustomerUser;
@@ -104,6 +128,8 @@ export async function loginStoreCustomer(input: {
       return {
         ok: false,
         message: body.message ?? "No se pudo iniciar sesión.",
+        retryAfterSeconds: parseRetryAfterSeconds(response, body.retryAfterSeconds),
+        requiresEmailVerification: body.requiresEmailVerification ?? false,
       };
     }
 
@@ -171,6 +197,143 @@ export async function logoutStoreCustomer(token: string): Promise<StoreCustomerL
     return {
       ok: true,
       message: body.message ?? "Sesión cerrada.",
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "No se pudo conectar con la API.",
+    };
+  }
+}
+
+export async function requestStorePasswordReset(input: {
+  email: string;
+}): Promise<StorePasswordResetResponse> {
+  try {
+    const { response, body } = await requestWithBaseFallback<{
+      ok?: boolean;
+      message?: string;
+      retryAfterSeconds?: number;
+    }>("/public/auth/forgot_password.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+
+    if (!response.ok || !body.ok) {
+      return {
+        ok: false,
+        message: body.message ?? "No se pudo enviar la solicitud de recuperacion.",
+        retryAfterSeconds: parseRetryAfterSeconds(response, body.retryAfterSeconds),
+      };
+    }
+
+    return {
+      ok: true,
+      message: body.message ?? "Revisa tu correo para continuar.",
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "No se pudo conectar con la API.",
+    };
+  }
+}
+
+export async function applyStorePasswordReset(input: {
+  token: string;
+  password: string;
+}): Promise<StorePasswordResetResponse> {
+  try {
+    const { response, body } = await requestWithBaseFallback<{
+      ok?: boolean;
+      message?: string;
+      retryAfterSeconds?: number;
+    }>("/public/auth/reset_password.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+
+    if (!response.ok || !body.ok) {
+      return {
+        ok: false,
+        message: body.message ?? "No se pudo actualizar la contrasena.",
+        retryAfterSeconds: parseRetryAfterSeconds(response, body.retryAfterSeconds),
+      };
+    }
+
+    return {
+      ok: true,
+      message: body.message ?? "Contrasena actualizada correctamente.",
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "No se pudo conectar con la API.",
+    };
+  }
+}
+
+export async function resendStoreEmailVerification(input: {
+  email: string;
+}): Promise<StoreEmailVerificationResponse> {
+  try {
+    const { response, body } = await requestWithBaseFallback<{
+      ok?: boolean;
+      message?: string;
+      retryAfterSeconds?: number;
+    }>("/public/auth/resend_verification.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+
+    if (!response.ok || !body.ok) {
+      return {
+        ok: false,
+        message: body.message ?? "No se pudo reenviar el correo de verificacion.",
+        retryAfterSeconds: parseRetryAfterSeconds(response, body.retryAfterSeconds),
+      };
+    }
+
+    return {
+      ok: true,
+      message: body.message ?? "Si aplica, enviamos un nuevo enlace de verificacion.",
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "No se pudo conectar con la API.",
+    };
+  }
+}
+
+export async function verifyStoreCustomerEmail(input: {
+  token: string;
+}): Promise<StoreEmailVerificationResponse> {
+  try {
+    const { response, body } = await requestWithBaseFallback<{
+      ok?: boolean;
+      message?: string;
+      retryAfterSeconds?: number;
+    }>("/public/auth/verify_email.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+
+    if (!response.ok || !body.ok) {
+      return {
+        ok: false,
+        message: body.message ?? "No se pudo verificar el correo.",
+        retryAfterSeconds: parseRetryAfterSeconds(response, body.retryAfterSeconds),
+      };
+    }
+
+    return {
+      ok: true,
+      message: body.message ?? "Correo verificado correctamente.",
     };
   } catch (error) {
     return {

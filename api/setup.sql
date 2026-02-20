@@ -70,6 +70,8 @@ CREATE TABLE IF NOT EXISTS customer_users (
   name VARCHAR(120) NOT NULL,
   email VARCHAR(150) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
+  email_verified_at DATETIME NULL,
+  email_verification_required TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -86,6 +88,57 @@ CREATE TABLE IF NOT EXISTS customer_sessions (
   INDEX idx_customer_sessions_user (customer_user_id),
   INDEX idx_customer_sessions_expires (expires_at),
   CONSTRAINT fk_customer_sessions_user
+    FOREIGN KEY (customer_user_id) REFERENCES customer_users(id)
+    ON DELETE CASCADE
+);
+
+-- Protección anti-bruteforce para login/registro de clientes
+CREATE TABLE IF NOT EXISTS customer_auth_rate_limits (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  action VARCHAR(40) NOT NULL,
+  scope VARCHAR(20) NOT NULL,
+  identifier_hash CHAR(64) NOT NULL,
+  attempt_count INT NOT NULL DEFAULT 0,
+  window_started_at DATETIME NOT NULL,
+  blocked_until DATETIME NULL,
+  last_attempt_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_customer_auth_rate_limit (action, scope, identifier_hash),
+  INDEX idx_customer_auth_rate_limit_blocked (blocked_until),
+  INDEX idx_customer_auth_rate_limit_window (window_started_at)
+);
+
+-- Tokens de recuperacion de contrasena para clientes
+CREATE TABLE IF NOT EXISTS customer_password_resets (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  customer_user_id INT NOT NULL,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  used_at DATETIME NULL,
+  requested_ip VARCHAR(45) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_customer_password_resets_user (customer_user_id),
+  INDEX idx_customer_password_resets_expires (expires_at),
+  INDEX idx_customer_password_resets_used (used_at),
+  CONSTRAINT fk_customer_password_resets_user
+    FOREIGN KEY (customer_user_id) REFERENCES customer_users(id)
+    ON DELETE CASCADE
+);
+
+-- Tokens de verificacion de correo para clientes
+CREATE TABLE IF NOT EXISTS customer_email_verifications (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  customer_user_id INT NOT NULL,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  used_at DATETIME NULL,
+  requested_ip VARCHAR(45) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_customer_email_verifications_user (customer_user_id),
+  INDEX idx_customer_email_verifications_expires (expires_at),
+  INDEX idx_customer_email_verifications_used (used_at),
+  CONSTRAINT fk_customer_email_verifications_user
     FOREIGN KEY (customer_user_id) REFERENCES customer_users(id)
     ON DELETE CASCADE
 );

@@ -16,4 +16,13 @@ const ADMIN_ALLOWED_ORIGINS = [
   'https://www.godart-papeleria.com',
   'https://godart-papelería.com',
   'https://www.godart-papelería.com',
+  'https://xn--godart-papelera-xkb.com',
+  'https://www.xn--godart-papelera-xkb.com',
 ];
+
+// URL publica de la tienda para enlaces de recuperacion.
+const STORE_PUBLIC_APP_URL = 'https://godart-papelería.com';
+
+// Remitentes para correos del flujo de autenticacion cliente.
+const STORE_MAIL_FROM = 'no-reply@godart-papeleria.com';
+const STORE_MAIL_REPLY_TO = 'soporte@godart-papeleria.com';

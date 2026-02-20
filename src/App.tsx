@@ -11,7 +11,19 @@
 import { useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import { FloatingWhatsAppButton, Footer, MobileBottomNav, Navbar } from "./components/layout";
-import { AllProducts, AdminDashboard, AdminLogin, Cart, Home, Login, ProductDetail, SignUp } from "./pages";
+import {
+  AllProducts,
+  AdminDashboard,
+  AdminLogin,
+  Cart,
+  ForgotPassword,
+  Home,
+  Login,
+  ProductDetail,
+  ResetPassword,
+  SignUp,
+  VerifyEmail,
+} from "./pages";
 import { AdminRoute } from "./components/admin/AdminRoute";
 
 function AppContent() {
@@ -35,6 +47,9 @@ function AppContent() {
   const hideLayout =
     location.pathname === "/login" ||
     location.pathname === "/signup" ||
+    location.pathname === "/forgot-password" ||
+    location.pathname === "/reset-password" ||
+    location.pathname === "/verify-email" ||
     location.pathname.startsWith("/admin");
 
   return (
@@ -47,6 +62,9 @@ function AppContent() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminDashboard />} />
