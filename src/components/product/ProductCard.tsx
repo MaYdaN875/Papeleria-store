@@ -2,8 +2,8 @@
  * Tarjeta de producto: imagen, nombre, marca, rating, precio y botón agregar al carrito.
  * Opcional badge (descuento/oferta) y precio tachado. Click en la tarjeta navega al detalle.
  */
-import { useNavigate } from "react-router";
-import type { Product } from "../../types/Product";
+import { useNavigate } from "react-router"
+import type { Product } from "../../types/Product"
 
 export type ProductCardBadge = { type: "discount" | "sale"; value: string }
 
@@ -58,7 +58,7 @@ export function ProductCard({
         <>
             <div className="product-image">
                 {isImageSource(product.image) ? (
-                    <img src={product.image} alt={product.name} loading="lazy" />
+                    <img src={product.image} alt={product.name} />
                 ) : (
                     <div className="product-placeholder">
                         {product.image || "📦"}

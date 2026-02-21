@@ -168,8 +168,8 @@
     background: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    height: 550px !important;
-    min-height: 550px !important;
+    height: 380px;
+    min-height: 380px;
 }
 
 .fusion-carousel-wrapper {
@@ -177,8 +177,8 @@
     overflow: hidden;
     border-radius: 0;
     background: none;
-    height: 550px !important;
-    min-height: 550px !important;
+    height: 380px;
+    min-height: 380px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -186,8 +186,8 @@
 
 .fusion-slide {
     width: 100%;
-    height: 550px !important;
-    min-height: 550px !important;
+    height: 380px;
+    min-height: 380px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -238,7 +238,7 @@
 .fusion-slide-full-image {
     width: 100%;
     height: 100%;
-    max-height: 550px;
+    max-height: 380px;
     object-fit: cover;
     display: block;
 }

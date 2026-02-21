@@ -1,7 +1,7 @@
 /**
  * Una slide del carrusel de productos: imagen, badge, precio, botón agregar. Click navega al detalle.
  */
-import type { Product } from "../../types/Product";
+import type { Product } from "../../types/Product"
 
 export type ProductCarouselSlideConfig = {
     badge?: { type: "discount" | "sale"; value: string }
@@ -40,7 +40,7 @@ export function ProductCarouselSlide({
         >
             <div className="product-image-carousel">
                 {isImageSource(product.image) ? (
-                    <img src={product.image} alt={product.name} loading="lazy" />
+                    <img src={product.image} alt={product.name} />
                 ) : (
                     <div className="product-placeholder-carousel">
                         {product.image || "📦"}

@@ -15,9 +15,10 @@ export function buildCandidateApiBases(base: string): string[] {
   if (!normalizedBase) return [];
 
   const variants = new Set<string>([normalizedBase]);
-  // Solo agregar la variante ASCII si el original tiene caracteres especiales
-  const asciiVariant = normalizedBase.replace("papelería", "papeleria");
-  if (asciiVariant !== normalizedBase) variants.add(asciiVariant);
+  variants.add(normalizedBase.replace("papelería", "papeleria"));
+  variants.add(normalizedBase.replace("papeleria", "papelería"));
+  variants.add(normalizedBase.replace("://www.", "://"));
+  variants.add(normalizedBase.replace("://", "://www."));
 
-  return Array.from(variants);
+  return Array.from(variants).filter((value) => value.length > 0);
 }

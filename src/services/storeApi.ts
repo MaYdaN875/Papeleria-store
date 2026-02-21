@@ -102,10 +102,7 @@ export async function fetchStoreProducts(): Promise<StoreProductsResponse> {
 
     for (const base of candidateBases) {
         try {
-            const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 8000)
-            const response = await fetch(`${base}/public/products.php`, { signal: controller.signal })
-            clearTimeout(timeoutId)
+            const response = await fetch(`${base}/public/products.php`)
 
             if (!response.ok) {
                 const errorBody = (await response.json().catch(() => ({}))) as Partial<StoreProductsResponse>
@@ -157,10 +154,7 @@ export async function fetchStoreHomeSlides(): Promise<StoreHomeSlidesResponse> {
 
     for (const base of candidateBases) {
         try {
-            const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 8000)
-            const response = await fetch(`${base}/public/slides.php`, { signal: controller.signal })
-            clearTimeout(timeoutId)
+            const response = await fetch(`${base}/public/slides.php`)
 
             if (!response.ok) {
                 const errorBody = (await response.json().catch(() => ({}))) as Partial<StoreHomeSlidesResponse>

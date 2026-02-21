@@ -14,13 +14,17 @@
 }
 
 .banner-principal::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(26, 95, 110, 0.06) 0%, transparent 60%);
+  background: radial-gradient(
+    ellipse 80% 50% at 50% 0%,
+    rgba(26, 95, 110, 0.06) 0%,
+    transparent 60%
+  );
   pointer-events: none;
 }
 
@@ -29,8 +33,8 @@
   background: none !important;
   box-shadow: none !important;
   border-radius: 0 !important;
-  height: 550px;
-  min-height: 550px;
+  height: 340px;
+  min-height: 340px;
   position: relative;
   z-index: 1;
 }
@@ -40,8 +44,8 @@
   overflow: visible;
   border-radius: 0;
   background: none;
-  height: 550px;
-  min-height: 550px;
+  height: 340px;
+  min-height: 340px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,14 +53,16 @@
 
 .fusion-slide {
   width: 100%;
-  height: 550px;
-  min-height: 550px;
+  height: 340px;
+  min-height: 340px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: none;
   position: relative;
-  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease;
+  transition:
+    transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.4s ease;
   opacity: 1;
   z-index: 1;
 }
@@ -164,13 +170,25 @@
 }
 
 @keyframes fusion-slide-left {
-  0% { opacity: 0; transform: translateX(40px); }
-  100% { opacity: 1; transform: translateX(0); }
+  0% {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes fusion-slide-right {
-  0% { opacity: 0; transform: translateX(-40px); }
-  100% { opacity: 1; transform: translateX(0); }
+  0% {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .fusion-slide.animating.slide-left {
@@ -213,7 +231,7 @@
 }
 
 .carousel-title::after {
-  content: '';
+  content: "";
   display: block;
   position: absolute;
   bottom: 0;
@@ -269,8 +287,8 @@
   .fusion-carousel,
   .fusion-carousel-wrapper,
   .fusion-slide {
-    height: 500px;
-    min-height: 500px;
+    height: 300px;
+    min-height: 300px;
   }
 
   .fusion-slide-content {

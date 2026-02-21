@@ -7,7 +7,7 @@ import {
     ProductDetailShipping,
 } from "../components/product-detail"
 import { getProductById } from "../data/products"
-import { getStoreProducts } from "../services/productCache"
+import { fetchStoreProducts } from "../services/storeApi"
 import type { Product } from "../types/Product"
 import { addProductToCart } from "../utils/cart"
 
@@ -32,7 +32,7 @@ export const ProductDetail = () => {
 
             const staticProduct = getProductById(id ?? "")
             try {
-                const result = await getStoreProducts()
+                const result = await fetchStoreProducts()
                 if (!result.ok || !result.products) {
                     setProduct(staticProduct ?? null)
                     setIsLoadingProduct(false)

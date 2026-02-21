@@ -132,7 +132,6 @@ export function AdminDashboard() {
   const [slideImageUploadError, setSlideImageUploadError] = useState("");
   const [slideImageUploadSuccess, setSlideImageUploadSuccess] = useState("");
   const [lowStockThreshold, setLowStockThreshold] = useState(5);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [createForm, setCreateForm] = useState<ProductCreateFormState>({
     name: "",
     categoryId: "",
@@ -481,7 +480,7 @@ export function AdminDashboard() {
 
   async function handleDeleteProduct(product: AdminProduct) {
     const shouldDelete = globalThis.confirm(
-      `¿Seguro que quieres eliminar "${product.name}"?\n\nSe eliminará de forma permanente en la base de datos.`
+      `¿Seguro que quieres eliminar "${product.name}"?\n\nSe eliminará de forma permanente.`
     );
     if (!shouldDelete) return;
 
@@ -1031,7 +1030,7 @@ export function AdminDashboard() {
   // Mensaje contextual en sidebar para saber si hay conexión real con backend.
   function getSidebarStatusMessage() {
     if (adminMode === "api" && !error)
-      return "Conectado a Hostinger: API PHP y base de datos MySQL activas.";
+      return "Conectado a Hostinger: API PHP y servidor activos.";
 
     if (error)
       return "No hay conexión con la API en este momento. Revisa Hostinger, dominio y CORS.";
@@ -1045,97 +1044,8 @@ export function AdminDashboard() {
   const mayoreoEnabledCount = products.filter((product) => product.mayoreo === 1).length;
   const offersCount = products.filter((product) => product.isOffer === 1).length;
 
-  function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function handleMobileSectionChange(section: AdminSectionView) {
-    setActiveSection(section);
-    setIsMobileMenuOpen(false);
-    scrollToTop();
-  }
-
   return (
     <div className="admin-layout">
-      {/* ── Navbar mobile sticky ── */}
-      <header className="admin-mobile-navbar">
-        <button
-          type="button"
-          className="admin-mobile-logo"
-          onClick={scrollToTop}
-          aria-label="Volver arriba"
-        >
-          <span className="admin-mobile-logo-icon">✦</span>
-          <span className="admin-mobile-logo-text">God Art</span>
-        </button>
-        <button
-          type="button"
-          className={`admin-mobile-hamburger ${isMobileMenuOpen ? "admin-mobile-hamburger--open" : ""}`}
-          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-          aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
-        >
-          <span className="admin-hamburger-line" />
-          <span className="admin-hamburger-line" />
-          <span className="admin-hamburger-line" />
-        </button>
-      </header>
-
-      {/* ── Menú lateral mobile ── */}
-      {isMobileMenuOpen && (
-        <button
-          type="button"
-          className="admin-mobile-backdrop"
-          onClick={() => setIsMobileMenuOpen(false)}
-          aria-label="Cerrar menú"
-        />
-      )}
-      <nav className={`admin-mobile-menu ${isMobileMenuOpen ? "admin-mobile-menu--open" : ""}`}>
-        <div className="admin-mobile-menu-header">
-          <span className="admin-mobile-menu-brand">Panel Admin</span>
-          <button
-            type="button"
-            className="admin-mobile-menu-close"
-            onClick={() => setIsMobileMenuOpen(false)}
-            aria-label="Cerrar menú"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="admin-mobile-menu-items">
-          {([
-            { key: "resumen" as const, label: "📊 Resumen" },
-            { key: "productos" as const, label: "📦 Productos" },
-            { key: "inicio" as const, label: "🖼️ Inicio (Slides)" },
-            { key: "ofertas" as const, label: "🏷️ Ofertas" },
-            { key: "ingresos" as const, label: "💰 Ingresos" },
-          ]).map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              className={`admin-mobile-menu-item ${activeSection === item.key ? "admin-mobile-menu-item--active" : ""}`}
-              onClick={() => handleMobileSectionChange(item.key)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-        <div className="admin-mobile-menu-footer">
-          <button
-            type="button"
-            className="admin-mobile-menu-item"
-            onClick={() => { setIsMobileMenuOpen(false); navigate("/"); }}
-          >
-            🏪 Ver tienda
-          </button>
-          <button
-            type="button"
-            className="admin-mobile-menu-item admin-mobile-menu-item--logout"
-            onClick={() => { setIsMobileMenuOpen(false); void handleLogout(); }}
-          >
-            🚪 Cerrar sesión
-          </button>
-        </div>
-      </nav>
       <aside className="admin-sidebar">
         <div className="admin-sidebar-header">
           <span className="admin-badge">God Art</span>
@@ -1257,7 +1167,7 @@ export function AdminDashboard() {
             <p className="admin-card-description">
               Productos con precio promocional activo.
             </p>
-            <p className="admin-card-note">Puedes quitarlas sin borrar el producto de la base de datos.</p>
+            <p className="admin-card-note">Puedes quitarlas sin borrar el producto.</p>
           </article>
 
           <article className="admin-card">
@@ -1479,7 +1389,7 @@ export function AdminDashboard() {
           {isLoading && <p>Cargando productos...</p>}
           {!isLoading && error && <p className="admin-auth-error">{error}</p>}
           {!isLoading && !error && products.length === 0 && (
-            <p>No hay productos registrados en la base de datos.</p>
+            <p>No hay productos registrados.</p>
           )}
           {!isLoading && !error && products.length > 0 && (
             <div className="admin-table-wrapper admin-surface-card">

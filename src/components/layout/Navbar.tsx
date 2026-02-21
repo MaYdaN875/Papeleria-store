@@ -10,7 +10,7 @@ import { products as staticProducts } from "../../data/products"
 import { useNotification } from "../../hooks/useNotification"
 import { logoutStoreCustomer } from "../../services/customerApi"
 import { signOutFirebaseSession } from "../../services/firebaseAuth"
-import { getStoreProducts } from "../../services/productCache"
+import { fetchStoreProducts } from "../../services/storeApi"
 import type { Product } from "../../types/Product"
 import { syncCartCount } from "../../utils/cart"
 import {
@@ -86,7 +86,6 @@ export function Navbar() {
     const [storeUserName, setStoreUserName] = useState("")
     const [isDesktopCategoriesOpen, setIsDesktopCategoriesOpen] = useState(false)
     const [expandedDesktopCategoryId, setExpandedDesktopCategoryId] = useState<string | null>(null)
-    const [expandedMobileCategoryId, setExpandedMobileCategoryId] = useState<string | null>(null)
     const desktopCloseTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null)
     const preventDesktopOpenUntilRef = useRef(0)
 
@@ -141,17 +140,6 @@ export function Navbar() {
         )
     }
 
-    const toggleMobileSubOptions = (categoryId: string) => {
-        setExpandedMobileCategoryId((currentId) =>
-            currentId === categoryId ? null : categoryId
-        )
-    }
-
-    const handleMobileSubOptionClick = (categoryId: string, subOptionIndex: number) => {
-        closeMenu()
-        navigate(`/all-products?category=${categoryId}&sub=${subOptionIndex}`)
-    }
-
     const openDesktopCategories = () => {
         if (Date.now() < preventDesktopOpenUntilRef.current) return
 
@@ -176,7 +164,7 @@ export function Navbar() {
     useEffect(() => {
         async function loadSearchProducts() {
             try {
-                const result = await getStoreProducts()
+                const result = await fetchStoreProducts()
                 if (result.ok && result.products) {
                     setSearchProducts(result.products)
                 }
@@ -468,50 +456,24 @@ export function Navbar() {
                             </div>
                             <div className="mobile-menu-categories">
                                 {CATEGORIES.map((category) => (
-                                    <div
+                                    <button
                                         key={category.id}
-                                        className={`mobile-category-group ${expandedMobileCategoryId === category.id ? "mobile-category-group--open" : ""} ${isMenuClosing ? "closing" : ""}`}
+                                        type="button"
+                                        className={`mobile-category-btn ${isMenuClosing ? "closing" : ""}`}
+                                        onClick={() =>
+                                            handleCategoryClick(category.id)
+                                        }
                                     >
-                                        <div className="mobile-category-row">
-                                            <button
-                                                type="button"
-                                                className="mobile-category-btn"
-                                                onClick={() =>
-                                                    handleCategoryClick(category.id)
-                                                }
-                                            >
-                                                <i
-                                                    className={category.icon}
-                                                    aria-hidden
-                                                />
-                                                <span>{category.label}</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="mobile-category-expand-btn"
-                                                aria-label={`Desplegar opciones de ${category.label}`}
-                                                aria-expanded={expandedMobileCategoryId === category.id}
-                                                onClick={() => toggleMobileSubOptions(category.id)}
-                                            >
-                                                <i
-                                                    className={`fas fa-chevron-${expandedMobileCategoryId === category.id ? "up" : "down"}`}
-                                                    aria-hidden="true"
-                                                />
-                                            </button>
-                                        </div>
-                                        <div className="mobile-suboptions-list">
-                                            {category.subOptions.map((subOption, optionIndex) => (
-                                                <button
-                                                    key={`${category.id}-mob-${subOption}`}
-                                                    type="button"
-                                                    className="mobile-suboption-item"
-                                                    onClick={() => handleMobileSubOptionClick(category.id, optionIndex + 1)}
-                                                >
-                                                    {subOption}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                                        <i
+                                            className={category.icon}
+                                            aria-hidden
+                                        />
+                                        <span>{category.label}</span>
+                                        <i
+                                            className="fas fa-chevron-right"
+                                            aria-hidden
+                                        />
+                                    </button>
                                 ))}
                             </div>
                         </div>
