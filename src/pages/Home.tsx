@@ -6,7 +6,8 @@ import {
     type ProductCarouselSlideConfig,
 } from "../components/product"
 import { products as staticProducts } from "../data/products"
-import { fetchStoreHomeSlides, fetchStoreProducts } from "../services/storeApi"
+import { getStoreProducts } from "../services/productCache"
+import { fetchStoreHomeSlides } from "../services/storeApi"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
 
@@ -80,7 +81,7 @@ export const Home = () => {
         async function loadStoreProducts() {
             setIsLoadingProducts(true)
             try {
-                const result = await fetchStoreProducts()
+                const result = await getStoreProducts()
                 if (result.ok && result.products) {
                     setStoreProducts(result.products)
                     setShouldUseStaticFallback(false)

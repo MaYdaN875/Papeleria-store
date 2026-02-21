@@ -10,7 +10,7 @@ import { products as staticProducts } from "../../data/products"
 import { useNotification } from "../../hooks/useNotification"
 import { logoutStoreCustomer } from "../../services/customerApi"
 import { signOutFirebaseSession } from "../../services/firebaseAuth"
-import { fetchStoreProducts } from "../../services/storeApi"
+import { getStoreProducts } from "../../services/productCache"
 import type { Product } from "../../types/Product"
 import { syncCartCount } from "../../utils/cart"
 import {
@@ -176,7 +176,7 @@ export function Navbar() {
     useEffect(() => {
         async function loadSearchProducts() {
             try {
-                const result = await fetchStoreProducts()
+                const result = await getStoreProducts()
                 if (result.ok && result.products) {
                     setSearchProducts(result.products)
                 }

@@ -10,7 +10,7 @@ import {
 } from "../components/product"
 import { products as staticProducts } from "../data/products"
 import { filterProductsBySearch } from "../hooks/useProductSearch"
-import { fetchStoreProducts } from "../services/storeApi"
+import { getStoreProducts } from "../services/productCache"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
 
@@ -126,7 +126,7 @@ export const AllProducts = () => {
             setProductsLoadError("")
 
             try {
-                const result = await fetchStoreProducts()
+                const result = await getStoreProducts()
                 if (!result.ok || !result.products) {
                     setProductsLoadError(result.message ?? "No se pudo cargar catálogo desde la API.")
                     setStoreProducts([])
