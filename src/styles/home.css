@@ -29,8 +29,8 @@
   background: none !important;
   box-shadow: none !important;
   border-radius: 0 !important;
-  height: 340px;
-  min-height: 340px;
+  height: 550px;
+  min-height: 550px;
   position: relative;
   z-index: 1;
 }
@@ -40,8 +40,8 @@
   overflow: visible;
   border-radius: 0;
   background: none;
-  height: 340px;
-  min-height: 340px;
+  height: 550px;
+  min-height: 550px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,8 +49,8 @@
 
 .fusion-slide {
   width: 100%;
-  height: 340px;
-  min-height: 340px;
+  height: 550px;
+  min-height: 550px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,8 +269,8 @@
   .fusion-carousel,
   .fusion-carousel-wrapper,
   .fusion-slide {
-    height: 300px;
-    min-height: 300px;
+    height: 500px;
+    min-height: 500px;
   }
 
   .fusion-slide-content {
