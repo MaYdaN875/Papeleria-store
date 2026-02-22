@@ -2,10 +2,42 @@
  * Barra de navegación inferior en móvil: Inicio, Productos, Cuenta, Carrito.
  * Solo visible en viewports pequeños; resalta la ruta activa.
  */
+import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router"
+import {
+    getStoreAuthChangedEventName,
+    getStoreUser,
+} from "../../utils/storeSession"
+
+function buildMobileUserLabel(fullName: string): string {
+    const name = fullName.trim()
+    if (!name) return "Cuenta"
+    if (name.length <= 10) return name
+    const firstName = name.split(/\s+/)[0] ?? name
+    return firstName.length <= 10 ? firstName : `${firstName.slice(0, 8)}…`
+}
 
 export function MobileBottomNav() {
     const location = useLocation()
+    const [storeUserName, setStoreUserName] = useState("")
+
+    useEffect(() => {
+        const refreshStoreUser = () => {
+            const currentUser = getStoreUser()
+            setStoreUserName(currentUser?.name ?? "")
+        }
+
+        refreshStoreUser()
+        globalThis.addEventListener("storage", refreshStoreUser)
+        globalThis.addEventListener(getStoreAuthChangedEventName(), refreshStoreUser)
+
+        return () => {
+            globalThis.removeEventListener("storage", refreshStoreUser)
+            globalThis.removeEventListener(getStoreAuthChangedEventName(), refreshStoreUser)
+        }
+    }, [])
+
+    const accountLabel = buildMobileUserLabel(storeUserName)
 
     // Función para validar si está en ruta activa
     const isActive = (path: string): boolean => {
@@ -44,10 +76,10 @@ export function MobileBottomNav() {
                     to="/login"
                     className={`mobile-bottom-nav__item ${isActive("/login") ? "mobile-bottom-nav__item--active" : ""}`}
                     aria-label="Ir a mi cuenta"
-                    title="Cuenta"
+                    title={storeUserName.trim() || "Cuenta"}
                 >
                     <i className="fas fa-user" aria-hidden="true" />
-                    <span className="mobile-bottom-nav__label">Cuenta</span>
+                    <span className="mobile-bottom-nav__label">{accountLabel}</span>
                 </Link>
 
                 {/* Opción: Carrito */}
@@ -67,3 +99,4 @@ export function MobileBottomNav() {
         </nav>
     )
 }
+

@@ -86,6 +86,7 @@ export function Navbar() {
     const [storeUserName, setStoreUserName] = useState("")
     const [isDesktopCategoriesOpen, setIsDesktopCategoriesOpen] = useState(false)
     const [expandedDesktopCategoryId, setExpandedDesktopCategoryId] = useState<string | null>(null)
+    const [expandedMobileCategoryId, setExpandedMobileCategoryId] = useState<string | null>(null)
     const desktopCloseTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null)
     const preventDesktopOpenUntilRef = useRef(0)
 
@@ -219,7 +220,14 @@ export function Navbar() {
         setTimeout(() => {
             setIsMobileMenuOpen(false)
             setIsMenuClosing(false)
+            setExpandedMobileCategoryId(null)
         }, 500)
+    }
+
+    const toggleMobileSubOptions = (categoryId: string) => {
+        setExpandedMobileCategoryId((currentId) =>
+            currentId === categoryId ? null : categoryId
+        )
     }
 
     const hasStoreSession = storeUserName.trim() !== ""
@@ -456,24 +464,58 @@ export function Navbar() {
                             </div>
                             <div className="mobile-menu-categories">
                                 {CATEGORIES.map((category) => (
-                                    <button
+                                    <div
                                         key={category.id}
-                                        type="button"
-                                        className={`mobile-category-btn ${isMenuClosing ? "closing" : ""}`}
-                                        onClick={() =>
-                                            handleCategoryClick(category.id)
-                                        }
+                                        className={`mobile-category-group ${expandedMobileCategoryId === category.id ? "mobile-category-group--open" : ""}`}
                                     >
-                                        <i
-                                            className={category.icon}
-                                            aria-hidden
-                                        />
-                                        <span>{category.label}</span>
-                                        <i
-                                            className="fas fa-chevron-right"
-                                            aria-hidden
-                                        />
-                                    </button>
+                                        <div className={`mobile-category-row ${isMenuClosing ? "closing" : ""}`}>
+                                            <button
+                                                type="button"
+                                                className="mobile-category-btn"
+                                                onClick={() =>
+                                                    handleCategoryClick(category.id)
+                                                }
+                                            >
+                                                <i
+                                                    className={category.icon}
+                                                    aria-hidden
+                                                />
+                                                <span>{category.label}</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="mobile-category-expand-btn"
+                                                aria-label={`Ver opciones de ${category.label}`}
+                                                aria-expanded={expandedMobileCategoryId === category.id}
+                                                onClick={() => toggleMobileSubOptions(category.id)}
+                                            >
+                                                <i
+                                                    className={`fas fa-chevron-${expandedMobileCategoryId === category.id ? "up" : "down"}`}
+                                                    aria-hidden
+                                                />
+                                            </button>
+                                        </div>
+                                        <div className="mobile-suboptions-list">
+                                            {category.subOptions.map(
+                                                (subOption, optionIndex) => (
+                                                    <button
+                                                        key={`${category.id}-mobile-${subOption}`}
+                                                        type="button"
+                                                        className="mobile-suboption-item"
+                                                        onClick={() => {
+                                                            closeMenu()
+                                                            handleSubOptionClick(
+                                                                category.id,
+                                                                optionIndex + 1
+                                                            )
+                                                        }}
+                                                    >
+                                                        {subOption}
+                                                    </button>
+                                                )
+                                            )}
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </div>

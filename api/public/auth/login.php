@@ -4,13 +4,20 @@
  */
 
 require_once __DIR__ . '/../../_admin_common.php';
+require_once __DIR__ . '/../../core/recaptcha.php';
 
 adminHandleCors(['POST']);
 adminRequireMethod('POST');
 
 $data = adminReadJsonBody();
-$email = strtolower(trim((string)($data['email'] ?? '')));
-$password = (string)($data['password'] ?? '');
+$email = strtolower(trim((string) ($data['email'] ?? '')));
+$password = (string) ($data['password'] ?? '');
+$recaptchaToken = (string) ($data['recaptcha_token'] ?? '');
+
+// Verificar reCAPTCHA v2 antes de procesar login.
+if (!verifyRecaptcha($recaptchaToken)) {
+  adminJsonResponse(403, ['ok' => false, 'message' => 'Verificación reCAPTCHA fallida. Intenta de nuevo.']);
+}
 
 try {
   $pdo = adminGetPdo();
@@ -56,8 +63,8 @@ try {
     adminJsonResponse(401, ['ok' => false, 'message' => 'Credenciales incorrectas.']);
   }
 
-  $verificationRequired = ((int)($user['email_verification_required'] ?? 0)) === 1;
-  $isVerified = trim((string)($user['email_verified_at'] ?? '')) !== '';
+  $verificationRequired = ((int) ($user['email_verification_required'] ?? 0)) === 1;
+  $isVerified = trim((string) ($user['email_verified_at'] ?? '')) !== '';
   if ($verificationRequired && !$isVerified) {
     storeClearRateLimit($pdo, 'login', $rateLimitEntries);
     adminJsonResponse(403, [
@@ -68,7 +75,7 @@ try {
   }
 
   $token = bin2hex(random_bytes(32));
-  $expiresAt = storeCreateSession($pdo, (int)$user['id'], $token, 168);
+  $expiresAt = storeCreateSession($pdo, (int) $user['id'], $token, 168);
   storeClearRateLimit($pdo, 'login', $rateLimitEntries);
 
   adminJsonResponse(200, [
@@ -76,9 +83,9 @@ try {
     'token' => $token,
     'expiresAt' => $expiresAt,
     'user' => [
-      'id' => (int)$user['id'],
-      'name' => (string)$user['name'],
-      'email' => (string)$user['email'],
+      'id' => (int) $user['id'],
+      'name' => (string) $user['name'],
+      'email' => (string) $user['email'],
     ],
   ]);
 } catch (PDOException $e) {

@@ -7,31 +7,31 @@
  * - Permitir edición rápida de producto (nombre, precio, stock, mayoreo/menudeo).
  * - Persistir cambios usando el endpoint admin de productos (`/admin/products/update.php`).
  */
-import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-    adminLogoutRequest,
-    createAdminHomeSlide,
-    createAdminProduct,
-    deleteAdminHomeSlide,
-    deleteAdminProduct,
-    fetchAdminCategories,
-    fetchAdminHomeSlides,
-    fetchAdminOffers,
-    fetchAdminProducts,
-    fetchAdminSalesToday,
-    removeAdminOffer,
-    updateAdminProduct,
-    uploadAdminProductImage,
-    upsertAdminOffer,
+  adminLogoutRequest,
+  createAdminHomeSlide,
+  createAdminProduct,
+  deleteAdminHomeSlide,
+  deleteAdminProduct,
+  fetchAdminCategories,
+  fetchAdminHomeSlides,
+  fetchAdminOffers,
+  fetchAdminProducts,
+  fetchAdminSalesToday,
+  removeAdminOffer,
+  updateAdminProduct,
+  uploadAdminProductImage,
+  upsertAdminOffer,
 } from "../services/adminApi";
 import type {
-    AdminCategory,
-    AdminHomeSlide,
-    AdminOffer,
-    AdminProduct,
-    AdminSalesProductRow,
-    AdminSalesTodaySummary,
+  AdminCategory,
+  AdminHomeSlide,
+  AdminOffer,
+  AdminProduct,
+  AdminSalesProductRow,
+  AdminSalesTodaySummary,
 } from "../types/admin";
 import { clearAdminSession, getAdminMode, getAdminToken } from "../utils/adminSession";
 import { getImageValidationError } from "../utils/validation";
@@ -43,6 +43,10 @@ interface ProductEditFormState {
   imageUrl: string;
   mayoreo: boolean;
   menudeo: boolean;
+  mayoreoPrice: string;
+  mayoreoStock: string;
+  menudeoPrice: string;
+  menudeoStock: string;
   homeCarouselSlot: HomeCarouselSlotFormValue;
 }
 
@@ -54,6 +58,10 @@ interface ProductCreateFormState {
   imageUrl: string;
   mayoreo: boolean;
   menudeo: boolean;
+  mayoreoPrice: string;
+  mayoreoStock: string;
+  menudeoPrice: string;
+  menudeoStock: string;
   homeCarouselSlot: HomeCarouselSlotFormValue;
 }
 
@@ -98,6 +106,7 @@ export function AdminDashboard() {
 
   // Estado del formulario de edición de producto.
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const editFormRef = useRef<HTMLFormElement>(null);
   const [isSavingProduct, setIsSavingProduct] = useState(false);
   const [editError, setEditError] = useState("");
   const [editSuccess, setEditSuccess] = useState("");
@@ -111,6 +120,10 @@ export function AdminDashboard() {
     imageUrl: "",
     mayoreo: true,
     menudeo: true,
+    mayoreoPrice: "",
+    mayoreoStock: "",
+    menudeoPrice: "",
+    menudeoStock: "",
     homeCarouselSlot: "0",
   });
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
@@ -140,6 +153,10 @@ export function AdminDashboard() {
     imageUrl: "",
     mayoreo: true,
     menudeo: true,
+    mayoreoPrice: "",
+    mayoreoStock: "",
+    menudeoPrice: "",
+    menudeoStock: "",
     homeCarouselSlot: "0",
   });
   const [homeSlideCreateForm, setHomeSlideCreateForm] = useState<HomeSlideCreateFormState>({
@@ -466,7 +483,15 @@ export function AdminDashboard() {
       imageUrl: product.image ?? "",
       mayoreo: product.mayoreo === 1,
       menudeo: product.menudeo === 1,
+      mayoreoPrice: product.mayoreoPrice != null ? String(product.mayoreoPrice) : "",
+      mayoreoStock: String(product.mayoreoStock ?? 0),
+      menudeoPrice: product.menudeoPrice != null ? String(product.menudeoPrice) : "",
+      menudeoStock: String(product.menudeoStock ?? 0),
       homeCarouselSlot: String(product.homeCarouselSlot ?? 0) as HomeCarouselSlotFormValue,
+    });
+    // Auto-scroll al formulario de edición después de renderizar.
+    requestAnimationFrame(() => {
+      editFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
 
@@ -691,6 +716,10 @@ export function AdminDashboard() {
           imageUrl: "",
           mayoreo: product.mayoreo ? 1 : 0,
           menudeo: product.menudeo ? 1 : 0,
+          mayoreoPrice: product.mayoreoPrice ?? null,
+          mayoreoStock: product.mayoreoStock ?? 0,
+          menudeoPrice: product.menudeoPrice ?? null,
+          menudeoStock: product.menudeoStock ?? 0,
           homeCarouselSlot: parsedSlot as HomeCarouselSlotValue,
         },
         token
@@ -778,6 +807,10 @@ export function AdminDashboard() {
         imageUrl: createForm.imageUrl.trim(),
         mayoreo: createForm.mayoreo ? 1 : 0,
         menudeo: createForm.menudeo ? 1 : 0,
+        mayoreoPrice: createForm.mayoreo && createForm.mayoreoPrice ? Number(createForm.mayoreoPrice) : null,
+        mayoreoStock: createForm.mayoreo ? Number(createForm.mayoreoStock) || 0 : 0,
+        menudeoPrice: createForm.menudeo && createForm.menudeoPrice ? Number(createForm.menudeoPrice) : null,
+        menudeoStock: createForm.menudeo ? Number(createForm.menudeoStock) || 0 : 0,
         homeCarouselSlot,
       }, token);
 
@@ -798,6 +831,10 @@ export function AdminDashboard() {
         imageUrl: "",
         mayoreo: true,
         menudeo: true,
+        mayoreoPrice: "",
+        mayoreoStock: "",
+        menudeoPrice: "",
+        menudeoStock: "",
         homeCarouselSlot: "0",
       }));
       setIsCreatingProduct(false);
@@ -862,6 +899,10 @@ export function AdminDashboard() {
         imageUrl: editForm.imageUrl.trim(),
         mayoreo: editForm.mayoreo ? 1 : 0,
         menudeo: editForm.menudeo ? 1 : 0,
+        mayoreoPrice: editForm.mayoreo && editForm.mayoreoPrice ? Number(editForm.mayoreoPrice) : null,
+        mayoreoStock: editForm.mayoreo ? Number(editForm.mayoreoStock) || 0 : 0,
+        menudeoPrice: editForm.menudeo && editForm.menudeoPrice ? Number(editForm.menudeoPrice) : null,
+        menudeoStock: editForm.menudeo ? Number(editForm.menudeoStock) || 0 : 0,
         homeCarouselSlot,
       }, token);
 
@@ -1360,6 +1401,38 @@ export function AdminDashboard() {
                 />
                 <span>Mayoreo</span>
               </label>
+              {createForm.mayoreo && (
+                <div className="admin-edit-grid" style={{ marginTop: 8 }}>
+                  <label className="admin-edit-label">
+                    <span>Precio mayoreo</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className="admin-edit-input"
+                      value={createForm.mayoreoPrice}
+                      onChange={(event) =>
+                        setCreateForm((prevForm) => ({ ...prevForm, mayoreoPrice: event.target.value }))
+                      }
+                      placeholder="Precio de mayoreo"
+                    />
+                  </label>
+                  <label className="admin-edit-label">
+                    <span>Stock mayoreo</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      className="admin-edit-input"
+                      value={createForm.mayoreoStock}
+                      onChange={(event) =>
+                        setCreateForm((prevForm) => ({ ...prevForm, mayoreoStock: event.target.value }))
+                      }
+                      placeholder="Stock de mayoreo"
+                    />
+                  </label>
+                </div>
+              )}
               <label>
                 <input
                   type="checkbox"
@@ -1370,6 +1443,38 @@ export function AdminDashboard() {
                 />
                 <span>Menudeo</span>
               </label>
+              {createForm.menudeo && (
+                <div className="admin-edit-grid" style={{ marginTop: 8 }}>
+                  <label className="admin-edit-label">
+                    <span>Precio menudeo</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className="admin-edit-input"
+                      value={createForm.menudeoPrice}
+                      onChange={(event) =>
+                        setCreateForm((prevForm) => ({ ...prevForm, menudeoPrice: event.target.value }))
+                      }
+                      placeholder="Precio de menudeo"
+                    />
+                  </label>
+                  <label className="admin-edit-label">
+                    <span>Stock menudeo</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      className="admin-edit-input"
+                      value={createForm.menudeoStock}
+                      onChange={(event) =>
+                        setCreateForm((prevForm) => ({ ...prevForm, menudeoStock: event.target.value }))
+                      }
+                      placeholder="Stock de menudeo"
+                    />
+                  </label>
+                </div>
+              )}
             </div>
 
             {createError && <p className="admin-auth-error">{createError}</p>}
@@ -1509,7 +1614,7 @@ export function AdminDashboard() {
           )}
 
           {editingProductId && (
-            <form className="admin-edit-form admin-surface-card" onSubmit={handleSaveProduct}>
+            <form ref={editFormRef} className="admin-edit-form admin-surface-card" onSubmit={handleSaveProduct}>
               <h3>Editar producto ID {editingProductId}</h3>
               <div className="admin-edit-grid">
                 <label className="admin-edit-label">
@@ -1614,6 +1719,38 @@ export function AdminDashboard() {
                   />
                   <span>Mayoreo</span>
                 </label>
+                {editForm.mayoreo && (
+                  <div className="admin-edit-grid" style={{ marginTop: 8 }}>
+                    <label className="admin-edit-label">
+                      <span>Precio mayoreo</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className="admin-edit-input"
+                        value={editForm.mayoreoPrice}
+                        onChange={(event) =>
+                          setEditForm((prevForm) => ({ ...prevForm, mayoreoPrice: event.target.value }))
+                        }
+                        placeholder="Precio de mayoreo"
+                      />
+                    </label>
+                    <label className="admin-edit-label">
+                      <span>Stock mayoreo</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        className="admin-edit-input"
+                        value={editForm.mayoreoStock}
+                        onChange={(event) =>
+                          setEditForm((prevForm) => ({ ...prevForm, mayoreoStock: event.target.value }))
+                        }
+                        placeholder="Stock de mayoreo"
+                      />
+                    </label>
+                  </div>
+                )}
                 <label>
                   <input
                     type="checkbox"
@@ -1624,6 +1761,38 @@ export function AdminDashboard() {
                   />
                   <span>Menudeo</span>
                 </label>
+                {editForm.menudeo && (
+                  <div className="admin-edit-grid" style={{ marginTop: 8 }}>
+                    <label className="admin-edit-label">
+                      <span>Precio menudeo</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className="admin-edit-input"
+                        value={editForm.menudeoPrice}
+                        onChange={(event) =>
+                          setEditForm((prevForm) => ({ ...prevForm, menudeoPrice: event.target.value }))
+                        }
+                        placeholder="Precio de menudeo"
+                      />
+                    </label>
+                    <label className="admin-edit-label">
+                      <span>Stock menudeo</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        className="admin-edit-input"
+                        value={editForm.menudeoStock}
+                        onChange={(event) =>
+                          setEditForm((prevForm) => ({ ...prevForm, menudeoStock: event.target.value }))
+                        }
+                        placeholder="Stock de menudeo"
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
 
               {editError && <p className="admin-auth-error">{editError}</p>}

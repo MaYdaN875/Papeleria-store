@@ -89,6 +89,26 @@ function normalizeStoreHomeSlide(raw: RawStoreHomeSlide, apiBase: string): Store
     }
 }
 
+/** Timeout (ms) para cada intento de fetch contra un candidato de API. */
+const FETCH_TIMEOUT_MS = 8_000
+
+/** Recuerda la última base que funcionó para no volver a probar las que fallan. */
+let lastWorkingBase: string | null = null
+
+function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
+    const controller = new AbortController()
+    const timer = globalThis.setTimeout(() => controller.abort(), timeoutMs)
+    return fetch(url, { signal: controller.signal }).finally(() =>
+        globalThis.clearTimeout(timer)
+    )
+}
+
+/** Ordena las bases candidatas poniendo la última que funcionó primero. */
+function prioritizeCandidates(candidates: string[]): string[] {
+    if (!lastWorkingBase || !candidates.includes(lastWorkingBase)) return candidates
+    return [lastWorkingBase, ...candidates.filter((b) => b !== lastWorkingBase)]
+}
+
 export async function fetchStoreProducts(): Promise<StoreProductsResponse> {
     const candidateBases = buildCandidateApiBases(API_BASE)
     if (candidateBases.length === 0 || !candidateBases[0]) {
@@ -99,10 +119,14 @@ export async function fetchStoreProducts(): Promise<StoreProductsResponse> {
     }
 
     let lastNetworkError = ""
+    const ordered = prioritizeCandidates(candidateBases)
 
-    for (const base of candidateBases) {
+    for (const base of ordered) {
         try {
-            const response = await fetch(`${base}/public/products.php`)
+            const response = await fetchWithTimeout(
+                `${base}/public/products.php`,
+                FETCH_TIMEOUT_MS
+            )
 
             if (!response.ok) {
                 const errorBody = (await response.json().catch(() => ({}))) as Partial<StoreProductsResponse>
@@ -125,6 +149,7 @@ export async function fetchStoreProducts(): Promise<StoreProductsResponse> {
                 }
             }
 
+            lastWorkingBase = base
             return {
                 ok: true,
                 message: body.message,
@@ -151,10 +176,14 @@ export async function fetchStoreHomeSlides(): Promise<StoreHomeSlidesResponse> {
     }
 
     let lastNetworkError = ""
+    const ordered = prioritizeCandidates(candidateBases)
 
-    for (const base of candidateBases) {
+    for (const base of ordered) {
         try {
-            const response = await fetch(`${base}/public/slides.php`)
+            const response = await fetchWithTimeout(
+                `${base}/public/slides.php`,
+                FETCH_TIMEOUT_MS
+            )
 
             if (!response.ok) {
                 const errorBody = (await response.json().catch(() => ({}))) as Partial<StoreHomeSlidesResponse>
@@ -177,6 +206,7 @@ export async function fetchStoreHomeSlides(): Promise<StoreHomeSlidesResponse> {
                 }
             }
 
+            lastWorkingBase = base
             return {
                 ok: true,
                 message: body.message,
@@ -192,3 +222,4 @@ export async function fetchStoreHomeSlides(): Promise<StoreHomeSlidesResponse> {
         message: `No se pudo conectar a la API de slides. ${lastNetworkError}`,
     }
 }
+

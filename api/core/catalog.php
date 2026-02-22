@@ -8,7 +8,8 @@
  *
  * @return array{select:string, join:string}
  */
-function adminOfferSqlParts(PDO $pdo, string $productAlias = 'p', string $offerAlias = 'po'): array {
+function adminOfferSqlParts(PDO $pdo, string $productAlias = 'p', string $offerAlias = 'po'): array
+{
   if (!adminTableExists($pdo, 'product_offers')) {
     return [
       'select' => '0 AS is_offer, NULL AS offer_price',
@@ -27,7 +28,8 @@ function adminOfferSqlParts(PDO $pdo, string $productAlias = 'p', string $offerA
  *
  * @return array{select:string, join:string}
  */
-function adminImageSqlParts(PDO $pdo, string $productAlias = 'p', string $imageAlias = 'pimg'): array {
+function adminImageSqlParts(PDO $pdo, string $productAlias = 'p', string $imageAlias = 'pimg'): array
+{
   if (!adminTableExists($pdo, 'product_images')) {
     return [
       'select' => "'/images/boligrafos.jpg' AS image",
@@ -55,7 +57,8 @@ function adminImageSqlParts(PDO $pdo, string $productAlias = 'p', string $imageA
  *
  * @return array{select:string, join:string}
  */
-function adminHomeCarouselSqlParts(PDO $pdo, string $productAlias = 'p', string $assignmentAlias = 'hca'): array {
+function adminHomeCarouselSqlParts(PDO $pdo, string $productAlias = 'p', string $assignmentAlias = 'hca'): array
+{
   if (!adminTableExists($pdo, 'home_carousel_assignments')) {
     return [
       'select' => '0 AS home_carousel_slot',
@@ -72,21 +75,41 @@ function adminHomeCarouselSqlParts(PDO $pdo, string $productAlias = 'p', string 
 /**
  * Convierte campos de producto a tipos consistentes para respuestas JSON.
  */
-function adminNormalizeProductRow(array $product): array {
-  if (isset($product['id'])) $product['id'] = (int)$product['id'];
-  if (isset($product['category_id'])) $product['category_id'] = (int)$product['category_id'];
-  if (isset($product['stock'])) $product['stock'] = (int)$product['stock'];
-  if (isset($product['price'])) $product['price'] = (float)$product['price'];
+function adminNormalizeProductRow(array $product): array
+{
+  if (isset($product['id']))
+    $product['id'] = (int) $product['id'];
+  if (isset($product['category_id']))
+    $product['category_id'] = (int) $product['category_id'];
+  if (isset($product['stock']))
+    $product['stock'] = (int) $product['stock'];
+  if (isset($product['price']))
+    $product['price'] = (float) $product['price'];
 
-  if (array_key_exists('mayoreo', $product)) $product['mayoreo'] = $product['mayoreo'] ? 1 : 0;
-  if (array_key_exists('menudeo', $product)) $product['menudeo'] = $product['menudeo'] ? 1 : 0;
-  if (array_key_exists('is_offer', $product)) $product['is_offer'] = $product['is_offer'] ? 1 : 0;
+  if (array_key_exists('mayoreo', $product))
+    $product['mayoreo'] = $product['mayoreo'] ? 1 : 0;
+  if (array_key_exists('menudeo', $product))
+    $product['menudeo'] = $product['menudeo'] ? 1 : 0;
+  if (array_key_exists('mayoreo_price', $product)) {
+    $product['mayoreo_price'] = isset($product['mayoreo_price']) ? (float) $product['mayoreo_price'] : null;
+  }
+  if (array_key_exists('mayoreo_stock', $product)) {
+    $product['mayoreo_stock'] = (int) ($product['mayoreo_stock'] ?? 0);
+  }
+  if (array_key_exists('menudeo_price', $product)) {
+    $product['menudeo_price'] = isset($product['menudeo_price']) ? (float) $product['menudeo_price'] : null;
+  }
+  if (array_key_exists('menudeo_stock', $product)) {
+    $product['menudeo_stock'] = (int) ($product['menudeo_stock'] ?? 0);
+  }
+  if (array_key_exists('is_offer', $product))
+    $product['is_offer'] = $product['is_offer'] ? 1 : 0;
   if (array_key_exists('home_carousel_slot', $product)) {
-    $slot = (int)$product['home_carousel_slot'];
+    $slot = (int) $product['home_carousel_slot'];
     $product['home_carousel_slot'] = ($slot >= 1 && $slot <= 3) ? $slot : 0;
   }
   if (array_key_exists('offer_price', $product)) {
-    $product['offer_price'] = isset($product['offer_price']) ? (float)$product['offer_price'] : null;
+    $product['offer_price'] = isset($product['offer_price']) ? (float) $product['offer_price'] : null;
   }
 
   $product['category'] = $product['category'] ?? 'General';
@@ -102,7 +125,8 @@ function adminNormalizeProductRow(array $product): array {
 /**
  * Crea, actualiza o elimina asignación de carrusel (slots 1, 2, 3) por producto.
  */
-function adminUpsertHomeCarouselAssignment(PDO $pdo, int $productId, int $homeCarouselSlot): void {
+function adminUpsertHomeCarouselAssignment(PDO $pdo, int $productId, int $homeCarouselSlot): void
+{
   if (!adminTableExists($pdo, 'home_carousel_assignments')) {
     return;
   }
@@ -133,15 +157,19 @@ function adminUpsertHomeCarouselAssignment(PDO $pdo, int $productId, int $homeCa
 /**
  * Crea o actualiza la imagen principal de un producto.
  */
-function adminUpsertPrimaryProductImage(PDO $pdo, int $productId, string $imageUrl, string $altText): void {
+function adminUpsertPrimaryProductImage(PDO $pdo, int $productId, string $imageUrl, string $altText): void
+{
   $cleanUrl = trim($imageUrl);
-  if ($cleanUrl === '') return;
-  if (!adminTableExists($pdo, 'product_images')) return;
+  if ($cleanUrl === '')
+    return;
+  if (!adminTableExists($pdo, 'product_images'))
+    return;
 
   $columns = adminGetTableColumns($pdo, 'product_images');
   $hasProductId = in_array('product_id', $columns, true);
   $hasImageUrl = in_array('image_url', $columns, true);
-  if (!$hasProductId || !$hasImageUrl) return;
+  if (!$hasProductId || !$hasImageUrl)
+    return;
 
   $hasAltText = in_array('alt_text', $columns, true);
   $hasIsPrimary = in_array('is_primary', $columns, true);
@@ -157,7 +185,7 @@ function adminUpsertPrimaryProductImage(PDO $pdo, int $productId, string $imageU
     : 'SELECT id FROM product_images WHERE product_id = :product_id ORDER BY id ASC LIMIT 1';
   $existingStmt = $pdo->prepare($existingSql);
   $existingStmt->execute(['product_id' => $productId]);
-  $existingId = (int)($existingStmt->fetchColumn() ?: 0);
+  $existingId = (int) ($existingStmt->fetchColumn() ?: 0);
 
   if ($existingId > 0) {
     $setParts = ['image_url = :image_url'];

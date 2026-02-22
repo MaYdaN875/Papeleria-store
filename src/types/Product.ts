@@ -12,5 +12,9 @@ export type Product = {
     stock: number
     mayoreo?: boolean
     menudeo?: boolean
+    mayoreoPrice?: number | null
+    mayoreoStock?: number
+    menudeoPrice?: number | null
+    menudeoStock?: number
     homeCarouselSlot?: number
 }

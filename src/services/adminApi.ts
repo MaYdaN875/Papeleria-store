@@ -6,37 +6,37 @@
  * - Normalizar tipos recibidos desde MySQL/PHP (que suelen venir como string).
  * - Evitar duplicar lógica de fetch y manejo de errores en componentes.
  */
-import { buildAuthHeaders, getApiBase } from "./api/base";
 import type {
-  AdminCategory,
-  AdminHomeSlide,
-  AdminOffer,
-  AdminProduct,
-  AdminSalesProductRow,
-  AdminSalesTodaySummary,
-  CreateAdminHomeSlideInput,
-  CreateAdminProductInput,
-  DeleteAdminHomeSlideInput,
-  DeleteAdminProductInput,
-  RemoveAdminOfferInput,
-  UpdateAdminProductInput,
-  UpsertAdminOfferInput,
+    AdminCategory,
+    AdminHomeSlide,
+    AdminOffer,
+    AdminProduct,
+    AdminSalesProductRow,
+    AdminSalesTodaySummary,
+    CreateAdminHomeSlideInput,
+    CreateAdminProductInput,
+    DeleteAdminHomeSlideInput,
+    DeleteAdminProductInput,
+    RemoveAdminOfferInput,
+    UpdateAdminProductInput,
+    UpsertAdminOfferInput,
 } from "../types/admin";
+import { buildAuthHeaders, getApiBase } from "./api/base";
 
 export type {
-  AdminCategory,
-  AdminHomeSlide,
-  AdminOffer,
-  AdminProduct,
-  AdminSalesProductRow,
-  AdminSalesTodaySummary,
-  CreateAdminHomeSlideInput,
-  CreateAdminProductInput,
-  DeleteAdminHomeSlideInput,
-  DeleteAdminProductInput,
-  RemoveAdminOfferInput,
-  UpdateAdminProductInput,
-  UpsertAdminOfferInput,
+    AdminCategory,
+    AdminHomeSlide,
+    AdminOffer,
+    AdminProduct,
+    AdminSalesProductRow,
+    AdminSalesTodaySummary,
+    CreateAdminHomeSlideInput,
+    CreateAdminProductInput,
+    DeleteAdminHomeSlideInput,
+    DeleteAdminProductInput,
+    RemoveAdminOfferInput,
+    UpdateAdminProductInput,
+    UpsertAdminOfferInput
 } from "../types/admin";
 
 const API_BASE = getApiBase();
@@ -133,6 +133,10 @@ interface RawAdminProduct {
   image?: string;
   mayoreo: RawBinaryFlag;
   menudeo: RawBinaryFlag;
+  mayoreo_price?: number | string | null;
+  mayoreo_stock?: number | string;
+  menudeo_price?: number | string | null;
+  menudeo_stock?: number | string;
   home_carousel_slot?: number | string;
   category: string;
   is_offer?: RawBinaryFlag;
@@ -195,6 +199,12 @@ function normalizeAdminProduct(raw: RawAdminProduct): AdminProduct {
     image: raw.image ?? "/images/boligrafos.jpg",
     mayoreo: toBinaryFlag(raw.mayoreo),
     menudeo: toBinaryFlag(raw.menudeo),
+    mayoreoPrice:
+      raw.mayoreo_price === null || raw.mayoreo_price === undefined ? null : Number(raw.mayoreo_price) || 0,
+    mayoreoStock: Number(raw.mayoreo_stock) || 0,
+    menudeoPrice:
+      raw.menudeo_price === null || raw.menudeo_price === undefined ? null : Number(raw.menudeo_price) || 0,
+    menudeoStock: Number(raw.menudeo_stock) || 0,
     homeCarouselSlot,
     category: raw.category ?? "",
     isOffer: toBinaryFlag(raw.is_offer),
@@ -390,6 +400,10 @@ export async function updateAdminProduct(
       image_url: payload.imageUrl,
       mayoreo: payload.mayoreo,
       menudeo: payload.menudeo,
+      mayoreo_price: payload.mayoreoPrice,
+      mayoreo_stock: payload.mayoreoStock,
+      menudeo_price: payload.menudeoPrice,
+      menudeo_stock: payload.menudeoStock,
       home_carousel_slot: payload.homeCarouselSlot,
     }),
   });
@@ -448,6 +462,10 @@ export async function createAdminProduct(
       image_url: payload.imageUrl,
       mayoreo: payload.mayoreo,
       menudeo: payload.menudeo,
+      mayoreo_price: payload.mayoreoPrice,
+      mayoreo_stock: payload.mayoreoStock,
+      menudeo_price: payload.menudeoPrice,
+      menudeo_stock: payload.menudeoStock,
       home_carousel_slot: payload.homeCarouselSlot,
     }),
   });

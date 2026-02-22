@@ -148,6 +148,18 @@ export const AllProducts = () => {
         }
 
         void loadStoreProducts()
+
+        // Refrescar productos al volver al foco de la pestaña
+        function handleVisibilityChange() {
+            if (document.visibilityState === "visible") {
+                void loadStoreProducts()
+            }
+        }
+
+        document.addEventListener("visibilitychange", handleVisibilityChange)
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange)
+        }
     }, [])
 
     const baseProducts = shouldUseStaticFallback ? staticProducts : storeProducts

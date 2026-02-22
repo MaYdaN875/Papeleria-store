@@ -1,11 +1,11 @@
-import { buildCandidateApiBases, getApiBase } from "./api/base";
 import type {
-  StoreCustomerAuthResponse,
-  StoreEmailVerificationResponse,
-  StoreCustomerLogoutResponse,
-  StorePasswordResetResponse,
-  StoreCustomerSessionResponse,
+    StoreCustomerAuthResponse,
+    StoreCustomerLogoutResponse,
+    StoreCustomerSessionResponse,
+    StoreEmailVerificationResponse,
+    StorePasswordResetResponse,
 } from "../types/customer";
+import { buildCandidateApiBases, getApiBase } from "./api/base";
 
 const API_BASE = getApiBase();
 
@@ -64,6 +64,7 @@ export async function registerStoreCustomer(input: {
   name: string;
   email: string;
   password: string;
+  recaptchaToken?: string | null;
 }): Promise<StoreCustomerAuthResponse> {
   try {
     const { response, body } = await requestWithBaseFallback<{
@@ -77,7 +78,12 @@ export async function registerStoreCustomer(input: {
     }>("/public/auth/register.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
+      body: JSON.stringify({
+        name: input.name,
+        email: input.email,
+        password: input.password,
+        recaptcha_token: input.recaptchaToken ?? undefined,
+      }),
     });
 
     if (!response.ok || !body.ok) {
@@ -108,6 +114,7 @@ export async function registerStoreCustomer(input: {
 export async function loginStoreCustomer(input: {
   email: string;
   password: string;
+  recaptchaToken?: string | null;
 }): Promise<StoreCustomerAuthResponse> {
   try {
     const { response, body } = await requestWithBaseFallback<{
@@ -121,7 +128,11 @@ export async function loginStoreCustomer(input: {
     }>("/public/auth/login.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
+      body: JSON.stringify({
+        email: input.email,
+        password: input.password,
+        recaptcha_token: input.recaptchaToken ?? undefined,
+      }),
     });
 
     if (!response.ok || !body.ok) {

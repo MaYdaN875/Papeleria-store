@@ -10,6 +10,10 @@ export interface AdminProduct {
   image: string;
   mayoreo: AdminBinaryFlag;
   menudeo: AdminBinaryFlag;
+  mayoreoPrice: number | null;
+  mayoreoStock: number;
+  menudeoPrice: number | null;
+  menudeoStock: number;
   homeCarouselSlot: AdminHomeCarouselSlot;
   category: string;
   isOffer: AdminBinaryFlag;
@@ -61,6 +65,10 @@ export interface UpdateAdminProductInput {
   imageUrl: string;
   mayoreo: AdminBinaryFlag;
   menudeo: AdminBinaryFlag;
+  mayoreoPrice: number | null;
+  mayoreoStock: number;
+  menudeoPrice: number | null;
+  menudeoStock: number;
   homeCarouselSlot: AdminHomeCarouselSlot;
 }
 
@@ -72,6 +80,10 @@ export interface CreateAdminProductInput {
   imageUrl: string;
   mayoreo: AdminBinaryFlag;
   menudeo: AdminBinaryFlag;
+  mayoreoPrice: number | null;
+  mayoreoStock: number;
+  menudeoPrice: number | null;
+  menudeoStock: number;
   homeCarouselSlot: AdminHomeCarouselSlot;
 }
 

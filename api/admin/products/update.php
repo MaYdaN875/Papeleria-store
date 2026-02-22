@@ -26,16 +26,20 @@ adminRequireMethod('POST');
 //   menudeo: 0|1|boolean
 // }
 $data = adminReadJsonBody();
-$id = isset($data['id']) ? (int)$data['id'] : 0;
-$name = trim((string)($data['name'] ?? ''));
-$price = isset($data['price']) ? (float)$data['price'] : -1;
-$stock = isset($data['stock']) ? (int)$data['stock'] : -1;
-$imageUrl = trim((string)($data['image_url'] ?? ''));
-$homeCarouselSlot = isset($data['home_carousel_slot']) ? (int)$data['home_carousel_slot'] : 0;
+$id = isset($data['id']) ? (int) $data['id'] : 0;
+$name = trim((string) ($data['name'] ?? ''));
+$price = isset($data['price']) ? (float) $data['price'] : -1;
+$stock = isset($data['stock']) ? (int) $data['stock'] : -1;
+$imageUrl = trim((string) ($data['image_url'] ?? ''));
+$homeCarouselSlot = isset($data['home_carousel_slot']) ? (int) $data['home_carousel_slot'] : 0;
 $mayoreoRaw = $data['mayoreo'] ?? 0;
 $menudeoRaw = $data['menudeo'] ?? 0;
 $mayoreo = ($mayoreoRaw === 1 || $mayoreoRaw === '1' || $mayoreoRaw === true) ? 1 : 0;
 $menudeo = ($menudeoRaw === 1 || $menudeoRaw === '1' || $menudeoRaw === true) ? 1 : 0;
+$mayoreoPrice = isset($data['mayoreo_price']) && $data['mayoreo_price'] !== null ? (float) $data['mayoreo_price'] : null;
+$mayoreoStock = isset($data['mayoreo_stock']) ? (int) $data['mayoreo_stock'] : 0;
+$menudeoPrice = isset($data['menudeo_price']) && $data['menudeo_price'] !== null ? (float) $data['menudeo_price'] : null;
+$menudeoStock = isset($data['menudeo_stock']) ? (int) $data['menudeo_stock'] : 0;
 
 if ($id <= 0 || $name === '' || $price < 0 || $stock < 0) {
   adminJsonResponse(400, ['ok' => false, 'message' => 'Datos inválidos para actualizar producto']);
@@ -55,7 +59,11 @@ try {
         price = :price,
         stock = :stock,
         mayoreo = :mayoreo,
-        menudeo = :menudeo
+        menudeo = :menudeo,
+        mayoreo_price = :mayoreo_price,
+        mayoreo_stock = :mayoreo_stock,
+        menudeo_price = :menudeo_price,
+        menudeo_stock = :menudeo_stock
     WHERE id = :id
   ');
 
@@ -66,6 +74,10 @@ try {
     'stock' => $stock,
     'mayoreo' => $mayoreo,
     'menudeo' => $menudeo,
+    'mayoreo_price' => $mayoreoPrice,
+    'mayoreo_stock' => $mayoreoStock,
+    'menudeo_price' => $menudeoPrice,
+    'menudeo_stock' => $menudeoStock,
   ]);
 
   adminUpsertPrimaryProductImage($pdo, $id, $imageUrl, $name);
@@ -83,6 +95,10 @@ try {
       p.stock,
       p.mayoreo,
       p.menudeo,
+      p.mayoreo_price,
+      p.mayoreo_stock,
+      p.menudeo_price,
+      p.menudeo_stock,
       {$homeCarouselSql['select']},
       {$offerSql['select']},
       {$imageSql['select']},

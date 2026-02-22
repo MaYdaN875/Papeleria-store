@@ -121,6 +121,19 @@ export const Home = () => {
 
         void loadStoreProducts()
         void loadHomeSlides()
+
+        // Refrescar productos/slides al volver al foco de la pestaña
+        function handleVisibilityChange() {
+            if (document.visibilityState === "visible") {
+                void loadStoreProducts()
+                void loadHomeSlides()
+            }
+        }
+
+        document.addEventListener("visibilitychange", handleVisibilityChange)
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange)
+        }
     }, [])
 
     const baseProducts = shouldUseStaticFallback ? staticProducts : storeProducts

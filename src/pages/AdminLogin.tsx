@@ -18,7 +18,7 @@ import { getAdminToken, setAdminSession } from "../utils/adminSession";
 
 export function AdminLogin() {
   // Estado del formulario y feedback visual.
-  const [userIdentifier, setUserIdentifier] = useState("admin@godart.com");
+  const [userIdentifier, setUserIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [error, setError] = useState("");
@@ -84,14 +84,14 @@ export function AdminLogin() {
 
         <form onSubmit={handleSubmit} className="admin-auth-form">
           <label className="admin-auth-label">
-            <span>Usuario o correo</span>
+            <span>Usuario</span>
             <input
               type="text"
               className="admin-auth-input"
               value={userIdentifier}
               onChange={(event) => setUserIdentifier(event.target.value)}
-              placeholder="admin@godart.com"
-              autoComplete="username"
+              placeholder="Tu nombre de usuario"
+              autoComplete="off"
             />
           </label>
 

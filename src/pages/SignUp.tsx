@@ -1,10 +1,11 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
+import RecaptchaCheckbox from "../components/ui/RecaptchaCheckbox";
 import { registerStoreCustomer } from "../services/customerApi";
+import "../styles/password-recovery.css";
+import "../styles/signup.css";
 import { syncCartCount } from "../utils/cart";
 import { setStoreSession } from "../utils/storeSession";
-import "../styles/signup.css";
-import "../styles/password-recovery.css";
 
 export function SignUp() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export function SignUp() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registerCooldownSeconds, setRegisterCooldownSeconds] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState("");
 
   const passwordMatch = useMemo(() => {
     if (!confirmPassword) return true;
@@ -79,12 +81,19 @@ export function SignUp() {
       return;
     }
 
+    if (!captchaToken) {
+      setError("Completa la verificación \"No soy un robot\".");
+      setIsSubmitting(false);
+      return;
+    }
+
     let result: Awaited<ReturnType<typeof registerStoreCustomer>>;
     try {
       result = await registerStoreCustomer({
         name: fullName,
         email: email.trim().toLowerCase(),
         password,
+        recaptchaToken: captchaToken,
       });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "No se pudo crear la cuenta.");
@@ -291,6 +300,11 @@ export function SignUp() {
                 </span>
               </label>
 
+              <RecaptchaCheckbox
+                onVerify={(token) => setCaptchaToken(token)}
+                onExpire={() => setCaptchaToken("")}
+              />
+
               {error && <p className="password-feedback password-feedback--error">{error}</p>}
               {successMessage && (
                 <p className="password-feedback password-feedback--success">{successMessage}</p>
@@ -299,7 +313,7 @@ export function SignUp() {
               <button
                 type="submit"
                 className="signup-btn"
-                disabled={!passwordMatch || !agreeTerms || isSubmitting || registerCooldownSeconds > 0}
+                disabled={!passwordMatch || !agreeTerms || !captchaToken || isSubmitting || registerCooldownSeconds > 0}
               >
                 {signUpButtonLabel}
               </button>

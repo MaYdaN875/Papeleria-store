@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
+import RecaptchaCheckbox from "../components/ui/RecaptchaCheckbox";
 import {
   fetchStoreCustomerSession,
   loginStoreCustomer,
@@ -7,6 +8,8 @@ import {
   resendStoreEmailVerification,
 } from "../services/customerApi";
 import { isFirebaseAuthEnabled, signInWithGoogleFirebase, signOutFirebaseSession } from "../services/firebaseAuth";
+import "../styles/login.css";
+import "../styles/password-recovery.css";
 import { syncCartCount } from "../utils/cart";
 import {
   clearStoreSession,
@@ -15,8 +18,6 @@ import {
   getStoreUserToken,
   setStoreSession,
 } from "../utils/storeSession";
-import "../styles/login.css";
-import "../styles/password-recovery.css";
 
 export function Login() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export function Login() {
   const [loginCooldownSeconds, setLoginCooldownSeconds] = useState(0);
   const [isResendingVerification, setIsResendingVerification] = useState(false);
   const [showResendVerification, setShowResendVerification] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
   const [isCheckingSession, setIsCheckingSession] = useState(() => !!getStoreUserToken());
   const [sessionUserName, setSessionUserName] = useState(() => getStoreUser()?.name ?? "");
   const [sessionUserEmail, setSessionUserEmail] = useState(() => getStoreUser()?.email ?? "");
@@ -110,9 +112,16 @@ export function Login() {
       return;
     }
 
+    if (!captchaToken) {
+      setError("Completa la verificación \"No soy un robot\".");
+      setIsSubmitting(false);
+      return;
+    }
+
     const result = await loginStoreCustomer({
       email: normalizedEmail,
       password,
+      recaptchaToken: captchaToken,
     });
 
     if (!result.ok || !result.token || !result.user) {
@@ -335,10 +344,15 @@ export function Login() {
                   </button>
                 )}
 
+                <RecaptchaCheckbox
+                  onVerify={(token: string) => setCaptchaToken(token)}
+                  onExpire={() => setCaptchaToken("")}
+                />
+
                 <button
                   type="submit"
                   className="login-btn"
-                  disabled={isSubmitting || isCheckingSession || loginCooldownSeconds > 0}
+                  disabled={!captchaToken || isSubmitting || isCheckingSession || loginCooldownSeconds > 0}
                 >
                   {loginButtonLabel}
                 </button>
