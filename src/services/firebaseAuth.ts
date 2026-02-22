@@ -1,14 +1,16 @@
-import { initializeApp, type FirebaseApp, getApps } from "firebase/app";
+import { getApps, initializeApp, type FirebaseApp } from "firebase/app";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
 import {
-  GoogleAuthProvider,
-  browserLocalPersistence,
-  getAuth,
-  setPersistence,
-  signInWithPopup,
-  signOut,
-  type Auth,
-  type User,
+    browserLocalPersistence,
+    getAuth,
+    GoogleAuthProvider,
+    setPersistence,
+    signInWithPopup,
+    signOut,
+    type Auth,
+    type User,
 } from "firebase/auth";
+
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -39,6 +41,19 @@ function getFirebaseAuthInstance(): Auth {
   if (!firebaseAuth) {
     firebaseAuth = getAuth(firebaseApp);
     void setPersistence(firebaseAuth, browserLocalPersistence);
+
+    // Inicializar App Check con reCAPTCHA Enterprise
+    if (typeof window !== "undefined") {
+      const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+      if (siteKey) {
+        initializeAppCheck(firebaseApp, {
+          provider: new ReCaptchaEnterpriseProvider(siteKey),
+          isTokenAutoRefreshEnabled: true,
+        });
+      }
+    }
+
+
   }
 
   return firebaseAuth;
