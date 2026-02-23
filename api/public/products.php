@@ -103,6 +103,10 @@ try {
       p.stock,
       p.mayoreo,
       p.menudeo,
+      p.mayoreo_price,
+      p.mayoreo_stock,
+      p.menudeo_price,
+      p.menudeo_stock,
       $homeCarouselSelect
       p.price AS original_price,
       $offersSelect
@@ -134,6 +138,10 @@ try {
     $product['stock'] = (int)$product['stock'];
     $product['mayoreo'] = $product['mayoreo'] ? 1 : 0;
     $product['menudeo'] = $product['menudeo'] ? 1 : 0;
+    $product['mayoreo_price'] = isset($product['mayoreo_price']) ? (float)$product['mayoreo_price'] : null;
+    $product['mayoreo_stock'] = isset($product['mayoreo_stock']) ? (int)$product['mayoreo_stock'] : 0;
+    $product['menudeo_price'] = isset($product['menudeo_price']) ? (float)$product['menudeo_price'] : null;
+    $product['menudeo_stock'] = isset($product['menudeo_stock']) ? (int)$product['menudeo_stock'] : 0;
     $slot = isset($product['home_carousel_slot']) ? (int)$product['home_carousel_slot'] : 0;
     $product['home_carousel_slot'] = ($slot >= 1 && $slot <= 3) ? $slot : 0;
     $product['is_offer'] = $product['is_offer'] ? 1 : 0;

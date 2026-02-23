@@ -57,13 +57,40 @@ function filterProducts(productsList: Product[], filters: FilterState): Product[
         if (filters.brands.length > 0 && !filters.brands.includes(brand)) return false
         if (filters.mayoreo && !product.mayoreo) return false
         if (filters.menudeo && !product.menudeo) return false
-        if (
-            product.price < filters.priceRange[0] ||
-            product.price > filters.priceRange[1]
-        )
-            return false
+
+        // Usar el precio correspondiente al modo activo para el filtro de rango
+        const activePrice = filters.mayoreo && product.mayoreoPrice != null
+            ? product.mayoreoPrice
+            : filters.menudeo && product.menudeoPrice != null
+                ? product.menudeoPrice
+                : product.price
+
+        if (activePrice < filters.priceRange[0] || activePrice > filters.priceRange[1]) return false
 
         return true
+    })
+}
+
+/** Transforma productos para mostrar precio/stock de mayoreo o menudeo según el filtro activo. */
+function applyPriceMode(products: Product[], filters: FilterState): Product[] {
+    if (!filters.mayoreo && !filters.menudeo) return products
+
+    return products.map((product) => {
+        if (filters.mayoreo && product.mayoreo && product.mayoreoPrice != null) {
+            return {
+                ...product,
+                price: product.mayoreoPrice,
+                stock: product.mayoreoStock ?? product.stock,
+            }
+        }
+        if (filters.menudeo && product.menudeo && product.menudeoPrice != null) {
+            return {
+                ...product,
+                price: product.menudeoPrice,
+                stock: product.menudeoStock ?? product.stock,
+            }
+        }
+        return product
     })
 }
 
@@ -175,11 +202,26 @@ export const AllProducts = () => {
         () => filterProducts(productsAfterSearch, filters),
         [productsAfterSearch, filters]
     )
-    const hasNoFilteredProducts = !isLoadingProducts && filteredProducts.length === 0
+
+    // Aplicar transformación de precios según filtro mayoreo/menudeo
+    const displayProducts = useMemo(
+        () => applyPriceMode(filteredProducts, filters),
+        [filteredProducts, filters]
+    )
+    const hasNoFilteredProducts = !isLoadingProducts && displayProducts.length === 0
+
+    const activeMode = filters.mayoreo ? "mayoreo" : filters.menudeo ? "menudeo" : null
 
     const handleAddToCart = useCallback((product: Product) => {
         addProductToCart(product.name, product.price.toFixed(2))
     }, [])
+
+    const handleNavigateToProduct = useCallback((productId: number) => {
+        const url = activeMode
+            ? `/product/${productId}?mode=${activeMode}`
+            : `/product/${productId}`
+        navigate(url)
+    }, [navigate, activeMode])
 
     return (
         <>
@@ -274,16 +316,27 @@ export const AllProducts = () => {
                                     filtros seleccionados.
                                 </p>
                             )}
-                            {!isLoadingProducts && filteredProducts.length > 0 && (
-                                filteredProducts.map((product) => (
+                            {!isLoadingProducts && displayProducts.length > 0 && (
+                                displayProducts.map((product) => (
                                     <ProductCard
                                         key={product.id}
                                         product={product}
-                                        badge={getBadgeForProduct(product)}
-                                        originalPrice={product.originalPrice}
+                                        badge={
+                                            activeMode === "mayoreo"
+                                                ? { type: "sale", value: "Mayoreo" }
+                                                : activeMode === "menudeo"
+                                                    ? { type: "sale", value: "Menudeo" }
+                                                    : getBadgeForProduct(product)
+                                        }
+                                        originalPrice={
+                                            activeMode ? undefined : product.originalPrice
+                                        }
                                         brand={getBrand(product)}
                                         onAddToCart={() =>
                                             handleAddToCart(product)
+                                        }
+                                        onNavigate={() =>
+                                            handleNavigateToProduct(product.id)
                                         }
                                     />
                                 ))

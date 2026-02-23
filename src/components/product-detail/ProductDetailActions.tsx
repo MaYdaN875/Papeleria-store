@@ -7,6 +7,7 @@ export interface ProductDetailActionsProps {
     quantity: number
     onQuantityChange: (v: number) => void
     onAddToCart: () => void
+    displayStock?: number
 }
 
 export function ProductDetailActions({
@@ -14,8 +15,10 @@ export function ProductDetailActions({
     quantity,
     onQuantityChange,
     onAddToCart,
+    displayStock,
 }: ProductDetailActionsProps) {
-    const maxQuantity = Math.min(20, product.stock)
+    const effectiveStock = displayStock ?? product.stock
+    const maxQuantity = Math.min(20, effectiveStock)
 
     return (
         <div className="product-detail__actions">
