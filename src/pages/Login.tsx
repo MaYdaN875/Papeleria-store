@@ -2,21 +2,22 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import RecaptchaCheckbox from "../components/ui/RecaptchaCheckbox";
 import {
-  fetchStoreCustomerSession,
-  loginStoreCustomer,
-  logoutStoreCustomer,
-  resendStoreEmailVerification,
+    fetchStoreCustomerSession,
+    loginStoreCustomer,
+    loginWithFirebaseToken,
+    logoutStoreCustomer,
+    resendStoreEmailVerification,
 } from "../services/customerApi";
 import { isFirebaseAuthEnabled, signInWithGoogleFirebase, signOutFirebaseSession } from "../services/firebaseAuth";
 import "../styles/login.css";
 import "../styles/password-recovery.css";
 import { syncCartCount } from "../utils/cart";
 import {
-  clearStoreSession,
-  getStoreUser,
-  getStoreUserProvider,
-  getStoreUserToken,
-  setStoreSession,
+    clearStoreSession,
+    getStoreUser,
+    getStoreUserProvider,
+    getStoreUserToken,
+    setStoreSession,
 } from "../utils/storeSession";
 
 export function Login() {
@@ -175,18 +176,24 @@ export function Login() {
     setError("");
     setIsGoogleSubmitting(true);
 
-    const result = await signInWithGoogleFirebase();
-    if (!result.ok || !result.token || !result.user?.email) {
-      setError(result.message ?? "No se pudo iniciar sesión con Google.");
+    const firebaseResult = await signInWithGoogleFirebase();
+    if (!firebaseResult.ok || !firebaseResult.token || !firebaseResult.user?.email) {
+      setError(firebaseResult.message ?? "No se pudo iniciar sesión con Google.");
       setIsGoogleSubmitting(false);
       return;
     }
 
-    setStoreSession(result.token, {
-      uid: result.user.uid,
-      name: result.user.name,
-      email: result.user.email,
-      provider: "firebase",
+    // Enviar token de Firebase al backend para crear/vincular usuario en la BD.
+    const apiResult = await loginWithFirebaseToken(firebaseResult.token);
+    if (!apiResult.ok || !apiResult.token || !apiResult.user) {
+      setError(apiResult.message ?? "No se pudo vincular la cuenta de Google.");
+      setIsGoogleSubmitting(false);
+      return;
+    }
+
+    setStoreSession(apiResult.token, {
+      ...apiResult.user,
+      provider: "api",
     });
     syncCartCount();
     navigate(returnTo, { replace: true });

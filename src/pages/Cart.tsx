@@ -3,17 +3,16 @@ import { Link, useNavigate } from "react-router"
 import { CartEmpty, CartItem } from "../components/cart"
 import { useCart } from "../hooks/useCart"
 import { createCheckoutSession } from "../services/customerApi"
+import "../styles/password-recovery.css"
+import { showNotification } from "../utils/notification"
 import {
-    getStoreUserProvider,
     getStoreUserToken,
     isStoreUserLoggedIn,
 } from "../utils/storeSession"
-import { showNotification } from "../utils/notification"
-import "../styles/password-recovery.css"
 
 /**
  * Página del carrito de compras.
- * "Proceder al pago" requiere sesión con la API (correo/contraseña), crea sesión Stripe y redirige a pagar.
+ * "Proceder al pago" requiere sesión con la API, crea sesión Stripe y redirige a pagar.
  */
 export const Cart = () => {
     const navigate = useNavigate()
@@ -34,14 +33,6 @@ export const Cart = () => {
 
         if (!isStoreUserLoggedIn()) {
             navigate("/login?returnTo=/cart", { replace: true })
-            return
-        }
-
-        const provider = getStoreUserProvider()
-        if (provider === "firebase") {
-            setCheckoutError(
-                "Para pagar con tarjeta inicia sesión con tu correo y contraseña (no con Google)."
-            )
             return
         }
 

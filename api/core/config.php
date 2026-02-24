@@ -14,6 +14,9 @@ const STRIPE_SECRET_KEY = getenv('VITE_STRIPE_SECRET_KEY');
 const STRIPE_PUBLISHABLE_KEY = getenv('VITE_STRIPE_PUBLISHABLE_KEY');
 const STRIPE_WEBHOOK_SECRET = getenv('VITE_STRIPE_WEBHOOK_SECRET');
 
+// Firebase — clave de API para verificar tokens vía REST.
+const FIREBASE_API_KEY = getenv('VITE_FIREBASE_API_KEY');
+
 
 const ADMIN_ALLOWED_ORIGINS = [
   'http://localhost:5173',

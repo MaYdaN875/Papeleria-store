@@ -415,3 +415,44 @@ export async function createCheckoutSession(
     };
   }
 }
+
+/**
+ * Envía el token de Firebase al backend para verificarlo, crear/vincular
+ * usuario en la BD local y obtener un token de API (Bearer) válido para pagos.
+ */
+export async function loginWithFirebaseToken(
+  firebaseToken: string
+): Promise<StoreCustomerAuthResponse> {
+  try {
+    const { response, body } = await requestWithBaseFallback<{
+      ok?: boolean;
+      message?: string;
+      token?: string;
+      expiresAt?: string;
+      user?: RawStoreCustomerUser;
+    }>("/public/auth/firebase_login.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ firebase_token: firebaseToken }),
+    });
+
+    if (!response.ok || !body.ok) {
+      return {
+        ok: false,
+        message: body.message ?? "No se pudo iniciar sesión con Google.",
+      };
+    }
+
+    return {
+      ok: true,
+      token: body.token,
+      expiresAt: body.expiresAt,
+      user: body.user ? normalizeUser(body.user) : undefined,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "No se pudo conectar con la API.",
+    };
+  }
+}
