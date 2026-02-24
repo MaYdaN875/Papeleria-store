@@ -7,7 +7,7 @@
  * - Permitir edición rápida de producto (nombre, precio, stock, mayoreo/menudeo).
  * - Persistir cambios usando el endpoint admin de productos (`/admin/products/update.php`).
  */
-import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   adminLogoutRequest,
@@ -68,6 +68,7 @@ type HomeCarouselSlotFormValue = "0" | "1" | "2" | "3";
 type HomeCarouselSlotValue = 0 | 1 | 2 | 3;
 type AdminSectionView = "resumen" | "productos" | "inicio" | "ofertas" | "ingresos";
 const MAX_PRODUCTS_PER_HOME_CAROUSEL = 6;
+const PRODUCTS_PER_PAGE = 20;
 
 export function AdminDashboard() {
   const navigate = useNavigate();
@@ -137,6 +138,12 @@ export function AdminDashboard() {
   const [slideImageUploadSuccess, setSlideImageUploadSuccess] = useState("");
   const [lowStockThreshold, setLowStockThreshold] = useState(5);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterProblems, setFilterProblems] = useState("");
+  const [sortOrder, setSortOrder] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [stockAlertsExpanded, setStockAlertsExpanded] = useState(false);
   const [createForm, setCreateForm] = useState<ProductCreateFormState>({
     name: "",
     categoryId: "",
@@ -1066,6 +1073,57 @@ export function AdminDashboard() {
   const lowStockProducts = products.filter((product) => product.stock <= lowStockThreshold);
   const lowStockCount = lowStockProducts.length;
   const mayoreoEnabledCount = products.filter((product) => product.mayoreo === 1).length;
+
+  // ── Filtrado y paginación de productos ──
+  const uniqueCategories = useMemo(() => {
+    const cats = new Set(products.map((p) => p.category).filter(Boolean));
+    return Array.from(cats).sort((a, b) => a.localeCompare(b, "es"));
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    let result = products;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.category?.toLowerCase().includes(q) ||
+          String(p.id).includes(q)
+      );
+    }
+    if (filterCategory) {
+      result = result.filter((p) => p.category === filterCategory);
+    }
+    if (filterProblems === "sin-precio") {
+      result = result.filter((p) => Number(p.price) === 0);
+    } else if (filterProblems === "sin-stock") {
+      result = result.filter((p) => Number(p.stock) === 0);
+    } else if (filterProblems === "sin-categoria") {
+      result = result.filter((p) => !p.category || p.category === "Sin categor\u00eda");
+    }
+    if (sortOrder === "price-asc") {
+      result = [...result].sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (sortOrder === "price-desc") {
+      result = [...result].sort((a, b) => Number(b.price) - Number(a.price));
+    } else if (sortOrder === "stock-asc") {
+      result = [...result].sort((a, b) => Number(a.stock) - Number(b.stock));
+    } else if (sortOrder === "name-asc") {
+      result = [...result].sort((a, b) => a.name.localeCompare(b.name, "es"));
+    }
+    return result;
+  }, [products, searchQuery, filterCategory, filterProblems, sortOrder]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedProducts = useMemo(() => {
+    const start = (safePage - 1) * PRODUCTS_PER_PAGE;
+    return filteredProducts.slice(start, start + PRODUCTS_PER_PAGE);
+  }, [filteredProducts, safePage]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterCategory, filterProblems, sortOrder]);
   const offersCount = products.filter((product) => product.isOffer === 1).length;
 
   function scrollToTop() {
@@ -1334,14 +1392,40 @@ export function AdminDashboard() {
               </p>
             )}
             {lowStockProducts.length > 0 && (
-              <ul className="admin-stock-alerts-list">
-                {lowStockProducts.map((product) => (
-                  <li key={product.id}>
-                    <span>{product.name}</span>
-                    <strong>Stock: {product.stock}</strong>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <p className="admin-stock-alerts-summary">
+                  <span className="admin-stock-badge admin-stock-badge--warn">{lowStockProducts.length}</span>
+                  {lowStockProducts.length === 1 ? "producto con stock bajo" : "productos con stock bajo"}
+                </p>
+                <ul className="admin-stock-alerts-list">
+                  {(stockAlertsExpanded ? lowStockProducts : lowStockProducts.slice(0, 6)).map((product) => (
+                    <li key={product.id} className="admin-stock-alert-item">
+                      <button
+                        type="button"
+                        className="admin-stock-alert-btn"
+                        onClick={() => startEditProduct(product)}
+                        title="Click para editar este producto"
+                      >
+                        <span className="admin-stock-alert-name">{product.name}</span>
+                        <span className={`admin-stock-pill ${product.stock === 0 ? "admin-stock-pill--critical" : "admin-stock-pill--low"}`}>
+                          {product.stock}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                {lowStockProducts.length > 6 && (
+                  <button
+                    type="button"
+                    className="admin-stock-alerts-toggle"
+                    onClick={() => setStockAlertsExpanded((prev) => !prev)}
+                  >
+                    {stockAlertsExpanded
+                      ? "Mostrar menos \u25B2"
+                      : `Ver todos (${lowStockProducts.length}) \u25BC`}
+                  </button>
+                )}
+              </>
             )}
           </div>
           {offerError && <p className="admin-auth-error">{offerError}</p>}
@@ -1529,9 +1613,52 @@ export function AdminDashboard() {
           {!isLoading && !error && products.length > 0 && (
             <div className="admin-table-wrapper admin-surface-card">
               <div className="admin-table-toolbar">
-                <p>{products.length} productos en catálogo</p>
-                <p>Edición en línea activa</p>
+                <input
+                  type="text"
+                  className="admin-search-input"
+                  placeholder="🔍 Buscar por nombre, categoría o ID..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <div className="admin-toolbar-filters">
+                  <select
+                    className="admin-filter-select"
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                  >
+                    <option value="">📂 Categoría</option>
+                    {uniqueCategories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="admin-filter-select"
+                    value={filterProblems}
+                    onChange={(e) => setFilterProblems(e.target.value)}
+                  >
+                    <option value="">⚠️ Problemas</option>
+                    <option value="sin-precio">Sin precio ($0)</option>
+                    <option value="sin-stock">Sin stock (0)</option>
+                    <option value="sin-categoria">Sin categoría</option>
+                  </select>
+                  <select
+                    className="admin-filter-select"
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                  >
+                    <option value="">↕️ Ordenar</option>
+                    <option value="price-asc">Precio: menor a mayor</option>
+                    <option value="price-desc">Precio: mayor a menor</option>
+                    <option value="stock-asc">Stock: menor a mayor</option>
+                    <option value="name-asc">Nombre: A-Z</option>
+                  </select>
+                </div>
+                <p className="admin-toolbar-count">
+                  Mostrando {paginatedProducts.length} de {filteredProducts.length} productos
+                  {filteredProducts.length < products.length && ` (${products.length} total)`}
+                </p>
               </div>
+              <div className="admin-table-scroll">
               <table className="admin-table">
                 <thead>
                   <tr>
@@ -1548,7 +1675,7 @@ export function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map((product) => (
+                  {paginatedProducts.map((product) => (
                     <tr key={product.id}>
                       <td>{product.id}</td>
                       <td>{product.name}</td>
@@ -1640,6 +1767,47 @@ export function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+              </div>
+              {totalPages > 1 && (
+                <div className="admin-pagination">
+                  <button
+                    type="button"
+                    disabled={safePage <= 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  >
+                    ← Anterior
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      if (totalPages <= 7) return true;
+                      if (page === 1 || page === totalPages) return true;
+                      if (Math.abs(page - safePage) <= 1) return true;
+                      return false;
+                    })
+                    .map((page, idx, arr) => {
+                      const showEllipsis = idx > 0 && page - arr[idx - 1] > 1;
+                      return (
+                        <Fragment key={page}>
+                          {showEllipsis && <span className="admin-pagination-ellipsis">…</span>}
+                          <button
+                            type="button"
+                            className={safePage === page ? "active" : ""}
+                            onClick={() => setCurrentPage(page)}
+                          >
+                            {page}
+                          </button>
+                        </Fragment>
+                      );
+                    })}
+                  <button
+                    type="button"
+                    disabled={safePage >= totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
