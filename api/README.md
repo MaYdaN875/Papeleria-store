@@ -23,6 +23,10 @@ Estos archivos van en tu servidor Hostinger, dentro de `public_html/api/`
 - `admin/slides/delete.php` - Eliminar slide de home
 - `public/products.php` - Catálogo público de tienda
 - `public/slides.php` - Slides públicos para banner home
+- `public/auth/login.php`, `register.php`, `me.php`, `logout.php`, etc. - Autenticación cliente (tienda)
+- `public/checkout/create-session.php` - Crear sesión Stripe Checkout (cliente autenticado)
+- `public/webhooks/stripe.php` - Webhook Stripe (marca órdenes como pagadas)
+- `public/orders/list.php`, `public/orders/get.php` - Listar y ver detalle de órdenes del cliente
 - `setup.sql` - SQL para crear/actualizar tablas (`admin_sessions`, `product_offers`, `home_carousel_assignments`, `home_slides`)
 - `generar_hash.php` - Script temporal para hash de contraseñas (borrar después de usar)
 
@@ -37,6 +41,16 @@ Estos archivos van en tu servidor Hostinger, dentro de `public_html/api/`
 3. **Ejecuta** `setup.sql` en phpMyAdmin para crear/actualizar tablas de admin, sesiones, ofertas, carruseles y slides
    - `setup.sql` no necesita permanecer en servidor después de ejecutarse.
 4. **Configura** `.env` en tu proyecto React con `VITE_API_URL=https://tu-dominio.com/api`
+
+## Pasarela de pagos (Stripe)
+
+- Ejecuta la migración `prompt/migration_orders_stripe.sql` en tu BD para crear tablas `orders` y `order_items`.
+- **Sin Composer (Hostinger):** Descarga el ZIP de [stripe-php en GitHub Releases](https://github.com/stripe/stripe-php/releases), descomprímelo y sube la carpeta como `api/stripe-php/` (debe existir `api/stripe-php/init.php`).
+- Con Composer: en la carpeta `api` ejecuta `composer install`.
+- Configura `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY` y `STRIPE_WEBHOOK_SECRET` (variables de entorno o constantes en `core/config.php`).
+- Configura el webhook en el Dashboard de Stripe apuntando a `https://tu-dominio.com/api/public/webhooks/stripe.php` (evento `checkout.session.completed`).
+
+Documentación completa: **prompt/STRIPE_SETUP.md**
 
 ## Acceso al modo admin
 
