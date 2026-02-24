@@ -479,3 +479,27 @@
     height: 54px;
   }
 }
+
+/* Páginas de resultado de checkout (éxito / cancelado) */
+.checkout-result-card .empty-message h2 {
+  margin-bottom: 12px;
+}
+
+.checkout-session-hint {
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+  margin-top: 12px;
+}
+
+.checkout-session-hint code {
+  background: var(--color-light-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.checkout-result-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 24px;
+}

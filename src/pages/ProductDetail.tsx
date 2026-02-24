@@ -143,7 +143,8 @@ export const ProductDetail = () => {
         addProductToCart(
             cartName,
             displayData.price.toFixed(2),
-            quantity
+            quantity,
+            product.id
         )
     }
 

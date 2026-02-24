@@ -353,3 +353,65 @@ export async function verifyStoreCustomerEmail(input: {
     };
   }
 }
+
+/** Respuesta de crear sesión de Stripe Checkout */
+export interface CreateCheckoutSessionResponse {
+  ok: boolean;
+  message?: string;
+  url?: string;
+  sessionId?: string;
+  orderId?: number;
+}
+
+/**
+ * Crea una sesión de Stripe Checkout para el carrito. Requiere usuario autenticado con la API (Bearer).
+ * Redirige al usuario a la URL devuelta para pagar.
+ */
+export async function createCheckoutSession(
+  token: string,
+  input: {
+    items: Array<{ product_id: number; quantity: number }>;
+    success_url?: string;
+    cancel_url?: string;
+  }
+): Promise<CreateCheckoutSessionResponse> {
+  try {
+    const { response, body } = await requestWithBaseFallback<{
+      ok?: boolean;
+      message?: string;
+      url?: string;
+      sessionId?: string;
+      orderId?: number;
+    }>("/public/checkout/create-session.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        items: input.items,
+        success_url: input.success_url ?? undefined,
+        cancel_url: input.cancel_url ?? undefined,
+      }),
+    });
+
+    if (!response.ok || !body.ok) {
+      return {
+        ok: false,
+        message: body.message ?? "No se pudo crear la sesión de pago.",
+      };
+    }
+
+    return {
+      ok: true,
+      url: body.url,
+      sessionId: body.sessionId,
+      orderId: body.orderId,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "No se pudo conectar con la API.",
+    };
+  }
+}

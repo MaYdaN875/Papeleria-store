@@ -17,7 +17,7 @@ export interface ProductCarouselProps {
         product: Product
     ) => ProductCarouselSlideConfig | undefined
     onNavigate: (id: number) => void
-    onAddToCart: (name: string, price: string) => void
+    onAddToCart: (name: string, price: string, productId?: number) => void
     seeMorePath?: string
 }
 
@@ -104,18 +104,16 @@ export function ProductCarousel({
                             return (
                                 <div
                                     key={product.id}
-                                    className={`carousel-item ${
-                                        isActive ? "active" : ""
-                                    } ${badgeClass}`}
+                                    className={`carousel-item ${isActive ? "active" : ""
+                                        } ${badgeClass}`}
                                     style={{
-                                        transform: `translateX(${offset * 100}%) scale(${
-                                            isActive ? 1 : 0.85
-                                        })`,
+                                        transform: `translateX(${offset * 100}%) scale(${isActive ? 1 : 0.85
+                                            })`,
                                         opacity:
                                             Math.abs(offset) > 1
                                                 ? 0
                                                 : 1 -
-                                                  Math.abs(offset) * 0.3,
+                                                Math.abs(offset) * 0.3,
                                     }}
                                 >
                                     <ProductCarouselSlide
@@ -134,18 +132,16 @@ export function ProductCarousel({
                             const offset = seeMoreIndex - currentIndex
                             return (
                                 <div
-                                    className={`carousel-item see-more-card ${
-                                        isActive ? "active" : ""
-                                    }`}
+                                    className={`carousel-item see-more-card ${isActive ? "active" : ""
+                                        }`}
                                     style={{
-                                        transform: `translateX(${offset * 100}%) scale(${
-                                            isActive ? 1 : 0.85
-                                        })`,
+                                        transform: `translateX(${offset * 100}%) scale(${isActive ? 1 : 0.85
+                                            })`,
                                         opacity:
                                             Math.abs(offset) > 1
                                                 ? 0
                                                 : 1 -
-                                                  Math.abs(offset) * 0.3,
+                                                Math.abs(offset) * 0.3,
                                     }}
                                 >
                                     <button
@@ -193,9 +189,8 @@ export function ProductCarousel({
                     <button
                         key={`indicator-${index}`}
                         type="button"
-                        className={`indicator ${
-                            index === currentIndex ? "active" : ""
-                        }`}
+                        className={`indicator ${index === currentIndex ? "active" : ""
+                            }`}
                         onClick={() => setCurrentIndex(index)}
                         aria-label={`Ir al producto ${index + 1}`}
                     />

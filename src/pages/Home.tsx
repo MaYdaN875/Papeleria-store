@@ -148,8 +148,8 @@ export const Home = () => {
         return buildHomeCarouselProducts(baseProducts, 3)
     }, [baseProducts])
 
-    const handleAddToCart = useCallback((name: string, price: string) => {
-        addProductToCart(name, price)
+    const handleAddToCart = useCallback((name: string, price: string, productId?: number) => {
+        addProductToCart(name, price, 1, productId)
     }, [])
 
     const handleNavigate = useCallback(

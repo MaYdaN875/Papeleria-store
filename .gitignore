@@ -30,3 +30,7 @@ dist-ssr
 # Uploaded product images (server runtime)
 api/uploads/products/*
 !api/uploads/products/.gitkeep
+
+# Stripe PHP SDK (manual install on server; do not commit)
+api/stripe-php/
+api/vendor/
