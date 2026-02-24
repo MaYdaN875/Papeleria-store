@@ -1,15 +1,24 @@
+import { useState } from "react"
 import { Link, useNavigate } from "react-router"
 import { CartEmpty, CartItem } from "../components/cart"
 import { useCart } from "../hooks/useCart"
+import { createCheckoutSession } from "../services/customerApi"
+import {
+    getStoreUserProvider,
+    getStoreUserToken,
+    isStoreUserLoggedIn,
+} from "../utils/storeSession"
 import { showNotification } from "../utils/notification"
+import "../styles/password-recovery.css"
 
 /**
  * Página del carrito de compras.
- * Lista ítems, cantidades, total; permite quitar ítems, cambiar cantidad y vaciar carrito.
- * Redirige a inicio tras "Procesar compra" (simulado).
+ * "Proceder al pago" requiere sesión con la API (correo/contraseña), crea sesión Stripe y redirige a pagar.
  */
 export const Cart = () => {
     const navigate = useNavigate()
+    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false)
+    const [checkoutError, setCheckoutError] = useState("")
     const {
         cartItems,
         total,
@@ -20,11 +29,61 @@ export const Cart = () => {
         clearCart,
     } = useCart()
 
-    const handleCheckout = () => {
-        showNotification(
-            "¡Procesando tu compra! Pronto serás redirigido al pago"
-        )
-        setTimeout(() => navigate("/"), 2000)
+    const handleCheckout = async () => {
+        setCheckoutError("")
+
+        if (!isStoreUserLoggedIn()) {
+            navigate("/login?returnTo=/cart", { replace: true })
+            return
+        }
+
+        const provider = getStoreUserProvider()
+        if (provider === "firebase") {
+            setCheckoutError(
+                "Para pagar con tarjeta inicia sesión con tu correo y contraseña (no con Google)."
+            )
+            return
+        }
+
+        const itemsWithId = cartItems.filter((item) => item.productId != null && item.productId > 0)
+        const missingId = cartItems.some((item) => !item.productId || item.productId <= 0)
+        if (missingId && itemsWithId.length === 0) {
+            setCheckoutError(
+                "Ningún producto tiene ID válido. Quita los productos y agrégalos de nuevo desde la ficha del producto."
+            )
+            return
+        }
+        if (missingId) {
+            setCheckoutError(
+                "Algunos productos no se pueden cobrar. Quítalos y agrégalos de nuevo desde la ficha del producto."
+            )
+            return
+        }
+
+        const token = getStoreUserToken()
+        if (!token) {
+            navigate("/login?returnTo=/cart", { replace: true })
+            return
+        }
+
+        setIsCheckoutLoading(true)
+        const origin = window.location.origin
+        const result = await createCheckoutSession(token, {
+            items: itemsWithId.map((item) => ({
+                product_id: item.productId!,
+                quantity: item.quantity,
+            })),
+            success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/checkout/cancel`,
+        })
+
+        setIsCheckoutLoading(false)
+        if (!result.ok || !result.url) {
+            setCheckoutError(result.message ?? "No se pudo iniciar el pago. Intenta de nuevo.")
+            return
+        }
+        showNotification("Redirigiendo a la pasarela de pago…")
+        window.location.href = result.url
     }
 
     const handleClearCart = () => {
@@ -63,8 +122,14 @@ export const Cart = () => {
 
                     <div className="cart-total">
                         <h3>Total</h3>
-                        <p id="totalAmount">{total.toFixed(2)}$</p>
+                        <p id="totalAmount">${total.toFixed(2)}</p>
                     </div>
+
+                    {checkoutError && (
+                        <p className="password-feedback password-feedback--error" style={{ marginBottom: 12 }}>
+                            {checkoutError}
+                        </p>
+                    )}
 
                     <div className="cart-actions">
                         <button
@@ -79,9 +144,10 @@ export const Cart = () => {
                         </Link>
                         <button
                             className="btn-checkout"
-                            onClick={handleCheckout}
+                            onClick={() => void handleCheckout()}
+                            disabled={isCheckoutLoading}
                         >
-                            Proceder al pago
+                            {isCheckoutLoading ? "Preparando pago…" : "Proceder al pago"}
                         </button>
                     </div>
                 </div>

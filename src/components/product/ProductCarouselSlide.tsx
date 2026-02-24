@@ -13,7 +13,7 @@ export interface ProductCarouselSlideProps {
     product: Product
     config?: ProductCarouselSlideConfig
     onNavigate: (id: number) => void
-    onAddToCart: (name: string, price: string) => void
+    onAddToCart: (name: string, price: string, productId?: number) => void
 }
 
 function isImageSource(value: string): boolean {
@@ -82,7 +82,8 @@ export function ProductCarouselSlide({
                         e.stopPropagation()
                         onAddToCart(
                             product.name,
-                            product.price.toFixed(2)
+                            product.price.toFixed(2),
+                            product.id
                         )
                     }}
                 >

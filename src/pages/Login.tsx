@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import RecaptchaCheckbox from "../components/ui/RecaptchaCheckbox";
 import {
   fetchStoreCustomerSession,
@@ -21,6 +21,8 @@ import {
 
 export function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get("returnTo") ?? "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -141,7 +143,7 @@ export function Login() {
       provider: "api",
     });
     syncCartCount();
-    navigate("/", { replace: true });
+    navigate(returnTo, { replace: true });
   }
 
   async function handleResendVerification() {
@@ -187,7 +189,7 @@ export function Login() {
       provider: "firebase",
     });
     syncCartCount();
-    navigate("/", { replace: true });
+    navigate(returnTo, { replace: true });
   }
 
   async function handleLogout() {

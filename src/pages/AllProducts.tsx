@@ -213,7 +213,7 @@ export const AllProducts = () => {
     const activeMode = filters.mayoreo ? "mayoreo" : filters.menudeo ? "menudeo" : null
 
     const handleAddToCart = useCallback((product: Product) => {
-        addProductToCart(product.name, product.price.toFixed(2))
+        addProductToCart(product.name, product.price.toFixed(2), 1, product.id)
     }, [])
 
     const handleNavigateToProduct = useCallback((productId: number) => {

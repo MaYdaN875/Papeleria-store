@@ -16,6 +16,8 @@ import {
   AdminDashboard,
   AdminLogin,
   Cart,
+  CheckoutCancel,
+  CheckoutSuccess,
   ForgotPassword,
   Home,
   Login,
@@ -60,6 +62,8 @@ function AppContent() {
         <Route path="/all-products" element={<AllProducts />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout/success" element={<CheckoutSuccess />} />
+        <Route path="/checkout/cancel" element={<CheckoutCancel />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
