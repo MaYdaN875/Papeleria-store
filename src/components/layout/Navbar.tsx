@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router"
 import { products as staticProducts } from "../../data/products"
 import { useNotification } from "../../hooks/useNotification"
-import { logoutStoreCustomer } from "../../services/customerApi"
+import { fetchStoreCart, logoutStoreCustomer } from "../../services/customerApi"
 import { signOutFirebaseSession } from "../../services/firebaseAuth"
 import { fetchStoreProducts } from "../../services/storeApi"
 import type { Product } from "../../types/Product"
@@ -194,7 +194,31 @@ export function Navbar() {
     }, [])
 
     useEffect(() => {
+        // Primero, sincroniza desde localStorage (invitados o fallback).
         syncCartCount()
+
+        // Si hay usuario autenticado, refrescar contador desde el servidor.
+        const token = getStoreUserToken()
+        if (!token) return
+
+        void (async () => {
+            try {
+                const result = await fetchStoreCart(token)
+                if (!result.ok || !result.items) return
+
+                const totalItems = result.items.reduce(
+                    (sum, item) => sum + (item.quantity || 1),
+                    0
+                )
+
+                const cartCountElement = document.getElementById("cartCount")
+                if (cartCountElement) {
+                    cartCountElement.textContent = totalItems.toString()
+                }
+            } catch {
+                // Silenciar errores de red; el contador local ya está sincronizado.
+            }
+        })()
     }, [location.pathname, storeUserName])
 
     useEffect(() => {
