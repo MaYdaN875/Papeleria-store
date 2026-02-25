@@ -135,6 +135,7 @@ export const AllProducts = () => {
     const [shouldUseStaticFallback, setShouldUseStaticFallback] = useState(false)
     const [isLoadingProducts, setIsLoadingProducts] = useState(true)
     const [productsLoadError, setProductsLoadError] = useState("")
+    const [currentPage, setCurrentPage] = useState(1)
 
     const handleCloseDrawer = () => {
         setIsClosing(true)
@@ -144,10 +145,16 @@ export const AllProducts = () => {
         }, 300)
     }
 
+    // Resetear paginación cuando cambia la búsqueda
     useEffect(() => {
         window.scrollTo(0, 0)
         syncCartCount()
-        setIsFilterDrawerOpen(false) // Cerrar drawer al entrar a la página
+        setIsFilterDrawerOpen(false)
+        setCurrentPage(1)
+    }, [searchQuery])
+
+    // Cargar productos al montar el componente
+    useEffect(() => {
         async function loadStoreProducts() {
             setIsLoadingProducts(true)
             setProductsLoadError("")
@@ -211,6 +218,72 @@ export const AllProducts = () => {
     const hasNoFilteredProducts = !isLoadingProducts && displayProducts.length === 0
 
     const activeMode = filters.mayoreo ? "mayoreo" : filters.menudeo ? "menudeo" : null
+
+    // Resetear a página 1 cuando los filtros cambian
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [filters])
+
+    // Calcular items por página según dispositivo
+    const itemsPerPage = isMobile ? 20 : 25
+    const totalPages = Math.ceil(displayProducts.length / itemsPerPage)
+    
+    // Validar página actual
+    const validCurrentPage = Math.min(currentPage, totalPages || 1)
+    
+    // Calcular índices de inicio y fin
+    const startIndex = (validCurrentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    
+    // Productos a mostrar en la página actual
+    const paginatedProducts = displayProducts.slice(startIndex, endIndex)
+
+    // Calcular números de página a mostrar (máximo 5)
+    const getPaginationNumbers = () => {
+        const pages: (number | string)[] = []
+        const maxButtons = 5
+        
+        if (totalPages <= maxButtons) {
+            // Si hay 5 o menos páginas, mostrar todas
+            return Array.from({ length: totalPages }, (_, i) => i + 1)
+        }
+
+        // Mostrar primeras 3 páginas
+        pages.push(1, 2, 3)
+
+        // Agregar puntos suspensivos si la página actual está lejos
+        if (validCurrentPage > 4) {
+            pages.push("...")
+        }
+
+        // Agregar página actual si no está en las primeras 3
+        if (validCurrentPage > 4 && validCurrentPage < totalPages - 2) {
+            pages.push(validCurrentPage)
+        }
+
+        // Agregar puntos suspensivos antes de la última página si es necesario
+        if (validCurrentPage < totalPages - 3) {
+            pages.push("...")
+        }
+
+        // Siempre mostrar última página
+        if (!pages.includes(totalPages)) {
+            pages.push(totalPages)
+        }
+
+        return pages
+    }
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage)
+        // Scroll suave hacia el grid
+        setTimeout(() => {
+            const gridElement = document.getElementById("allProductsGrid")
+            if (gridElement) {
+                gridElement.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+        }, 0)
+    }
 
     const handleAddToCart = useCallback((product: Product) => {
         addProductToCart(product.name, product.price.toFixed(2), 1, product.id)
@@ -317,7 +390,7 @@ export const AllProducts = () => {
                                 </p>
                             )}
                             {!isLoadingProducts && displayProducts.length > 0 && (
-                                displayProducts.map((product) => (
+                                paginatedProducts.map((product) => (
                                     <ProductCard
                                         key={product.id}
                                         product={product}
@@ -342,6 +415,49 @@ export const AllProducts = () => {
                                 ))
                             )}
                         </div>
+
+                        {/* Controles de paginación */}
+                        {!isLoadingProducts && displayProducts.length > itemsPerPage && (
+                            <div className="pagination-container">
+                                <button
+                                    className="pagination-btn pagination-prev"
+                                    onClick={() => validCurrentPage > 1 && handlePageChange(validCurrentPage - 1)}
+                                    disabled={validCurrentPage === 1}
+                                    aria-label="Página anterior"
+                                >
+                                    <i className="fas fa-chevron-left" />
+                                </button>
+
+                                <div className="pagination-numbers">
+                                    {getPaginationNumbers().map((page, index) => (
+                                        page === "..." ? (
+                                            <span key={`ellipsis-${index}`} className="pagination-ellipsis">
+                                                ...
+                                            </span>
+                                        ) : (
+                                            <button
+                                                key={page}
+                                                className={`pagination-number ${validCurrentPage === page ? "active" : ""}`}
+                                                onClick={() => handlePageChange(page as number)}
+                                                aria-current={validCurrentPage === page ? "page" : undefined}
+                                                aria-label={`Ir a página ${page}`}
+                                            >
+                                                {page}
+                                            </button>
+                                        )
+                                    ))}
+                                </div>
+
+                                <button
+                                    className="pagination-btn pagination-next"
+                                    onClick={() => validCurrentPage < totalPages && handlePageChange(validCurrentPage + 1)}
+                                    disabled={validCurrentPage === totalPages}
+                                    aria-label="Página siguiente"
+                                >
+                                    <i className="fas fa-chevron-right" />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>
