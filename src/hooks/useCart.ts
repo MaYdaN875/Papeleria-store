@@ -26,25 +26,31 @@ export function useCart() {
     const loadCart = useCallback(() => {
         const localItems = getActiveCartItems()
         setCartItems(localItems)
-        setIsFirstLoad(false)
 
         const token = getStoreUserToken()
-        if (!token) return
+        if (!token) {
+            // Invitado: solo usamos carrito local.
+            setIsFirstLoad(false)
+            return
+        }
 
         void (async () => {
             const result = await fetchStoreCart(token)
-            if (!result.ok || !result.items) return
 
-            const serverItems: CartItem[] = result.items.map((item) => ({
-                id: Date.now() + item.product_id,
-                name: item.name ?? "",
-                price: item.price ?? "0",
-                quantity: item.quantity || 1,
-                productId: item.product_id,
-            }))
+            if (result.ok && result.items && result.items.length > 0) {
+                const serverItems: CartItem[] = result.items.map((item) => ({
+                    id: Date.now() + item.product_id,
+                    name: item.name ?? "",
+                    price: item.price ?? "0",
+                    quantity: item.quantity || 1,
+                    productId: item.product_id,
+                }))
 
-            setCartItems(serverItems)
-            saveActiveCartItems(serverItems)
+                setCartItems(serverItems)
+            }
+
+            // A partir de aquí, lo que haya en estado es la fuente de verdad.
+            setIsFirstLoad(false)
             syncCartCount()
         })()
     }, [])
