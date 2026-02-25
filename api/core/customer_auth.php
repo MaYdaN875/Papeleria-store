@@ -472,6 +472,30 @@ function storeEnsureFirebaseUidColumn(PDO $pdo): void
     $ensured = true;
 }
 
+function storeEnsureCartTable(PDO $pdo): void
+{
+    static $tableEnsured = false;
+    if ($tableEnsured) {
+        return;
+    }
+
+    $pdo->exec('
+    CREATE TABLE IF NOT EXISTS customer_cart_items (
+      id BIGINT AUTO_INCREMENT PRIMARY KEY,
+      customer_user_id INT NOT NULL,
+      product_id INT NOT NULL,
+      quantity INT NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_customer_cart_item (customer_user_id, product_id),
+      INDEX idx_customer_cart_user (customer_user_id),
+      INDEX idx_customer_cart_product (product_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  ');
+
+    $tableEnsured = true;
+}
+
 function storeResolvePublicAppBaseUrl(): string
 {
     return rtrim(STORE_PUBLIC_APP_URL, '/');

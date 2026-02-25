@@ -3,7 +3,8 @@
  * sincronizar contadores en navbar y nav móvil (cartCount, mobileCartCount).
  */
 import { showNotification } from './notification'
-import { getStoreCartOwnerKey } from './storeSession'
+import { getStoreCartOwnerKey, getStoreUserToken } from './storeSession'
+import { syncStoreCart } from '../services/customerApi'
 
 const CART_STORAGE_PREFIX = 'cart'
 const CART_COUNT_ID = 'cartCount'
@@ -38,6 +39,18 @@ export function getActiveCartItems(): CartItem[] {
 export function saveActiveCartItems(items: CartItem[]): void {
     const key = getActiveCartStorageKey()
     globalThis.localStorage.setItem(key, JSON.stringify(items))
+
+    const token = getStoreUserToken()
+    if (!token) return
+
+    const payload = items
+        .filter((item) => item.productId && item.productId > 0)
+        .map((item) => ({
+            product_id: item.productId as number,
+            quantity: item.quantity || 1,
+        }))
+
+    void syncStoreCart(token, payload)
 }
 
 /**

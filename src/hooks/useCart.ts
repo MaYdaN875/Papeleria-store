@@ -5,7 +5,8 @@ import {
     syncCartCount,
     type CartItem,
 } from "../utils/cart"
-import { getStoreAuthChangedEventName } from "../utils/storeSession"
+import { getStoreAuthChangedEventName, getStoreUserToken } from "../utils/storeSession"
+import { fetchStoreCart } from "../services/customerApi"
 
 const CART_COUNT_ID = "cartCount"
 
@@ -23,8 +24,29 @@ export function useCart() {
     const [isFirstLoad, setIsFirstLoad] = useState(true)
 
     const loadCart = useCallback(() => {
-        setCartItems(getActiveCartItems())
+        const localItems = getActiveCartItems()
+        setCartItems(localItems)
         setIsFirstLoad(false)
+
+        const token = getStoreUserToken()
+        if (!token) return
+
+        void (async () => {
+            const result = await fetchStoreCart(token)
+            if (!result.ok || !result.items) return
+
+            const serverItems: CartItem[] = result.items.map((item) => ({
+                id: Date.now() + item.product_id,
+                name: item.name ?? "",
+                price: item.price ?? "0",
+                quantity: item.quantity || 1,
+                productId: item.product_id,
+            }))
+
+            setCartItems(serverItems)
+            saveActiveCartItems(serverItems)
+            syncCartCount()
+        })()
     }, [])
 
     useEffect(() => {

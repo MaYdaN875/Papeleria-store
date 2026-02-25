@@ -354,6 +354,92 @@ export async function verifyStoreCustomerEmail(input: {
   }
 }
 
+export interface StoreCartItemData {
+  product_id: number;
+  quantity: number;
+  name?: string;
+  price?: string;
+}
+
+export interface StoreCartGetResponse {
+  ok: boolean;
+  message?: string;
+  items?: StoreCartItemData[];
+}
+
+export interface StoreCartSyncResponse {
+  ok: boolean;
+  message?: string;
+}
+
+export async function fetchStoreCart(token: string): Promise<StoreCartGetResponse> {
+  try {
+    const { response, body } = await requestWithBaseFallback<{
+      ok?: boolean;
+      message?: string;
+      items?: StoreCartItemData[];
+    }>("/public/cart/get.php", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok || !body.ok) {
+      return {
+        ok: false,
+        message: body.message ?? "No se pudo obtener el carrito.",
+      };
+    }
+
+    return {
+      ok: true,
+      items: Array.isArray(body.items) ? body.items : [],
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "No se pudo conectar con la API.",
+    };
+  }
+}
+
+export async function syncStoreCart(
+  token: string,
+  items: Array<{ product_id: number; quantity: number }>
+): Promise<StoreCartSyncResponse> {
+  try {
+    const { response, body } = await requestWithBaseFallback<{
+      ok?: boolean;
+      message?: string;
+    }>("/public/cart/update.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ items }),
+    });
+
+    if (!response.ok || !body.ok) {
+      return {
+        ok: false,
+        message: body.message ?? "No se pudo sincronizar el carrito.",
+      };
+    }
+
+    return {
+      ok: true,
+      message: body.message ?? "Carrito sincronizado.",
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "No se pudo conectar con la API.",
+    };
+  }
+}
+
 /** Respuesta de crear sesión de Stripe Checkout */
 export interface CreateCheckoutSessionResponse {
   ok: boolean;
