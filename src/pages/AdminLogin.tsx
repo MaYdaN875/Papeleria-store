@@ -75,7 +75,7 @@ export function AdminLogin() {
         <div className="admin-auth-brand">
           <span className="admin-badge admin-badge--login">
             <img
-              src="/godart-logo.png"
+              src="/logo.png"
               alt="God Art"
               style={{ height: 32, display: "block" }}
             />
