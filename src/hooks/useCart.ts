@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { fetchStoreCart, syncStoreCart } from "../services/customerApi"
 import {
     getActiveCartItems,
     saveActiveCartItems,
@@ -6,7 +7,6 @@ import {
     type CartItem,
 } from "../utils/cart"
 import { getStoreAuthChangedEventName, getStoreUserToken } from "../utils/storeSession"
-import { fetchStoreCart } from "../services/customerApi"
 
 const CART_COUNT_ID = "cartCount"
 
@@ -35,23 +35,56 @@ export function useCart() {
         }
 
         void (async () => {
-            const result = await fetchStoreCart(token)
+            try {
+                // Si había un carrito de invitado, migrarlo al usuario:
+                const guestRaw = globalThis.localStorage.getItem("cart_guest")
+                const guestItems: CartItem[] = guestRaw ? (JSON.parse(guestRaw) as CartItem[]) : []
 
-            if (result.ok && result.items && result.items.length > 0) {
-                const serverItems: CartItem[] = result.items.map((item) => ({
-                    id: Date.now() + item.product_id,
-                    name: item.name ?? "",
-                    price: item.price ?? "0",
-                    quantity: item.quantity || 1,
-                    productId: item.product_id,
-                }))
+                if (guestItems && guestItems.length > 0) {
+                    // Enviar al servidor solo los items que tienen productId válido
+                    const payload = guestItems
+                        .filter((it) => it.productId && it.productId > 0)
+                        .map((it) => ({ product_id: it.productId as number, quantity: it.quantity || 1 }))
+
+                    if (payload.length > 0) {
+                        await syncStoreCart(token, payload)
+                    }
+
+                    // Eliminar carrito de invitado para evitar reenvíos
+                    try {
+                        globalThis.localStorage.removeItem("cart_guest")
+                    } catch {}
+                }
+
+                const result = await fetchStoreCart(token)
+
+                let serverItems: CartItem[] = []
+                if (result.ok && result.items && result.items.length > 0) {
+                    serverItems = result.items.map((item) => ({
+                        id: Date.now() + item.product_id,
+                        name: item.name ?? "",
+                        price: item.price ?? "0",
+                        quantity: item.quantity || 1,
+                        productId: item.product_id,
+                    }))
+                }
+
+                // Si existían items de invitado sin productId, añadirlos al estado local
+                if (guestItems && guestItems.length > 0) {
+                    const guestLocalOnly = guestItems.filter((it) => !it.productId || it.productId <= 0)
+                    if (guestLocalOnly.length > 0) {
+                        // Asignar ids nuevos y concatenar
+                        const migrated = guestLocalOnly.map((it) => ({ ...it, id: Date.now() + Math.floor(Math.random() * 1000) }))
+                        serverItems = [...serverItems, ...migrated]
+                    }
+                }
 
                 setCartItems(serverItems)
+            } finally {
+                // A partir de aquí, lo que haya en estado es la fuente de verdad.
+                setIsFirstLoad(false)
+                syncCartCount()
             }
-
-            // A partir de aquí, lo que haya en estado es la fuente de verdad.
-            setIsFirstLoad(false)
-            syncCartCount()
         })()
     }, [])
 

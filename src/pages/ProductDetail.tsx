@@ -11,34 +11,22 @@ import { fetchStoreProducts } from "../services/storeApi"
 import type { Product } from "../types/Product"
 import { addProductToCart } from "../utils/cart"
 
-type PriceMode = "regular" | "mayoreo" | "menudeo"
-
 /**
  * Página de detalle de un producto por ID en la URL (/product/:id).
- * Soporta ?mode=mayoreo|menudeo para mostrar precios de mayoreo/menudeo.
- * Incluye toggle estilo Amazon para cambiar entre variantes de precio.
+ * El precio de mayoreo se aplica automáticamente según la cantidad comprada
+ * y el mayoreoMinQty configurado para cada producto.
  */
 
 export const ProductDetail = () => {
     const { id } = useParams()
     const navigate = useNavigate()
-    const [searchParams, setSearchParams] = useSearchParams()
+    const [searchParams] = useSearchParams()
     const [quantity, setQuantity] = useState(1)
     const [product, setProduct] = useState<Product | null>(null)
     const [isLoadingProduct, setIsLoadingProduct] = useState(true)
 
-    // Determinar modo activo desde URL
-    const urlMode = searchParams.get("mode")
-    const [activeMode, setActiveMode] = useState<PriceMode>(
-        urlMode === "mayoreo" || urlMode === "menudeo" ? urlMode : "regular"
-    )
-
-    // Sincronizar modo con URL
-    useEffect(() => {
-        if (urlMode === "mayoreo" || urlMode === "menudeo") {
-            setActiveMode(urlMode)
-        }
-    }, [urlMode])
+    // Leer página de la URL
+    const pageNumber = searchParams.get("page") || "1"
 
     useEffect(() => {
         window.scrollTo(0, 0)
@@ -70,45 +58,33 @@ export const ProductDetail = () => {
         void loadProduct()
     }, [id])
 
-    // Calcular precio y stock según el modo activo
+    // Calcular precio automáticamente según cantidad
     const displayData = useMemo(() => {
         if (!product) return null
 
-        if (activeMode === "mayoreo" && product.mayoreo && product.mayoreoPrice != null) {
+        // Verificar si aplica mayoreo según la cantidad mínima configurada
+        const mayoreoMinQty = product.mayoreoMinQty ?? 10
+        const applieMayoreo = 
+            product.mayoreo && 
+            product.mayoreoPrice != null && 
+            quantity >= mayoreoMinQty
+
+        if (applieMayoreo && product.mayoreoPrice != null) {
             return {
                 price: product.mayoreoPrice,
                 stock: product.mayoreoStock ?? product.stock,
-                modeLabel: "Mayoreo",
+                isApplyingMayoreo: true,
+                mayoreoMinQty,
             }
         }
-        if (activeMode === "menudeo" && product.menudeo && product.menudeoPrice != null) {
-            return {
-                price: product.menudeoPrice,
-                stock: product.menudeoStock ?? product.stock,
-                modeLabel: "Menudeo",
-            }
-        }
+
         return {
             price: product.price,
             stock: product.stock,
-            modeLabel: null,
+            isApplyingMayoreo: false,
+            mayoreoMinQty,
         }
-    }, [product, activeMode])
-
-    // ¿Tiene este producto variantes de precio?
-    const hasMayoreo = product?.mayoreo && product?.mayoreoPrice != null
-    const hasMenudeo = product?.menudeo && product?.menudeoPrice != null
-    const hasVariants = hasMayoreo || hasMenudeo
-
-    const handleModeChange = (mode: PriceMode) => {
-        setActiveMode(mode)
-        setQuantity(1)
-        if (mode === "regular") {
-            setSearchParams({}, { replace: true })
-        } else {
-            setSearchParams({ mode }, { replace: true })
-        }
-    }
+    }, [product, quantity])
 
     if (isLoadingProduct) {
         return (
@@ -124,7 +100,7 @@ export const ProductDetail = () => {
                 <h2>Producto no encontrado</h2>
                 <button
                     className="btn-return"
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate(`/all-products?page=${pageNumber}`)}
                 >
                     Volver a la tienda
                 </button>
@@ -137,11 +113,9 @@ export const ProductDetail = () => {
     const reviews = Math.floor(product.stock * 3.5)
 
     const handleAddToCart = () => {
-        const cartName = displayData.modeLabel
-            ? `${product.name} (${displayData.modeLabel})`
-            : product.name
+        if (!product || !displayData) return
         addProductToCart(
-            cartName,
+            product.name,
             displayData.price.toFixed(2),
             quantity,
             product.id
@@ -153,7 +127,7 @@ export const ProductDetail = () => {
             <div className="product-detail-page">
                 <button
                     className="btn-return"
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate(`/all-products?page=${pageNumber}`)}
                 >
                     <i className="fas fa-arrow-left" aria-hidden />
                     <span>Volver</span>
@@ -166,47 +140,25 @@ export const ProductDetail = () => {
                         <ProductDetailInfo
                             product={product}
                             brand={brand}
-                            originalPrice={activeMode === "regular" ? product.originalPrice : undefined}
+                            originalPrice={!displayData.isApplyingMayoreo ? product.originalPrice : undefined}
                             rating={rating}
                             reviews={reviews}
-                            displayPrice={displayData.price}
-                            modeLabel={displayData.modeLabel}
+                            displayPrice={displayData.price ?? product.price}
+                            modeLabel={displayData.isApplyingMayoreo ? "Precio mayoreo aplicado" : undefined}
                         />
 
-                        {/* Toggle de variantes estilo Amazon — debajo del precio */}
-                        {hasVariants && (
-                            <div className="product-detail__mode-toggle">
-                                <span className="product-detail__mode-label">Tipo de compra:</span>
-                                <div className="product-detail__mode-options">
-                                    <button
-                                        type="button"
-                                        className={`product-detail__mode-btn ${activeMode === "regular" ? "active" : ""}`}
-                                        onClick={() => handleModeChange("regular")}
-                                    >
-                                        <span className="mode-btn-title">Normal</span>
-                                        <span className="mode-btn-price">${product.price.toFixed(2)}</span>
-                                    </button>
-                                    {hasMayoreo && (
-                                        <button
-                                            type="button"
-                                            className={`product-detail__mode-btn ${activeMode === "mayoreo" ? "active" : ""}`}
-                                            onClick={() => handleModeChange("mayoreo")}
-                                        >
-                                            <span className="mode-btn-title">Mayoreo</span>
-                                            <span className="mode-btn-price">${product.mayoreoPrice!.toFixed(2)}</span>
-                                        </button>
-                                    )}
-                                    {hasMenudeo && (
-                                        <button
-                                            type="button"
-                                            className={`product-detail__mode-btn ${activeMode === "menudeo" ? "active" : ""}`}
-                                            onClick={() => handleModeChange("menudeo")}
-                                        >
-                                            <span className="mode-btn-title">Menudeo</span>
-                                            <span className="mode-btn-price">${product.menudeoPrice!.toFixed(2)}</span>
-                                        </button>
-                                    )}
-                                </div>
+                        {/* Mostrar mensaje de descuento por mayoreo */}
+                        {product?.mayoreo && product?.mayoreoPrice != null && (
+                            <div className="product-detail__mayoreo-info">
+                                {displayData.isApplyingMayoreo ? (
+                                    <p style={{ color: "#27ae60", marginTop: "10px", fontWeight: "bold" }}>
+                                        ✓ Descuento por mayoreo aplicado (desde {displayData.mayoreoMinQty} unidades)
+                                    </p>
+                                ) : (
+                                    <p style={{ color: "#7f8c8d", marginTop: "10px" }}>
+                                        Compra {displayData.mayoreoMinQty} o más unidades y recibe precio de mayoreo: ${product.mayoreoPrice.toFixed(2)}
+                                    </p>
+                                )}
                             </div>
                         )}
 

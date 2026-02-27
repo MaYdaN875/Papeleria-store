@@ -38,8 +38,10 @@ $mayoreo = ($mayoreoRaw === 1 || $mayoreoRaw === '1' || $mayoreoRaw === true) ? 
 $menudeo = ($menudeoRaw === 1 || $menudeoRaw === '1' || $menudeoRaw === true) ? 1 : 0;
 $mayoreoPrice = isset($data['mayoreo_price']) && $data['mayoreo_price'] !== null ? (float) $data['mayoreo_price'] : null;
 $mayoreoStock = isset($data['mayoreo_stock']) ? (int) $data['mayoreo_stock'] : 0;
+$mayoreoMinQty = isset($data['mayoreo_min_qty']) ? (int) $data['mayoreo_min_qty'] : 10;
 $menudeoPrice = isset($data['menudeo_price']) && $data['menudeo_price'] !== null ? (float) $data['menudeo_price'] : null;
 $menudeoStock = isset($data['menudeo_stock']) ? (int) $data['menudeo_stock'] : 0;
+$menudeoMinQty = isset($data['menudeo_min_qty']) ? (int) $data['menudeo_min_qty'] : 1;
 
 if ($id <= 0 || $name === '' || $price < 0 || $stock < 0) {
   adminJsonResponse(400, ['ok' => false, 'message' => 'Datos inválidos para actualizar producto']);
@@ -62,8 +64,10 @@ try {
         menudeo = :menudeo,
         mayoreo_price = :mayoreo_price,
         mayoreo_stock = :mayoreo_stock,
+        mayoreo_min_qty = :mayoreo_min_qty,
         menudeo_price = :menudeo_price,
-        menudeo_stock = :menudeo_stock
+        menudeo_stock = :menudeo_stock,
+        menudeo_min_qty = :menudeo_min_qty
     WHERE id = :id
   ');
 
@@ -76,8 +80,10 @@ try {
     'menudeo' => $menudeo,
     'mayoreo_price' => $mayoreoPrice,
     'mayoreo_stock' => $mayoreoStock,
+    'mayoreo_min_qty' => $mayoreoMinQty,
     'menudeo_price' => $menudeoPrice,
     'menudeo_stock' => $menudeoStock,
+    'menudeo_min_qty' => $menudeoMinQty,
   ]);
 
   adminUpsertPrimaryProductImage($pdo, $id, $imageUrl, $name);

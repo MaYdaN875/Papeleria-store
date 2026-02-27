@@ -120,6 +120,7 @@ export const AllProducts = () => {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const searchQuery = searchParams.get("search") || ""
+    const pageFromUrl = Number.parseInt(searchParams.get("page") || "1", 10)
     const isMobile = useIsMobile()
 
     const [filters, setFilters] = useState<FilterState>({
@@ -135,7 +136,17 @@ export const AllProducts = () => {
     const [shouldUseStaticFallback, setShouldUseStaticFallback] = useState(false)
     const [isLoadingProducts, setIsLoadingProducts] = useState(true)
     const [productsLoadError, setProductsLoadError] = useState("")
-    const [currentPage, setCurrentPage] = useState(1)
+
+    // Resetear filtros al montar el componente para asegurar que se muestren todos los productos
+    useEffect(() => {
+        setFilters({
+            productos: [],
+            brands: [],
+            mayoreo: false,
+            menudeo: false,
+            priceRange: [0, DEFAULT_MAX_PRICE_FILTER],
+        })
+    }, [])
 
     const handleCloseDrawer = () => {
         setIsClosing(true)
@@ -145,12 +156,11 @@ export const AllProducts = () => {
         }, 300)
     }
 
-    // Resetear paginación cuando cambia la búsqueda
+    // Resetear paginación solo cuando cambia la búsqueda
     useEffect(() => {
         window.scrollTo(0, 0)
         syncCartCount()
         setIsFilterDrawerOpen(false)
-        setCurrentPage(1)
     }, [searchQuery])
 
     // Cargar productos al montar el componente
@@ -219,17 +229,12 @@ export const AllProducts = () => {
 
     const activeMode = filters.mayoreo ? "mayoreo" : filters.menudeo ? "menudeo" : null
 
-    // Resetear a página 1 cuando los filtros cambian
-    useEffect(() => {
-        setCurrentPage(1)
-    }, [filters])
-
     // Calcular items por página según dispositivo
     const itemsPerPage = isMobile ? 20 : 25
     const totalPages = Math.ceil(displayProducts.length / itemsPerPage)
     
-    // Validar página actual
-    const validCurrentPage = Math.min(currentPage, totalPages || 1)
+    // Validar página actual - mantener la página solicitada mientras se cargan productos
+    const validCurrentPage = totalPages > 0 ? Math.min(pageFromUrl, totalPages) : pageFromUrl
     
     // Calcular índices de inicio y fin
     const startIndex = (validCurrentPage - 1) * itemsPerPage
@@ -275,7 +280,10 @@ export const AllProducts = () => {
     }
 
     const handlePageChange = (newPage: number) => {
-        setCurrentPage(newPage)
+        // Actualizar la URL con el número de página
+        const params = new URLSearchParams(searchParams)
+        params.set("page", String(newPage))
+        navigate(`/all-products?${params.toString()}`, { replace: true })
         // Scroll suave hacia el grid
         setTimeout(() => {
             const gridElement = document.getElementById("allProductsGrid")
@@ -290,11 +298,13 @@ export const AllProducts = () => {
     }, [])
 
     const handleNavigateToProduct = useCallback((productId: number) => {
-        const url = activeMode
-            ? `/product/${productId}?mode=${activeMode}`
-            : `/product/${productId}`
-        navigate(url)
-    }, [navigate, activeMode])
+        const params = new URLSearchParams()
+        params.append("page", String(pageFromUrl))
+        if (activeMode) {
+            params.append("mode", activeMode)
+        }
+        navigate(`/product/${productId}?${params.toString()}`)
+    }, [navigate, activeMode, pageFromUrl])
 
     return (
         <>

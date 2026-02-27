@@ -10,28 +10,28 @@
 import { ChangeEvent, FormEvent, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  adminLogoutRequest,
-  createAdminHomeSlide,
-  createAdminProduct,
-  deleteAdminHomeSlide,
-  deleteAdminProduct,
-  fetchAdminCategories,
-  fetchAdminHomeSlides,
-  fetchAdminOffers,
-  fetchAdminProducts,
-  fetchAdminSalesToday,
-  removeAdminOffer,
-  updateAdminProduct,
-  uploadAdminProductImage,
-  upsertAdminOffer,
+    adminLogoutRequest,
+    createAdminHomeSlide,
+    createAdminProduct,
+    deleteAdminHomeSlide,
+    deleteAdminProduct,
+    fetchAdminCategories,
+    fetchAdminHomeSlides,
+    fetchAdminOffers,
+    fetchAdminProducts,
+    fetchAdminSalesToday,
+    removeAdminOffer,
+    updateAdminProduct,
+    uploadAdminProductImage,
+    upsertAdminOffer,
 } from "../services/adminApi";
 import type {
-  AdminCategory,
-  AdminHomeSlide,
-  AdminOffer,
-  AdminProduct,
-  AdminSalesProductRow,
-  AdminSalesTodaySummary,
+    AdminCategory,
+    AdminHomeSlide,
+    AdminOffer,
+    AdminProduct,
+    AdminSalesProductRow,
+    AdminSalesTodaySummary,
 } from "../types/admin";
 import { clearAdminSession, getAdminMode, getAdminToken } from "../utils/adminSession";
 import { getImageValidationError } from "../utils/validation";
@@ -140,6 +140,7 @@ export function AdminDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
+  const [filterMayoreo, setFilterMayoreo] = useState("");
   const [filterProblems, setFilterProblems] = useState("");
   const [sortOrder, setSortOrder] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -1094,6 +1095,11 @@ export function AdminDashboard() {
     if (filterCategory) {
       result = result.filter((p) => p.category === filterCategory);
     }
+    if (filterMayoreo === "con-mayoreo") {
+      result = result.filter((p) => p.mayoreo === 1);
+    } else if (filterMayoreo === "sin-mayoreo") {
+      result = result.filter((p) => p.mayoreo === 0);
+    }
     if (filterProblems === "sin-precio") {
       result = result.filter((p) => Number(p.price) === 0);
     } else if (filterProblems === "sin-stock") {
@@ -1109,9 +1115,15 @@ export function AdminDashboard() {
       result = [...result].sort((a, b) => Number(a.stock) - Number(b.stock));
     } else if (sortOrder === "name-asc") {
       result = [...result].sort((a, b) => a.name.localeCompare(b.name, "es"));
+    } else if (sortOrder === "id-asc") {
+      result = [...result].sort((a, b) => Number(a.id) - Number(b.id));
+    } else if (sortOrder === "carrusel-on") {
+      result = result.filter((p) => p.homeCarouselSlot != null && p.homeCarouselSlot !== 0);
+    } else if (sortOrder === "carrusel-off") {
+      result = result.filter((p) => p.homeCarouselSlot == null || p.homeCarouselSlot === 0);
     }
     return result;
-  }, [products, searchQuery, filterCategory, filterProblems, sortOrder]);
+  }, [products, searchQuery, filterCategory, filterMayoreo, filterProblems, sortOrder]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
@@ -1123,7 +1135,7 @@ export function AdminDashboard() {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, filterCategory, filterProblems, sortOrder]);
+  }, [searchQuery, filterCategory, filterMayoreo, filterProblems, sortOrder]);
   const offersCount = products.filter((product) => product.isOffer === 1).length;
 
   function scrollToTop() {
@@ -1626,17 +1638,26 @@ export function AdminDashboard() {
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
                   >
-                    <option value="">📂 Categoría</option>
+                    <option value="">📂 Categoría (sin filtro)</option>
                     {uniqueCategories.map((cat) => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
                   <select
                     className="admin-filter-select"
+                    value={filterMayoreo}
+                    onChange={(e) => setFilterMayoreo(e.target.value)}
+                  >
+                    <option value="">💰 Mayoreo (sin filtro)</option>
+                    <option value="con-mayoreo">Con mayoreo</option>
+                    <option value="sin-mayoreo">Sin mayoreo</option>
+                  </select>
+                  <select
+                    className="admin-filter-select"
                     value={filterProblems}
                     onChange={(e) => setFilterProblems(e.target.value)}
                   >
-                    <option value="">⚠️ Problemas</option>
+                    <option value="">⚠️ Problemas (sin filtro)</option>
                     <option value="sin-precio">Sin precio ($0)</option>
                     <option value="sin-stock">Sin stock (0)</option>
                     <option value="sin-categoria">Sin categoría</option>
@@ -1646,11 +1667,14 @@ export function AdminDashboard() {
                     value={sortOrder}
                     onChange={(e) => setSortOrder(e.target.value)}
                   >
-                    <option value="">↕️ Ordenar</option>
+                    <option value="">↕️ Ordenar (sin filtro)</option>
+                    <option value="id-asc">ID: menor a mayor</option>
                     <option value="price-asc">Precio: menor a mayor</option>
                     <option value="price-desc">Precio: mayor a menor</option>
                     <option value="stock-asc">Stock: menor a mayor</option>
                     <option value="name-asc">Nombre: A-Z</option>
+                    <option value="carrusel-on">Solo con carrusel</option>
+                    <option value="carrusel-off">Solo sin carrusel</option>
                   </select>
                 </div>
                 <p className="admin-toolbar-count">

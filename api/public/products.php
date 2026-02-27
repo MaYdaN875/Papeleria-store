@@ -105,8 +105,10 @@ try {
       p.menudeo,
       p.mayoreo_price,
       p.mayoreo_stock,
+      COALESCE(p.mayoreo_min_qty, 10) AS mayoreo_min_qty,
       p.menudeo_price,
       p.menudeo_stock,
+      COALESCE(p.menudeo_min_qty, 1) AS menudeo_min_qty,
       $homeCarouselSelect
       p.price AS original_price,
       $offersSelect

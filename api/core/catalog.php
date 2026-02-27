@@ -96,11 +96,17 @@ function adminNormalizeProductRow(array $product): array
   if (array_key_exists('mayoreo_stock', $product)) {
     $product['mayoreo_stock'] = (int) ($product['mayoreo_stock'] ?? 0);
   }
+  if (array_key_exists('mayoreo_min_qty', $product)) {
+    $product['mayoreo_min_qty'] = (int) ($product['mayoreo_min_qty'] ?? 10);
+  }
   if (array_key_exists('menudeo_price', $product)) {
     $product['menudeo_price'] = isset($product['menudeo_price']) ? (float) $product['menudeo_price'] : null;
   }
   if (array_key_exists('menudeo_stock', $product)) {
     $product['menudeo_stock'] = (int) ($product['menudeo_stock'] ?? 0);
+  }
+  if (array_key_exists('menudeo_min_qty', $product)) {
+    $product['menudeo_min_qty'] = (int) ($product['menudeo_min_qty'] ?? 1);
   }
   if (array_key_exists('is_offer', $product))
     $product['is_offer'] = $product['is_offer'] ? 1 : 0;

@@ -14,7 +14,9 @@ export type Product = {
     menudeo?: boolean
     mayoreoPrice?: number | null
     mayoreoStock?: number
+    mayoreoMinQty?: number
     menudeoPrice?: number | null
     menudeoStock?: number
+    menudeoMinQty?: number
     homeCarouselSlot?: number
 }
