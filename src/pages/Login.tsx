@@ -11,7 +11,7 @@ import {
 import { isFirebaseAuthEnabled, signInWithGoogleFirebase, signOutFirebaseSession } from "../services/firebaseAuth";
 import "../styles/login.css";
 import "../styles/password-recovery.css";
-import { syncCartCount } from "../utils/cart";
+import { migrateGuestCartToUser, syncCartCount } from "../utils/cart";
 import {
     clearStoreSession,
     getStoreUser,
@@ -143,7 +143,7 @@ export function Login() {
       ...result.user,
       provider: "api",
     });
-    syncCartCount();
+    migrateGuestCartToUser();
     navigate(returnTo, { replace: true });
   }
 
@@ -195,7 +195,7 @@ export function Login() {
       ...apiResult.user,
       provider: "api",
     });
-    syncCartCount();
+    migrateGuestCartToUser();
     navigate(returnTo, { replace: true });
   }
 

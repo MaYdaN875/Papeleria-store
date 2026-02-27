@@ -2,9 +2,9 @@
  * Lógica del carrito: almacenamiento en localStorage, agregar/quitar ítems,
  * sincronizar contadores en navbar y nav móvil (cartCount, mobileCartCount).
  */
+import { syncStoreCart } from '../services/customerApi'
 import { showNotification } from './notification'
 import { getStoreCartOwnerKey, getStoreUserToken } from './storeSession'
-import { syncStoreCart } from '../services/customerApi'
 
 const CART_STORAGE_PREFIX = 'cart'
 const CART_COUNT_ID = 'cartCount'
@@ -138,4 +138,46 @@ export function syncCartCount(): void {
     const cart = getActiveCartItems()
     const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0)
     updateAllCartCounts(totalItems)
+}
+
+/**
+ * Migra el carrito de invitado al usuario logeado.
+ * Si el usuario ya tiene productos en su carrito, combina ambos aumentando las cantidades.
+ * Se llama después de setStoreSession() en Login y SignUp.
+ */
+export function migrateGuestCartToUser(): void {
+    const guestCartKey = getCartStorageKeyForOwner(null) // 'cart_guest'
+    const guestCart = JSON.parse(globalThis.localStorage.getItem(guestCartKey) || '[]') as CartItem[]
+    
+    if (guestCart.length === 0) return // No hay carrito guest para migrar
+
+    // Obtener el carrito del usuario logeado
+    const userCart = getActiveCartItems()
+
+    // Mezclar carritos: para cada producto del guest, sumarlo al carrito del usuario
+    for (const guestItem of guestCart) {
+        const existingIndex = userCart.findIndex((item) => {
+            if (guestItem.productId && item.productId) {
+                return item.productId === guestItem.productId
+            }
+            return item.name === guestItem.name && item.price === guestItem.price
+        })
+
+        if (existingIndex >= 0) {
+            // Producto ya existe en el carrito del usuario, aumentar cantidad
+            userCart[existingIndex].quantity = (userCart[existingIndex].quantity || 1) + (guestItem.quantity || 1)
+        } else {
+            // Producto nuevo, agregarlo
+            userCart.push(guestItem)
+        }
+    }
+
+    // Guardar el carrito mezclado en la clave del usuario
+    saveActiveCartItems(userCart)
+
+    // Limpiar el carrito guest
+    globalThis.localStorage.removeItem(guestCartKey)
+
+    // Actualizar el contador en el DOM
+    syncCartCount()
 }

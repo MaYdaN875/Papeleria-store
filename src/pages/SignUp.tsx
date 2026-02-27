@@ -4,7 +4,7 @@ import RecaptchaCheckbox from "../components/ui/RecaptchaCheckbox";
 import { registerStoreCustomer } from "../services/customerApi";
 import "../styles/password-recovery.css";
 import "../styles/signup.css";
-import { syncCartCount } from "../utils/cart";
+import { migrateGuestCartToUser } from "../utils/cart";
 import { setStoreSession } from "../utils/storeSession";
 
 export function SignUp() {
@@ -120,7 +120,7 @@ export function SignUp() {
 
     if (result.token && result.user) {
       setStoreSession(result.token, result.user);
-      syncCartCount();
+      migrateGuestCartToUser();
       navigate("/", { replace: true });
       return;
     }
