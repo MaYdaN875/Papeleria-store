@@ -4,6 +4,7 @@
  */
 import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router"
+import { syncCartCount } from "../../utils/cart"
 import {
     getStoreAuthChangedEventName,
     getStoreUser,
@@ -25,6 +26,7 @@ export function MobileBottomNav() {
         const refreshStoreUser = () => {
             const currentUser = getStoreUser()
             setStoreUserName(currentUser?.name ?? "")
+            syncCartCount()
         }
 
         refreshStoreUser()

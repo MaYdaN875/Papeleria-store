@@ -4,7 +4,6 @@ import {
     ProductDetailActions,
     ProductDetailImage,
     ProductDetailInfo,
-    ProductDetailShipping,
 } from "../components/product-detail"
 import { getProductById } from "../data/products"
 import { fetchStoreProducts } from "../services/storeApi"
@@ -25,8 +24,10 @@ export const ProductDetail = () => {
     const [product, setProduct] = useState<Product | null>(null)
     const [isLoadingProduct, setIsLoadingProduct] = useState(true)
 
-    // Leer página de la URL
+    // Leer página de la URL y destino de retorno
     const pageNumber = searchParams.get("page") || "1"
+    const returnTo = searchParams.get("returnTo") || null
+    const backButtonLabel = returnTo === "/cart" ? "Volver al carrito" : "Volver"
 
     useEffect(() => {
         window.scrollTo(0, 0)
@@ -118,7 +119,8 @@ export const ProductDetail = () => {
             product.name,
             displayData.price.toFixed(2),
             quantity,
-            product.id
+            product.id,
+            product.image
         )
     }
 
@@ -127,10 +129,16 @@ export const ProductDetail = () => {
             <div className="product-detail-page">
                 <button
                     className="btn-return"
-                    onClick={() => navigate(`/all-products?page=${pageNumber}`)}
+                    onClick={() => {
+                        if (returnTo) {
+                            navigate(returnTo)
+                        } else {
+                            navigate(`/all-products?page=${pageNumber}`)
+                        }
+                    }}
                 >
                     <i className="fas fa-arrow-left" aria-hidden />
-                    <span>Volver</span>
+                    <span>{backButtonLabel}</span>
                 </button>
 
                 <div className="product-detail__layout">
@@ -169,7 +177,6 @@ export const ProductDetail = () => {
                             onAddToCart={handleAddToCart}
                             displayStock={displayData.stock}
                         />
-                        <ProductDetailShipping />
                     </div>
                 </div>
             </div>

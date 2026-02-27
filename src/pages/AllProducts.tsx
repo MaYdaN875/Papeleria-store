@@ -294,7 +294,13 @@ export const AllProducts = () => {
     }
 
     const handleAddToCart = useCallback((product: Product) => {
-        addProductToCart(product.name, product.price.toFixed(2), 1, product.id)
+        addProductToCart(
+            product.name,
+            product.price.toFixed(2),
+            1,
+            product.id,
+            product.image
+        )
     }, [])
 
     const handleNavigateToProduct = useCallback((productId: number) => {

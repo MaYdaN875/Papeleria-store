@@ -60,13 +60,22 @@ export function useCart() {
 
                 let serverItems: CartItem[] = []
                 if (result.ok && result.items && result.items.length > 0) {
-                    serverItems = result.items.map((item) => ({
-                        id: Date.now() + item.product_id,
-                        name: item.name ?? "",
-                        price: item.price ?? "0",
-                        quantity: item.quantity || 1,
-                        productId: item.product_id,
-                    }))
+                    serverItems = result.items.map((item) => {
+                        const matchingLocal = localItems.find(
+                            (local) =>
+                                local.productId != null &&
+                                local.productId === item.product_id
+                        )
+
+                        return {
+                            id: Date.now() + item.product_id,
+                            name: item.name ?? "",
+                            price: item.price ?? "0",
+                            quantity: item.quantity || 1,
+                            productId: item.product_id,
+                            image: matchingLocal?.image,
+                        }
+                    })
                 }
 
                 // Si existían items de invitado sin productId, añadirlos al estado local

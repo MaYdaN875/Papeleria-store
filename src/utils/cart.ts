@@ -16,6 +16,7 @@ export interface CartItem {
     id: number
     quantity: number
     productId?: number
+    image?: string
 }
 
 function getCartStorageKeyForOwner(ownerKey: string | null): string {
@@ -91,7 +92,8 @@ export function addProductToCart(
     productName: string,
     productPrice: string,
     quantity: number = 1,
-    productId?: number
+    productId?: number,
+    productImage?: string
 ): void {
     const cart = getActiveCartItems()
     const existing = cart.find(
@@ -103,6 +105,9 @@ export function addProductToCart(
 
     if (existing) {
         existing.quantity = (existing.quantity || 1) + quantity
+        if (productImage && !existing.image) {
+            existing.image = productImage
+        }
     } else {
         cart.push({
             name: productName,
@@ -110,6 +115,7 @@ export function addProductToCart(
             id: Date.now(),
             quantity,
             productId,
+            image: productImage,
         })
     }
 

@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router"
+import { getProductById } from "../../data/products"
 import type { CartItem as CartItemType } from "../../utils/cart"
 import { QuantitySteppers } from "../ui/QuantitySteppers"
 
@@ -19,11 +21,29 @@ export function CartItem({
     onRemove,
 }: CartItemProps) {
     const subtotal = Number.parseFloat(item.price) * item.quantity
+    const navigate = useNavigate()
+    const linkedProduct = item.productId ? getProductById(item.productId) : undefined
+    const imageSrc = item.image ?? linkedProduct?.image ?? undefined
 
     return (
         <div
             className="cart-item"
             data-id={item.id}
+            onClick={() => {
+                if (item.productId) {
+                    // Navegar a la ficha del producto y recordar volver al carrito
+                    navigate(`/product/${item.productId}?returnTo=/cart`)
+                }
+            }}
+            role={item.productId ? "button" : undefined}
+            tabIndex={item.productId ? 0 : undefined}
+            onKeyDown={(event) => {
+                if (!item.productId) return
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault()
+                    navigate(`/product/${item.productId}?returnTo=/cart`)
+                }
+            }}
             style={
                 isRemoving
                     ? {
@@ -31,15 +51,20 @@ export function CartItem({
                           transform: "translateX(100%)",
                           transition: "all 0.3s ease",
                       }
-                    : {}
+                    : { cursor: item.productId ? "pointer" : "default" }
             }
         >
-            <div className="item-image" />
+            <div className="item-image">
+                {imageSrc ? (
+                    // eslint-disable-next-line jsx-a11y/img-redundant-alt
+                    <img src={imageSrc} alt={linkedProduct?.name ?? "Imagen del producto"} />
+                ) : null}
+            </div>
             <div className="item-info">
                 <h4>{item.name}</h4>
                 <p className="item-price">${item.price}</p>
             </div>
-            <div className="item-quantity-controls">
+            <div className="item-quantity-controls" onClick={(e) => e.stopPropagation()}>
                 <QuantitySteppers
                     id={`cart-quantity-${item.id}`}
                     value={item.quantity}
@@ -53,7 +78,7 @@ export function CartItem({
             </div>
             <button
                 className="btn-remove"
-                onClick={() => onRemove(item.id)}
+                onClick={(e) => { e.stopPropagation(); onRemove(item.id); }}
                 title="Eliminar del carrito"
             >
                 <i className="fas fa-trash" />

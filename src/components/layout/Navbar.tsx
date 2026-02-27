@@ -181,6 +181,7 @@ export function Navbar() {
         const refreshStoreUser = () => {
             const currentUser = getStoreUser()
             setStoreUserName(currentUser?.name ?? "")
+            syncCartCount()
         }
 
         refreshStoreUser()
@@ -287,7 +288,13 @@ export function Navbar() {
                             className="header-logo"
                             onClick={handleLogoClick}
                         >
-                            <div className="logo-icon">🎨</div>
+                            <div className="logo-icon">
+                                <img
+                                    src="/godart-logo.png"
+                                    alt="God Art"
+                                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                                />
+                            </div>
                             <h1>God Art</h1>
                         </Link>
                     </div>

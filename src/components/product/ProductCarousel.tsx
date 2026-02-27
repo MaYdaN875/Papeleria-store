@@ -17,7 +17,7 @@ export interface ProductCarouselProps {
         product: Product
     ) => ProductCarouselSlideConfig | undefined
     onNavigate: (id: number) => void
-    onAddToCart: (name: string, price: string, productId?: number) => void
+    onAddToCart: (name: string, price: string, productId?: number, image?: string) => void
     seeMorePath?: string
 }
 

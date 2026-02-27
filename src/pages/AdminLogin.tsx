@@ -73,7 +73,13 @@ export function AdminLogin() {
     <div className="admin-auth-page">
       <div className="admin-auth-card">
         <div className="admin-auth-brand">
-          <span className="admin-badge admin-badge--login">God Art</span>
+          <span className="admin-badge admin-badge--login">
+            <img
+              src="/godart-logo.png"
+              alt="God Art"
+              style={{ height: 32, display: "block" }}
+            />
+          </span>
           <p className="admin-auth-kicker">Acceso interno</p>
         </div>
 
