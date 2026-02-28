@@ -59,31 +59,30 @@ export const ProductDetail = () => {
         void loadProduct()
     }, [id])
 
-    // Calcular precio automáticamente según cantidad
+    // Calcular precio y datos de stock según cantidad (siempre mostramos rangos menudeo/mayoreo)
     const displayData = useMemo(() => {
         if (!product) return null
 
-        // Verificar si aplica mayoreo según la cantidad mínima configurada
         const mayoreoMinQty = product.mayoreoMinQty ?? 10
-        const applieMayoreo = 
-            product.mayoreo && 
-            product.mayoreoPrice != null && 
-            quantity >= mayoreoMinQty
+        const menudeoStock = Math.max(0, product.menudeoStock ?? product.stock ?? 0)
+        const mayoreoStock = Math.max(0, product.mayoreoStock ?? 0)
+        const hasMayoreo = Boolean(product.mayoreo && product.mayoreoPrice != null)
 
-        if (applieMayoreo && product.mayoreoPrice != null) {
-            return {
-                price: product.mayoreoPrice,
-                stock: product.mayoreoStock ?? product.stock,
-                isApplyingMayoreo: true,
-                mayoreoMinQty,
-            }
-        }
+        // Stock total = menudeo + mayoreo; si no hay rangos configurados, usar product.stock
+        const totalStock =
+            hasMayoreo && (menudeoStock > 0 || mayoreoStock > 0)
+                ? menudeoStock + mayoreoStock
+                : Math.max(product.stock, menudeoStock, 1)
+        const appliesMayoreo = hasMayoreo && quantity >= mayoreoMinQty
 
         return {
-            price: product.price,
-            stock: product.stock,
-            isApplyingMayoreo: false,
+            price: appliesMayoreo && product.mayoreoPrice != null ? product.mayoreoPrice : product.price,
+            isApplyingMayoreo: appliesMayoreo,
             mayoreoMinQty,
+            menudeoStock,
+            mayoreoStock,
+            totalStock,
+            mayoreoMaxQty: hasMayoreo ? mayoreoMinQty + mayoreoStock - 1 : 0,
         }
     }, [product, quantity])
 
@@ -115,12 +114,21 @@ export const ProductDetail = () => {
 
     const handleAddToCart = () => {
         if (!product || !displayData) return
+        const mayoreo =
+            product.mayoreo && product.mayoreoPrice != null && displayData.mayoreoMinQty != null
+                ? {
+                      basePrice: product.price.toFixed(2),
+                      mayoreoPrice: product.mayoreoPrice.toFixed(2),
+                      mayoreoMinQty: displayData.mayoreoMinQty,
+                  }
+                : undefined
         addProductToCart(
             product.name,
             displayData.price.toFixed(2),
             quantity,
             product.id,
-            product.image
+            product.image,
+            mayoreo
         )
     }
 
@@ -175,7 +183,14 @@ export const ProductDetail = () => {
                             quantity={quantity}
                             onQuantityChange={setQuantity}
                             onAddToCart={handleAddToCart}
-                            displayStock={displayData.stock}
+                            stockRanges={{
+                                menudeoStock: displayData.menudeoStock,
+                                mayoreoMinQty: displayData.mayoreoMinQty,
+                                mayoreoStock: displayData.mayoreoStock,
+                                mayoreoMaxQty: displayData.mayoreoMaxQty,
+                                totalStock: displayData.totalStock,
+                                hasMayoreo: Boolean(product.mayoreo && product.mayoreoPrice != null),
+                            }}
                         />
                     </div>
                 </div>

@@ -43,8 +43,10 @@ $mayoreo = ($mayoreoRaw === 1 || $mayoreoRaw === '1' || $mayoreoRaw === true) ? 
 $menudeo = ($menudeoRaw === 1 || $menudeoRaw === '1' || $menudeoRaw === true) ? 1 : 0;
 $mayoreoPrice = isset($data['mayoreo_price']) && $data['mayoreo_price'] !== null ? (float) $data['mayoreo_price'] : null;
 $mayoreoStock = isset($data['mayoreo_stock']) ? (int) $data['mayoreo_stock'] : 0;
+$mayoreoMinQty = isset($data['mayoreo_min_qty']) ? (int) $data['mayoreo_min_qty'] : 10;
 $menudeoPrice = isset($data['menudeo_price']) && $data['menudeo_price'] !== null ? (float) $data['menudeo_price'] : null;
 $menudeoStock = isset($data['menudeo_stock']) ? (int) $data['menudeo_stock'] : 0;
+$menudeoMinQty = isset($data['menudeo_min_qty']) ? (int) $data['menudeo_min_qty'] : 1;
 
 if ($categoryId <= 0 || $name === '' || $price < 0 || $stock < 0) {
   adminJsonResponse(400, ['ok' => false, 'message' => 'Datos inválidos para crear producto']);
@@ -57,6 +59,17 @@ if (mb_strlen($name) > 150) {
 try {
   $pdo = adminGetPdo();
   adminRequireSession($pdo);
+
+  $minQtyColumnsStmt = $pdo->query("
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name = 'products'
+      AND column_name IN ('mayoreo_min_qty', 'menudeo_min_qty')
+  ");
+  $minQtyColumns = $minQtyColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
+  $hasMayoreoMinQty = in_array('mayoreo_min_qty', $minQtyColumns, true);
+  $hasMenudeoMinQty = in_array('menudeo_min_qty', $minQtyColumns, true);
 
   // Validación de categoría existente.
   $categoryStmt = $pdo->prepare('SELECT id FROM categories WHERE id = :id LIMIT 1');
@@ -83,17 +96,37 @@ try {
     $slug = $baseSlug . '-' . $slugSuffix;
   }
 
-  $insertStmt = $pdo->prepare('
-    INSERT INTO products (
-      category_id, name, slug, description, brand, price, stock, sku, mayoreo, menudeo,
-      mayoreo_price, mayoreo_stock, menudeo_price, menudeo_stock, is_active
-    ) VALUES (
-      :category_id, :name, :slug, NULL, NULL, :price, :stock, NULL, :mayoreo, :menudeo,
-      :mayoreo_price, :mayoreo_stock, :menudeo_price, :menudeo_stock, 1
-    )
-  ');
+  $insertColumns = [
+    'category_id',
+    'name',
+    'slug',
+    'description',
+    'brand',
+    'price',
+    'stock',
+    'sku',
+    'mayoreo',
+    'menudeo',
+    'mayoreo_price',
+    'mayoreo_stock',
+  ];
 
-  $insertStmt->execute([
+  $insertValues = [
+    ':category_id',
+    ':name',
+    ':slug',
+    'NULL',
+    'NULL',
+    ':price',
+    ':stock',
+    'NULL',
+    ':mayoreo',
+    ':menudeo',
+    ':mayoreo_price',
+    ':mayoreo_stock',
+  ];
+
+  $insertParams = [
     'category_id' => $categoryId,
     'name' => $name,
     'slug' => $slug,
@@ -103,9 +136,37 @@ try {
     'menudeo' => $menudeo,
     'mayoreo_price' => $mayoreoPrice,
     'mayoreo_stock' => $mayoreoStock,
-    'menudeo_price' => $menudeoPrice,
-    'menudeo_stock' => $menudeoStock,
-  ]);
+  ];
+
+  if ($hasMayoreoMinQty) {
+    $insertColumns[] = 'mayoreo_min_qty';
+    $insertValues[] = ':mayoreo_min_qty';
+    $insertParams['mayoreo_min_qty'] = $mayoreoMinQty;
+  }
+
+  $insertColumns[] = 'menudeo_price';
+  $insertValues[] = ':menudeo_price';
+  $insertParams['menudeo_price'] = $menudeoPrice;
+
+  $insertColumns[] = 'menudeo_stock';
+  $insertValues[] = ':menudeo_stock';
+  $insertParams['menudeo_stock'] = $menudeoStock;
+
+  if ($hasMenudeoMinQty) {
+    $insertColumns[] = 'menudeo_min_qty';
+    $insertValues[] = ':menudeo_min_qty';
+    $insertParams['menudeo_min_qty'] = $menudeoMinQty;
+  }
+
+  $insertColumns[] = 'is_active';
+  $insertValues[] = '1';
+
+  $insertStmt = $pdo->prepare('
+    INSERT INTO products (' . implode(', ', $insertColumns) . ')
+    VALUES (' . implode(', ', $insertValues) . ')
+  ');
+
+  $insertStmt->execute($insertParams);
 
   $newId = (int) $pdo->lastInsertId();
   adminUpsertPrimaryProductImage($pdo, $newId, $imageUrl, $name);
@@ -125,8 +186,10 @@ try {
       p.menudeo,
       p.mayoreo_price,
       p.mayoreo_stock,
+      " . ($hasMayoreoMinQty ? "COALESCE(p.mayoreo_min_qty, 10)" : "10") . " AS mayoreo_min_qty,
       p.menudeo_price,
       p.menudeo_stock,
+      " . ($hasMenudeoMinQty ? "COALESCE(p.menudeo_min_qty, 1)" : "1") . " AS menudeo_min_qty,
       {$homeCarouselSql['select']},
       {$offerSql['select']},
       {$imageSql['select']},

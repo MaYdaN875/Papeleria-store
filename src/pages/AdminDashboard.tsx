@@ -44,6 +44,8 @@ interface ProductEditFormState {
   mayoreo: boolean;
   mayoreoPrice: string;
   mayoreoStock: string;
+  mayoreoMinQty: string;
+  menudeoStock: string;
   homeCarouselSlot: HomeCarouselSlotFormValue;
 }
 
@@ -56,6 +58,8 @@ interface ProductCreateFormState {
   mayoreo: boolean;
   mayoreoPrice: string;
   mayoreoStock: string;
+  mayoreoMinQty: string;
+  menudeoStock: string;
   homeCarouselSlot: HomeCarouselSlotFormValue;
 }
 
@@ -116,6 +120,8 @@ export function AdminDashboard() {
     mayoreo: true,
     mayoreoPrice: "",
     mayoreoStock: "",
+    mayoreoMinQty: "10",
+    menudeoStock: "0",
     homeCarouselSlot: "0",
   });
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
@@ -124,6 +130,8 @@ export function AdminDashboard() {
   const [createImageUploadError, setCreateImageUploadError] = useState("");
   const [createImageUploadSuccess, setCreateImageUploadSuccess] = useState("");
   const [isUploadingCreateImage, setIsUploadingCreateImage] = useState(false);
+  const [createImageInputKey, setCreateImageInputKey] = useState(0);
+  const [editImageInputKey, setEditImageInputKey] = useState(0);
   const [isDeletingProductId, setIsDeletingProductId] = useState<number | null>(null);
   const [deleteError, setDeleteError] = useState("");
   const [deleteSuccess, setDeleteSuccess] = useState("");
@@ -154,6 +162,8 @@ export function AdminDashboard() {
     mayoreo: true,
     mayoreoPrice: "",
     mayoreoStock: "",
+    mayoreoMinQty: "10",
+    menudeoStock: "0",
     homeCarouselSlot: "0",
   });
   const [homeSlideCreateForm, setHomeSlideCreateForm] = useState<HomeSlideCreateFormState>({
@@ -316,6 +326,20 @@ export function AdminDashboard() {
     }
 
     setEditForm((prevForm) => ({ ...prevForm, imageUrl }));
+  }
+
+  function handleClearProductImage(targetForm: "create" | "edit") {
+    if (targetForm === "create") {
+      setCreateForm((prevForm) => ({ ...prevForm, imageUrl: "" }));
+      setCreateImageUploadSuccess("");
+      setCreateImageUploadError("");
+      setCreateImageInputKey((k) => k + 1);
+      return;
+    }
+    setEditForm((prevForm) => ({ ...prevForm, imageUrl: "" }));
+    setEditImageUploadSuccess("");
+    setEditImageUploadError("");
+    setEditImageInputKey((k) => k + 1);
   }
 
   async function handleImageFileSelection(
@@ -481,6 +505,8 @@ export function AdminDashboard() {
       mayoreo: product.mayoreo === 1,
       mayoreoPrice: product.mayoreoPrice != null ? String(product.mayoreoPrice) : "",
       mayoreoStock: String(product.mayoreoStock ?? 0),
+      mayoreoMinQty: String(product.mayoreoMinQty ?? 10),
+      menudeoStock: String(product.menudeoStock ?? 0),
       homeCarouselSlot: String(product.homeCarouselSlot ?? 0) as HomeCarouselSlotFormValue,
     });
     // Auto-scroll al formulario de edición después de renderizar.
@@ -712,8 +738,10 @@ export function AdminDashboard() {
           menudeo: 1,
           mayoreoPrice: product.mayoreoPrice ?? null,
           mayoreoStock: product.mayoreoStock ?? 0,
+          mayoreoMinQty: product.mayoreoMinQty ?? 10,
           menudeoPrice: null,
-          menudeoStock: 0,
+          menudeoStock: product.menudeoStock ?? 0,
+          menudeoMinQty: product.menudeoMinQty ?? 1,
           homeCarouselSlot: parsedSlot as HomeCarouselSlotValue,
         },
         token
@@ -803,8 +831,10 @@ export function AdminDashboard() {
         menudeo: 1,
         mayoreoPrice: createForm.mayoreo && createForm.mayoreoPrice ? Number(createForm.mayoreoPrice) : null,
         mayoreoStock: createForm.mayoreo ? Number(createForm.mayoreoStock) || 0 : 0,
+        mayoreoMinQty: Math.max(1, Number(createForm.mayoreoMinQty) || 10),
         menudeoPrice: null,
-        menudeoStock: 0,
+        menudeoStock: Math.max(0, parsedStock),
+        menudeoMinQty: 1,
         homeCarouselSlot,
       }, token);
 
@@ -826,6 +856,8 @@ export function AdminDashboard() {
         mayoreo: true,
         mayoreoPrice: "",
         mayoreoStock: "",
+        mayoreoMinQty: "10",
+        menudeoStock: "0",
         homeCarouselSlot: "0",
       }));
       setIsCreatingProduct(false);
@@ -892,8 +924,10 @@ export function AdminDashboard() {
         menudeo: 1,
         mayoreoPrice: editForm.mayoreo && editForm.mayoreoPrice ? Number(editForm.mayoreoPrice) : null,
         mayoreoStock: editForm.mayoreo ? Number(editForm.mayoreoStock) || 0 : 0,
+        mayoreoMinQty: Math.max(1, Number(editForm.mayoreoMinQty) || 10),
         menudeoPrice: null,
-        menudeoStock: 0,
+        menudeoStock: Math.max(0, parsedStock),
+        menudeoMinQty: 1,
         homeCarouselSlot,
       }, token);
 
@@ -1493,7 +1527,7 @@ export function AdminDashboard() {
               </label>
 
               <label className="admin-edit-label">
-                <span>Stock</span>
+                <span>Stock (normal / menudeo)</span>
                 <input
                   type="number"
                   min="0"
@@ -1503,6 +1537,7 @@ export function AdminDashboard() {
                   onChange={(event) =>
                     setCreateForm((prevForm) => ({ ...prevForm, stock: event.target.value }))
                   }
+                  placeholder="Unidades disponibles a precio normal (1 a N)"
                 />
               </label>
 
@@ -1541,6 +1576,7 @@ export function AdminDashboard() {
               <label className="admin-edit-label">
                 <span>Imagen (archivo)</span>
                 <input
+                  key={createImageInputKey}
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif"
                   className="admin-edit-input admin-edit-input--file"
@@ -1553,6 +1589,14 @@ export function AdminDashboard() {
             {createForm.imageUrl && (
               <div className="admin-image-preview-wrap">
                 <img src={createForm.imageUrl} alt="Vista previa de producto" className="admin-image-preview" />
+                <button
+                  type="button"
+                  className="admin-row-action-button admin-row-action-button--cancel"
+                  style={{ marginTop: 8 }}
+                  onClick={() => handleClearProductImage("create")}
+                >
+                  Quitar imagen
+                </button>
               </div>
             )}
             {createImageUploadError && <p className="admin-auth-error">{createImageUploadError}</p>}
@@ -1586,7 +1630,21 @@ export function AdminDashboard() {
                     />
                   </label>
                   <label className="admin-edit-label">
-                    <span>Stock mayoreo</span>
+                    <span>Cantidad mínima mayoreo (desde)</span>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      className="admin-edit-input"
+                      value={createForm.mayoreoMinQty}
+                      onChange={(event) =>
+                        setCreateForm((prevForm) => ({ ...prevForm, mayoreoMinQty: event.target.value }))
+                      }
+                      placeholder="Ej: 8 (mayoreo desde 8)"
+                    />
+                  </label>
+                  <label className="admin-edit-label">
+                    <span>Stock mayoreo (unidades)</span>
                     <input
                       type="number"
                       min="0"
@@ -1596,7 +1654,7 @@ export function AdminDashboard() {
                       onChange={(event) =>
                         setCreateForm((prevForm) => ({ ...prevForm, mayoreoStock: event.target.value }))
                       }
-                      placeholder="Stock de mayoreo"
+                      placeholder="Ej: 8 (mayoreo 8-15)"
                     />
                   </label>
                 </div>
@@ -1865,7 +1923,7 @@ export function AdminDashboard() {
                 </label>
 
                 <label className="admin-edit-label">
-                  <span>Stock</span>
+                  <span>Stock (normal / menudeo)</span>
                   <input
                     type="number"
                     min="0"
@@ -1875,6 +1933,7 @@ export function AdminDashboard() {
                     onChange={(event) =>
                       setEditForm((prevForm) => ({ ...prevForm, stock: event.target.value }))
                     }
+                    placeholder="Unidades disponibles a precio normal (1 a N)"
                   />
                 </label>
 
@@ -1913,6 +1972,7 @@ export function AdminDashboard() {
                 <label className="admin-edit-label">
                   <span>Imagen (archivo)</span>
                   <input
+                    key={editImageInputKey}
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/gif"
                     className="admin-edit-input admin-edit-input--file"
@@ -1925,6 +1985,14 @@ export function AdminDashboard() {
               {editForm.imageUrl && (
                 <div className="admin-image-preview-wrap">
                   <img src={editForm.imageUrl} alt="Vista previa de producto" className="admin-image-preview" />
+                  <button
+                    type="button"
+                    className="admin-row-action-button admin-row-action-button--cancel"
+                    style={{ marginTop: 8 }}
+                    onClick={() => handleClearProductImage("edit")}
+                  >
+                    Quitar imagen
+                  </button>
                 </div>
               )}
               {editImageUploadError && <p className="admin-auth-error">{editImageUploadError}</p>}
@@ -1958,7 +2026,21 @@ export function AdminDashboard() {
                       />
                     </label>
                     <label className="admin-edit-label">
-                      <span>Stock mayoreo</span>
+                      <span>Cantidad mínima mayoreo (desde)</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        className="admin-edit-input"
+                        value={editForm.mayoreoMinQty}
+                        onChange={(event) =>
+                          setEditForm((prevForm) => ({ ...prevForm, mayoreoMinQty: event.target.value }))
+                        }
+                        placeholder="Ej: 8 (mayoreo desde 8)"
+                      />
+                    </label>
+                    <label className="admin-edit-label">
+                      <span>Stock mayoreo (unidades)</span>
                       <input
                         type="number"
                         min="0"
@@ -1968,7 +2050,7 @@ export function AdminDashboard() {
                         onChange={(event) =>
                           setEditForm((prevForm) => ({ ...prevForm, mayoreoStock: event.target.value }))
                         }
-                        placeholder="Stock de mayoreo"
+                        placeholder="Ej: 8 (mayoreo 8-15)"
                       />
                     </label>
                   </div>

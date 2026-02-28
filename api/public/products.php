@@ -15,6 +15,17 @@ adminRequireMethod('GET');
 try {
   $pdo = adminGetPdo();
 
+  $minQtyColumnsStmt = $pdo->query("
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name = 'products'
+      AND column_name IN ('mayoreo_min_qty', 'menudeo_min_qty')
+  ");
+  $minQtyColumns = $minQtyColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
+  $hasMayoreoMinQty = in_array('mayoreo_min_qty', $minQtyColumns, true);
+  $hasMenudeoMinQty = in_array('menudeo_min_qty', $minQtyColumns, true);
+
   $offersTableStmt = $pdo->query("
     SELECT COUNT(*)
     FROM information_schema.tables
@@ -67,6 +78,14 @@ try {
     ? "COALESCE(hca.carousel_slot, 0) AS home_carousel_slot,"
     : "0 AS home_carousel_slot,";
 
+  $mayoreoMinQtySelect = $hasMayoreoMinQty
+    ? "COALESCE(p.mayoreo_min_qty, 10) AS mayoreo_min_qty,"
+    : "10 AS mayoreo_min_qty,";
+
+  $menudeoMinQtySelect = $hasMenudeoMinQty
+    ? "COALESCE(p.menudeo_min_qty, 1) AS menudeo_min_qty,"
+    : "1 AS menudeo_min_qty,";
+
   if ($imagesTableExists) {
     $imagesJoin = $imageHasIsPrimary
       ? "LEFT JOIN (
@@ -105,10 +124,10 @@ try {
       p.menudeo,
       p.mayoreo_price,
       p.mayoreo_stock,
-      COALESCE(p.mayoreo_min_qty, 10) AS mayoreo_min_qty,
+      $mayoreoMinQtySelect
       p.menudeo_price,
       p.menudeo_stock,
-      COALESCE(p.menudeo_min_qty, 1) AS menudeo_min_qty,
+      $menudeoMinQtySelect
       $homeCarouselSelect
       p.price AS original_price,
       $offersSelect

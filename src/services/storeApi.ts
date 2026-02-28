@@ -18,8 +18,10 @@ interface RawStoreProduct {
     menudeo?: BinaryLike
     mayoreo_price?: number | string | null
     mayoreo_stock?: number | string
+    mayoreo_min_qty?: number | string
     menudeo_price?: number | string | null
     menudeo_stock?: number | string
+    menudeo_min_qty?: number | string
     home_carousel_slot?: number | string
     is_offer?: BinaryLike
     original_price?: number | string
@@ -74,8 +76,16 @@ function normalizeStoreProduct(raw: RawStoreProduct, apiBase: string): Product {
         menudeo: toBooleanFlag(raw.menudeo),
         mayoreoPrice: raw.mayoreo_price != null ? Number(raw.mayoreo_price) || 0 : null,
         mayoreoStock: Number(raw.mayoreo_stock) || 0,
+        mayoreoMinQty:
+            raw.mayoreo_min_qty != null && raw.mayoreo_min_qty !== ""
+                ? Number(raw.mayoreo_min_qty) || 10
+                : 10,
         menudeoPrice: raw.menudeo_price != null ? Number(raw.menudeo_price) || 0 : null,
         menudeoStock: Number(raw.menudeo_stock) || 0,
+        menudeoMinQty:
+            raw.menudeo_min_qty != null && raw.menudeo_min_qty !== ""
+                ? Number(raw.menudeo_min_qty) || 1
+                : 1,
         homeCarouselSlot: (() => {
             const rawSlot = Number(raw.home_carousel_slot ?? 0) || 0
             return rawSlot >= 1 && rawSlot <= 3 ? rawSlot : 0

@@ -16,6 +16,25 @@ try {
   $pdo = adminGetPdo();
   adminRequireSession($pdo);
 
+  $minQtyColumnsStmt = $pdo->query("
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name = 'products'
+      AND column_name IN ('mayoreo_min_qty', 'menudeo_min_qty')
+  ");
+  $minQtyColumns = $minQtyColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
+  $hasMayoreoMinQty = in_array('mayoreo_min_qty', $minQtyColumns, true);
+  $hasMenudeoMinQty = in_array('menudeo_min_qty', $minQtyColumns, true);
+
+  $mayoreoMinQtySelect = $hasMayoreoMinQty
+    ? "COALESCE(p.mayoreo_min_qty, 10) AS mayoreo_min_qty,"
+    : "10 AS mayoreo_min_qty,";
+
+  $menudeoMinQtySelect = $hasMenudeoMinQty
+    ? "COALESCE(p.menudeo_min_qty, 1) AS menudeo_min_qty,"
+    : "1 AS menudeo_min_qty,";
+
   $offerSql = adminOfferSqlParts($pdo, 'p', 'po');
   $imageSql = adminImageSqlParts($pdo, 'p', 'pimg');
   $homeCarouselSql = adminHomeCarouselSqlParts($pdo, 'p', 'hca');
@@ -31,8 +50,10 @@ try {
       p.menudeo,
       p.mayoreo_price,
       p.mayoreo_stock,
+      {$mayoreoMinQtySelect}
       p.menudeo_price,
       p.menudeo_stock,
+      {$menudeoMinQtySelect}
       {$homeCarouselSql['select']},
       {$offerSql['select']},
       {$imageSql['select']},

@@ -1,13 +1,23 @@
-/** Cantidad, botón agregar al carrito y stock. */
+/** Cantidad, botón agregar al carrito y stock (rangos menudeo/mayoreo). */
 import type { Product } from "../../types/Product"
 import { QuantitySelector } from "../ui/QuantitySelector"
+
+export interface StockRanges {
+    menudeoStock: number
+    mayoreoMinQty: number
+    mayoreoStock: number
+    mayoreoMaxQty: number
+    totalStock: number
+    hasMayoreo: boolean
+}
 
 export interface ProductDetailActionsProps {
     product: Product
     quantity: number
     onQuantityChange: (v: number) => void
     onAddToCart: () => void
-    displayStock?: number
+    /** Rangos de stock: menudeo (1 a N) y mayoreo (N+1 a M). Si no se pasa, se usa product.stock. */
+    stockRanges?: StockRanges | null
 }
 
 export function ProductDetailActions({
@@ -15,10 +25,10 @@ export function ProductDetailActions({
     quantity,
     onQuantityChange,
     onAddToCart,
-    displayStock,
+    stockRanges,
 }: ProductDetailActionsProps) {
-    const effectiveStock = displayStock ?? product.stock
-    const maxQuantity = Math.min(20, effectiveStock)
+    const totalStock = stockRanges?.totalStock ?? product.stock
+    const maxQuantity = Math.min(20, Math.max(1, totalStock))
 
     return (
         <div className="product-detail__actions">

@@ -17,6 +17,35 @@ export interface CartItem {
     quantity: number
     productId?: number
     image?: string
+    /** Precio unitario menudeo (para calcular precio según cantidad). */
+    basePrice?: string
+    /** Precio unitario mayoreo. */
+    mayoreoPrice?: string
+    /** Cantidad mínima desde la que aplica mayoreo. */
+    mayoreoMinQty?: number
+}
+
+/**
+ * Precio unitario efectivo según cantidad (menudeo o mayoreo).
+ */
+export function getCartItemUnitPrice(item: CartItem): number {
+    const qty = item.quantity || 1
+    if (
+        item.mayoreoMinQty != null &&
+        item.mayoreoPrice != null &&
+        String(item.mayoreoPrice).trim() !== '' &&
+        qty >= item.mayoreoMinQty
+    ) {
+        return Number(item.mayoreoPrice) || 0
+    }
+    return Number(item.basePrice ?? item.price) || 0
+}
+
+/**
+ * Subtotal del ítem (precio unitario efectivo × cantidad).
+ */
+export function getCartItemSubtotal(item: CartItem): number {
+    return getCartItemUnitPrice(item) * (item.quantity || 1)
 }
 
 function getCartStorageKeyForOwner(ownerKey: string | null): string {
@@ -84,16 +113,19 @@ function updateAllCartCounts(totalItems: number): void {
 }
 
 /**
- * Agrega un producto al carrito (localStorage). Si ya existe por nombre+precio,
- * incrementa la cantidad. Actualiza el contador del header y muestra notificación.
+ * Agrega un producto al carrito (localStorage). Si ya existe por productId o nombre+precio,
+ * incrementa la cantidad. Opcionalmente recibe datos de mayoreo para que el carrito
+ * aplique precio mayoreo cuando la cantidad lo alcance.
  * @param quantity - Cantidad de productos a agregar (por defecto 1)
+ * @param mayoreo - basePrice (menudeo), mayoreoPrice, mayoreoMinQty para calcular precio en carrito
  */
 export function addProductToCart(
     productName: string,
     productPrice: string,
     quantity: number = 1,
     productId?: number,
-    productImage?: string
+    productImage?: string,
+    mayoreo?: { basePrice: string; mayoreoPrice: string; mayoreoMinQty: number }
 ): void {
     const cart = getActiveCartItems()
     const existing = cart.find(
@@ -108,15 +140,26 @@ export function addProductToCart(
         if (productImage && !existing.image) {
             existing.image = productImage
         }
+        if (mayoreo) {
+            if (existing.basePrice == null) existing.basePrice = mayoreo.basePrice
+            if (existing.mayoreoPrice == null) existing.mayoreoPrice = mayoreo.mayoreoPrice
+            if (existing.mayoreoMinQty == null) existing.mayoreoMinQty = mayoreo.mayoreoMinQty
+        }
     } else {
-        cart.push({
+        const newItem: CartItem = {
             name: productName,
             price: productPrice,
             id: Date.now(),
             quantity,
             productId,
             image: productImage,
-        })
+        }
+        if (mayoreo) {
+            newItem.basePrice = mayoreo.basePrice
+            newItem.mayoreoPrice = mayoreo.mayoreoPrice
+            newItem.mayoreoMinQty = mayoreo.mayoreoMinQty
+        }
+        cart.push(newItem)
     }
 
     saveActiveCartItems(cart)

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react"
 import { fetchStoreCart, syncStoreCart } from "../services/customerApi"
+import { fetchStoreProducts } from "../services/storeApi"
 import {
     getActiveCartItems,
+    getCartItemSubtotal,
     saveActiveCartItems,
     syncCartCount,
     type CartItem,
@@ -74,6 +76,9 @@ export function useCart() {
                             quantity: item.quantity || 1,
                             productId: item.product_id,
                             image: matchingLocal?.image,
+                            basePrice: matchingLocal?.basePrice,
+                            mayoreoPrice: matchingLocal?.mayoreoPrice,
+                            mayoreoMinQty: matchingLocal?.mayoreoMinQty,
                         }
                     })
                 }
@@ -85,6 +90,28 @@ export function useCart() {
                         // Asignar ids nuevos y concatenar
                         const migrated = guestLocalOnly.map((it) => ({ ...it, id: Date.now() + Math.floor(Math.random() * 1000) }))
                         serverItems = [...serverItems, ...migrated]
+                    }
+                }
+
+                // Enriquecer con mayoreo si falta (ej. ítem solo del servidor): traer catálogo y completar
+                const needsMayoreo = serverItems.some(
+                    (it) => it.productId != null && (it.mayoreoMinQty == null || it.basePrice == null)
+                )
+                if (needsMayoreo) {
+                    const catalog = await fetchStoreProducts()
+                    if (catalog.ok && catalog.products && catalog.products.length > 0) {
+                        serverItems = serverItems.map((it) => {
+                            if (it.productId == null || (it.mayoreoMinQty != null && it.basePrice != null)) return it
+                            const product = catalog.products!.find((p) => p.id === it.productId)
+                            if (!product || !product.mayoreo || product.mayoreoPrice == null) return it
+                            const mayoreoMinQty = product.mayoreoMinQty ?? 10
+                            return {
+                                ...it,
+                                basePrice: it.basePrice ?? String(product.price.toFixed(2)),
+                                mayoreoPrice: it.mayoreoPrice ?? String(product.mayoreoPrice.toFixed(2)),
+                                mayoreoMinQty: it.mayoreoMinQty ?? mayoreoMinQty,
+                            }
+                        })
                     }
                 }
 
@@ -167,7 +194,7 @@ export function useCart() {
     }, [])
 
     const total = cartItems.reduce(
-        (sum, item) => sum + Number.parseFloat(item.price) * item.quantity,
+        (sum, item) => sum + getCartItemSubtotal(item),
         0
     )
 

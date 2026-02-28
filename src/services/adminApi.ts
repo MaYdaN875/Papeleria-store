@@ -135,8 +135,10 @@ interface RawAdminProduct {
   menudeo: RawBinaryFlag;
   mayoreo_price?: number | string | null;
   mayoreo_stock?: number | string;
+  mayoreo_min_qty?: number | string;
   menudeo_price?: number | string | null;
   menudeo_stock?: number | string;
+  menudeo_min_qty?: number | string;
   home_carousel_slot?: number | string;
   category: string;
   is_offer?: RawBinaryFlag;
@@ -202,9 +204,17 @@ function normalizeAdminProduct(raw: RawAdminProduct): AdminProduct {
     mayoreoPrice:
       raw.mayoreo_price === null || raw.mayoreo_price === undefined ? null : Number(raw.mayoreo_price) || 0,
     mayoreoStock: Number(raw.mayoreo_stock) || 0,
+    mayoreoMinQty:
+      raw.mayoreo_min_qty !== undefined && raw.mayoreo_min_qty !== null && raw.mayoreo_min_qty !== ""
+        ? Number(raw.mayoreo_min_qty) || 10
+        : 10,
     menudeoPrice:
       raw.menudeo_price === null || raw.menudeo_price === undefined ? null : Number(raw.menudeo_price) || 0,
     menudeoStock: Number(raw.menudeo_stock) || 0,
+    menudeoMinQty:
+      raw.menudeo_min_qty !== undefined && raw.menudeo_min_qty !== null && raw.menudeo_min_qty !== ""
+        ? Number(raw.menudeo_min_qty) || 1
+        : 1,
     homeCarouselSlot,
     category: raw.category ?? "",
     isOffer: toBinaryFlag(raw.is_offer),
@@ -402,8 +412,10 @@ export async function updateAdminProduct(
       menudeo: payload.menudeo,
       mayoreo_price: payload.mayoreoPrice,
       mayoreo_stock: payload.mayoreoStock,
+      mayoreo_min_qty: payload.mayoreoMinQty,
       menudeo_price: payload.menudeoPrice,
       menudeo_stock: payload.menudeoStock,
+      menudeo_min_qty: payload.menudeoMinQty,
       home_carousel_slot: payload.homeCarouselSlot,
     }),
   });
@@ -464,8 +476,10 @@ export async function createAdminProduct(
       menudeo: payload.menudeo,
       mayoreo_price: payload.mayoreoPrice,
       mayoreo_stock: payload.mayoreoStock,
+      mayoreo_min_qty: payload.mayoreoMinQty,
       menudeo_price: payload.menudeoPrice,
       menudeo_stock: payload.menudeoStock,
+      menudeo_min_qty: payload.menudeoMinQty,
       home_carousel_slot: payload.homeCarouselSlot,
     }),
   });

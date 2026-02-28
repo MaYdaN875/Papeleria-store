@@ -1,6 +1,10 @@
 import { useNavigate } from "react-router"
 import { getProductById } from "../../data/products"
-import type { CartItem as CartItemType } from "../../utils/cart"
+import {
+    getCartItemSubtotal,
+    getCartItemUnitPrice,
+    type CartItem as CartItemType,
+} from "../../utils/cart"
 import { QuantitySteppers } from "../ui/QuantitySteppers"
 
 interface CartItemProps {
@@ -20,8 +24,13 @@ export function CartItem({
     onQuantityChange,
     onRemove,
 }: CartItemProps) {
-    const subtotal = Number.parseFloat(item.price) * item.quantity
+    const unitPrice = getCartItemUnitPrice(item)
+    const subtotal = getCartItemSubtotal(item)
     const navigate = useNavigate()
+    const isMayoreo =
+        item.mayoreoMinQty != null &&
+        item.mayoreoPrice != null &&
+        item.quantity >= item.mayoreoMinQty
     const linkedProduct = item.productId ? getProductById(item.productId) : undefined
     const imageSrc = item.image ?? linkedProduct?.image ?? undefined
 
@@ -62,7 +71,14 @@ export function CartItem({
             </div>
             <div className="item-info">
                 <h4>{item.name}</h4>
-                <p className="item-price">${item.price}</p>
+                <p className="item-price">
+                    ${unitPrice.toFixed(2)}
+                    {isMayoreo && (
+                        <span className="item-price-mayoreo" style={{ fontSize: "0.85em", color: "#27ae60", marginLeft: 4 }}>
+                            (mayoreo)
+                        </span>
+                    )}
+                </p>
             </div>
             <div className="item-quantity-controls" onClick={(e) => e.stopPropagation()}>
                 <QuantitySteppers

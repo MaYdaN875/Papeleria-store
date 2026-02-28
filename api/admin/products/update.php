@@ -55,23 +55,38 @@ try {
   $pdo = adminGetPdo();
   adminRequireSession($pdo);
 
-  $updateStmt = $pdo->prepare('
-    UPDATE products
-    SET name = :name,
-        price = :price,
-        stock = :stock,
-        mayoreo = :mayoreo,
-        menudeo = :menudeo,
-        mayoreo_price = :mayoreo_price,
-        mayoreo_stock = :mayoreo_stock,
-        mayoreo_min_qty = :mayoreo_min_qty,
-        menudeo_price = :menudeo_price,
-        menudeo_stock = :menudeo_stock,
-        menudeo_min_qty = :menudeo_min_qty
-    WHERE id = :id
-  ');
+  $minQtyColumnsStmt = $pdo->query("
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name = 'products'
+      AND column_name IN ('mayoreo_min_qty', 'menudeo_min_qty')
+  ");
+  $minQtyColumns = $minQtyColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
+  $hasMayoreoMinQty = in_array('mayoreo_min_qty', $minQtyColumns, true);
+  $hasMenudeoMinQty = in_array('menudeo_min_qty', $minQtyColumns, true);
 
-  $updateStmt->execute([
+  $setParts = [
+    'name = :name',
+    'price = :price',
+    'stock = :stock',
+    'mayoreo = :mayoreo',
+    'menudeo = :menudeo',
+    'mayoreo_price = :mayoreo_price',
+    'mayoreo_stock = :mayoreo_stock',
+    'menudeo_price = :menudeo_price',
+    'menudeo_stock = :menudeo_stock',
+  ];
+
+  if ($hasMayoreoMinQty)
+    $setParts[] = 'mayoreo_min_qty = :mayoreo_min_qty';
+  if ($hasMenudeoMinQty)
+    $setParts[] = 'menudeo_min_qty = :menudeo_min_qty';
+
+  $updateSql = 'UPDATE products SET ' . implode(",\n        ", $setParts) . ' WHERE id = :id';
+  $updateStmt = $pdo->prepare($updateSql);
+
+  $updateParams = [
     'id' => $id,
     'name' => $name,
     'price' => $price,
@@ -80,11 +95,16 @@ try {
     'menudeo' => $menudeo,
     'mayoreo_price' => $mayoreoPrice,
     'mayoreo_stock' => $mayoreoStock,
-    'mayoreo_min_qty' => $mayoreoMinQty,
     'menudeo_price' => $menudeoPrice,
     'menudeo_stock' => $menudeoStock,
-    'menudeo_min_qty' => $menudeoMinQty,
-  ]);
+  ];
+
+  if ($hasMayoreoMinQty)
+    $updateParams['mayoreo_min_qty'] = $mayoreoMinQty;
+  if ($hasMenudeoMinQty)
+    $updateParams['menudeo_min_qty'] = $menudeoMinQty;
+
+  $updateStmt->execute($updateParams);
 
   adminUpsertPrimaryProductImage($pdo, $id, $imageUrl, $name);
   adminUpsertHomeCarouselAssignment($pdo, $id, $homeCarouselSlot);
@@ -103,8 +123,10 @@ try {
       p.menudeo,
       p.mayoreo_price,
       p.mayoreo_stock,
+      " . ($hasMayoreoMinQty ? "COALESCE(p.mayoreo_min_qty, 10)" : "10") . " AS mayoreo_min_qty,
       p.menudeo_price,
       p.menudeo_stock,
+      " . ($hasMenudeoMinQty ? "COALESCE(p.menudeo_min_qty, 1)" : "1") . " AS menudeo_min_qty,
       {$homeCarouselSql['select']},
       {$offerSql['select']},
       {$imageSql['select']},
