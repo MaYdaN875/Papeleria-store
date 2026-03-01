@@ -123,10 +123,6 @@ export const Cart = () => {
                             <span>Subtotal ({itemCount} {itemCount === 1 ? "artículo" : "artículos"})</span>
                             <span>${subtotal.toFixed(2)}</span>
                         </p>
-                        <p className="cart-total-row cart-total-fee">
-                            <span>Comisión por pago con tarjeta (3.5% + $3 MXN)</span>
-                            <span>${fee.toFixed(2)}</span>
-                        </p>
                         <h3>Total a pagar</h3>
                         <p id="totalAmount">${totalToPay.toFixed(2)}</p>
                         <p className="cart-pickup-note">
