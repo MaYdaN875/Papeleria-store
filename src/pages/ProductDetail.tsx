@@ -6,9 +6,15 @@ import {
     ProductDetailInfo,
 } from "../components/product-detail"
 import { getProductById } from "../data/products"
+import { createCheckoutSession } from "../services/customerApi"
 import { fetchStoreProducts } from "../services/storeApi"
 import type { Product } from "../types/Product"
 import { addProductToCart } from "../utils/cart"
+import { showNotification } from "../utils/notification"
+import {
+    getStoreUserToken,
+    isStoreUserLoggedIn,
+} from "../utils/storeSession"
 
 /**
  * Página de detalle de un producto por ID en la URL (/product/:id).
@@ -23,6 +29,8 @@ export const ProductDetail = () => {
     const [quantity, setQuantity] = useState(1)
     const [product, setProduct] = useState<Product | null>(null)
     const [isLoadingProduct, setIsLoadingProduct] = useState(true)
+    const [isBuyNowLoading, setIsBuyNowLoading] = useState(false)
+    const [buyNowError, setBuyNowError] = useState("")
 
     // Leer página de la URL y destino de retorno
     const pageNumber = searchParams.get("page") || "1"
@@ -132,6 +140,41 @@ export const ProductDetail = () => {
         )
     }
 
+    const handleBuyNow = async () => {
+        if (!product || !displayData) return
+        setBuyNowError("")
+        const productReturnUrl = `/product/${product.id}?page=${pageNumber}`
+        if (!isStoreUserLoggedIn()) {
+            navigate(`/login?returnTo=${encodeURIComponent(productReturnUrl)}`, {
+                replace: true,
+            })
+            return
+        }
+        const token = getStoreUserToken()
+        if (!token) {
+            navigate(`/login?returnTo=${encodeURIComponent(productReturnUrl)}`, {
+                replace: true,
+            })
+            return
+        }
+        setIsBuyNowLoading(true)
+        const origin = window.location.origin
+        const result = await createCheckoutSession(token, {
+            items: [{ product_id: product.id, quantity }],
+            success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/checkout/cancel`,
+        })
+        setIsBuyNowLoading(false)
+        if (!result.ok || !result.url) {
+            setBuyNowError(
+                result.message ?? "No se pudo iniciar el pago. Intenta de nuevo."
+            )
+            return
+        }
+        showNotification("Redirigiendo a la pasarela de pago…")
+        window.location.href = result.url
+    }
+
     return (
         <main className="cart-main">
             <div className="product-detail-page">
@@ -178,11 +221,21 @@ export const ProductDetail = () => {
                             </div>
                         )}
 
+                        {buyNowError && (
+                            <p
+                                className="password-feedback password-feedback--error"
+                                style={{ marginTop: 8, marginBottom: 0 }}
+                            >
+                                {buyNowError}
+                            </p>
+                        )}
                         <ProductDetailActions
                             product={product}
                             quantity={quantity}
                             onQuantityChange={setQuantity}
                             onAddToCart={handleAddToCart}
+                            onBuyNow={() => void handleBuyNow()}
+                            isBuyNowLoading={isBuyNowLoading}
                             stockRanges={{
                                 menudeoStock: displayData.menudeoStock,
                                 mayoreoMinQty: displayData.mayoreoMinQty,

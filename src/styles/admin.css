@@ -390,6 +390,30 @@
   border: 1px solid #f5c5bc;
 }
 
+.admin-stock-print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--spacing-sm);
+  padding: 10px 16px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: #fff;
+  background: #2980b9;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.admin-stock-print-btn:hover {
+  background: #1f6dad;
+}
+
+.admin-stock-print-btn:active {
+  background: #1a5f9e;
+}
+
 .admin-stock-alerts-list {
   margin-top: var(--spacing-sm);
   display: grid;

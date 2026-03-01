@@ -16,6 +16,10 @@ export interface ProductDetailActionsProps {
     quantity: number
     onQuantityChange: (v: number) => void
     onAddToCart: () => void
+    /** Comprar ahora: redirige a la pasarela de pago con este producto y cantidad. */
+    onBuyNow?: () => void
+    /** Mientras se prepara la sesión de pago (Comprar ahora). */
+    isBuyNowLoading?: boolean
     /** Rangos de stock: menudeo (1 a N) y mayoreo (N+1 a M). Si no se pasa, se usa product.stock. */
     stockRanges?: StockRanges | null
 }
@@ -25,6 +29,8 @@ export function ProductDetailActions({
     quantity,
     onQuantityChange,
     onAddToCart,
+    onBuyNow,
+    isBuyNowLoading = false,
     stockRanges,
 }: ProductDetailActionsProps) {
     const totalStock = stockRanges?.totalStock ?? product.stock
@@ -58,9 +64,14 @@ export function ProductDetailActions({
                     <i className="fas fa-shopping-cart" aria-hidden />
                     Agregar
                 </button>
-                <button type="button" className="product-detail__btn-buy">
+                <button
+                    type="button"
+                    className="product-detail__btn-buy"
+                    onClick={onBuyNow}
+                    disabled={isBuyNowLoading}
+                >
                     <i className="fas fa-bolt" aria-hidden />
-                    Comprar ahora
+                    {isBuyNowLoading ? "Preparando pago…" : "Comprar ahora"}
                 </button>
             </div>
         </div>

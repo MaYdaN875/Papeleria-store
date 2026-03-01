@@ -34,6 +34,7 @@ import type {
     AdminSalesTodaySummary,
 } from "../types/admin";
 import { clearAdminSession, getAdminMode, getAdminToken } from "../utils/adminSession";
+import { downloadStockListPdf } from "../utils/stockListPdf";
 import { getImageValidationError } from "../utils/validation";
 
 interface ProductEditFormState {
@@ -1443,6 +1444,19 @@ export function AdminDashboard() {
                   <span className="admin-stock-badge admin-stock-badge--warn">{lowStockProducts.length}</span>
                   {lowStockProducts.length === 1 ? "producto con stock bajo" : "productos con stock bajo"}
                 </p>
+                <button
+                  type="button"
+                  className="admin-stock-print-btn"
+                  onClick={() =>
+                    downloadStockListPdf(
+                      lowStockProducts.map((p) => ({ id: p.id, name: p.name, stock: p.stock })),
+                      lowStockThreshold
+                    )
+                  }
+                >
+                  <i className="fas fa-print" aria-hidden />
+                  Imprimir lista de productos para surtir
+                </button>
                 <ul className="admin-stock-alerts-list">
                   {(stockAlertsExpanded ? lowStockProducts : lowStockProducts.slice(0, 6)).map((product) => (
                     <li key={product.id} className="admin-stock-alert-item">
