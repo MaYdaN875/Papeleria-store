@@ -49,7 +49,6 @@ try {
   $hasOffers = adminTableExists($pdo, 'product_offers');
 
   $orderLines = [];
-  $stripeLineItems = [];
 
   foreach ($items as $idx => $item) {
     $productId = isset($item['product_id']) ? (int) $item['product_id'] : 0;
@@ -84,8 +83,37 @@ try {
       'quantity' => $quantity,
       'price' => $unitPrice,
     ];
+  }
 
-    $unitAmountCents = (int) round($unitPrice * 100);
+  $subtotal = 0.0;
+  foreach ($orderLines as $line) {
+    $subtotal += $line['price'] * $line['quantity'];
+  }
+  if ($subtotal <= 0) {
+    adminJsonResponse(400, ['ok' => false, 'message' => 'El total debe ser mayor que cero.']);
+  }
+
+  // Comisión (3.5% + $3 MXN) incorporada al total; en Stripe solo se muestran productos
+  $feePercent = 0.035;
+  $feeFixed = 3.0;
+  $fee = round($subtotal * $feePercent + $feeFixed, 2);
+  $fee = max(0.0, $fee);
+  $total = round($subtotal + $fee, 2);
+
+  // Repartir el total (subtotal + comisión) entre las líneas de producto para Stripe
+  $stripeLineItems = [];
+  $totalCentsRemaining = (int) round($total * 100);
+  $lastIndex = count($orderLines) - 1;
+  foreach ($orderLines as $i => $line) {
+    $lineSubtotal = $line['price'] * $line['quantity'];
+    $quantity = (int) $line['quantity'];
+    if ($i === $lastIndex) {
+      $lineTotalCents = $totalCentsRemaining;
+    } else {
+      $lineTotalCents = (int) round($lineSubtotal * 100 * $total / $subtotal);
+      $totalCentsRemaining -= $lineTotalCents;
+    }
+    $unitAmountCents = $quantity > 0 ? (int) round((float) $lineTotalCents / $quantity) : 0;
     if ($unitAmountCents < 1) {
       $unitAmountCents = 1;
     }
@@ -94,20 +122,12 @@ try {
         'currency' => 'mxn',
         'unit_amount' => $unitAmountCents,
         'product_data' => [
-          'name' => (string) $product['name'],
+          'name' => (string) $line['product_name'],
           'description' => 'Cantidad: ' . $quantity,
         ],
       ],
       'quantity' => $quantity,
     ];
-  }
-
-  $total = 0.0;
-  foreach ($orderLines as $line) {
-    $total += $line['price'] * $line['quantity'];
-  }
-  if ($total <= 0) {
-    adminJsonResponse(400, ['ok' => false, 'message' => 'El total debe ser mayor que cero.']);
   }
 
   $pdo->beginTransaction();

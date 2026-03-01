@@ -28,6 +28,13 @@ export const Cart = () => {
         clearCart,
     } = useCart()
 
+    // Comisión por pago con tarjeta (3.5% + $3 MXN), igual que en el backend
+    const STRIPE_FEE_PERCENT = 0.035
+    const STRIPE_FEE_FIXED_MXN = 3
+    const subtotal = total
+    const fee = Math.max(0, Math.round((subtotal * STRIPE_FEE_PERCENT + STRIPE_FEE_FIXED_MXN) * 100) / 100)
+    const totalToPay = Math.round((subtotal + fee) * 100) / 100
+
     const handleCheckout = async () => {
         setCheckoutError("")
 
@@ -112,8 +119,19 @@ export const Cart = () => {
                     </div>
 
                     <div className="cart-total">
-                        <h3>Total</h3>
-                        <p id="totalAmount">${total.toFixed(2)}</p>
+                        <p className="cart-total-row">
+                            <span>Subtotal ({itemCount} {itemCount === 1 ? "artículo" : "artículos"})</span>
+                            <span>${subtotal.toFixed(2)}</span>
+                        </p>
+                        <p className="cart-total-row cart-total-fee">
+                            <span>Comisión por pago con tarjeta (3.5% + $3 MXN)</span>
+                            <span>${fee.toFixed(2)}</span>
+                        </p>
+                        <h3>Total a pagar</h3>
+                        <p id="totalAmount">${totalToPay.toFixed(2)}</p>
+                        <p className="cart-pickup-note">
+                            <i className="fas fa-store" aria-hidden /> Recogida en tienda. No hay envíos.
+                        </p>
                     </div>
 
                     {checkoutError && (
