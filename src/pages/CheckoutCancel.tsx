@@ -11,6 +11,7 @@ export function CheckoutCancel() {
         <div className="empty-message">
           <h2>Pago cancelado</h2>
           <p>No se realizó ningún cargo. Tu carrito sigue igual por si quieres intentar de nuevo.</p>
+          <p className="checkout-pickup-note">Recuerda: todos los pedidos se recogen en tienda. No hay envíos.</p>
         </div>
         <div className="checkout-result-actions">
           <Link to="/cart" className="btn-return">

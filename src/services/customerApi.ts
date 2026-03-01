@@ -502,8 +502,71 @@ export async function createCheckoutSession(
   }
 }
 
+/** ?tem de una orden (por session_id o get) */
+export interface OrderItemResponse {
+  id: number;
+  product_id: number;
+  product_name: string;
+  quantity: number;
+  price: number;
+}
+
+/** Orden devuelta por by-session o get */
+export interface OrderResponse {
+  id: number;
+  total: number;
+  currency: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  items: OrderItemResponse[];
+}
+
+export interface GetOrderBySessionResponse {
+  ok: boolean;
+  message?: string;
+  order?: OrderResponse;
+}
+
 /**
- * Envía el token de Firebase al backend para verificarlo, crear/vincular
+ * Obtiene la orden correspondiente a un Stripe Checkout session_id (para la p?gina de ?xito).
+ */
+export async function getOrderBySessionId(
+  token: string,
+  sessionId: string
+): Promise<GetOrderBySessionResponse> {
+  try {
+    const encoded = encodeURIComponent(sessionId);
+    const { response, body } = await requestWithBaseFallback<{
+      ok?: boolean;
+      message?: string;
+      order?: OrderResponse;
+    }>(`/public/orders/by-session.php?session_id=${encoded}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok || !body.ok) {
+      return {
+        ok: false,
+        message: body.message ?? "No se pudo cargar el pedido.",
+      };
+    }
+
+    return {
+      ok: true,
+      order: body.order,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "No se pudo conectar con la API.",
+    };
+  }
+}
+
+/**
+ * Env?a el token de Firebase al backend para verificarlo, crear/vincular
  * usuario en la BD local y obtener un token de API (Bearer) válido para pagos.
  */
 export async function loginWithFirebaseToken(
