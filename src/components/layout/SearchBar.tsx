@@ -117,6 +117,7 @@ export function SearchBar({
                             className="search-result-item"
                             onClick={handleResultClick}
                             role="option"
+                            aria-selected="false"
                         >
                             <div className="result-name">{product.name}</div>
                             <div className="result-category">{product.category}</div>

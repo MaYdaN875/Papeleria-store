@@ -7,7 +7,7 @@
  * - Permitir edición rápida de producto (nombre, precio, stock, mayoreo/menudeo).
  * - Persistir cambios usando el endpoint admin de productos (`/admin/products/update.php`).
  */
-import { ChangeEvent, FormEvent, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
     adminLogoutRequest,
@@ -75,6 +75,238 @@ type AdminSectionView = "resumen" | "productos" | "inicio" | "ofertas" | "ingres
 const MAX_PRODUCTS_PER_HOME_CAROUSEL = 6;
 const PRODUCTS_PER_PAGE = 20;
 
+interface InitialLoadState {
+  productsLoading: boolean;
+  categoriesLoading: boolean;
+  error: string;
+}
+
+type InitialLoadAction =
+  | { type: "PRODUCTS_START" }
+  | { type: "PRODUCTS_SUCCESS" }
+  | { type: "PRODUCTS_ERROR"; message: string }
+  | { type: "CATEGORIES_START" }
+  | { type: "CATEGORIES_SUCCESS" }
+  | { type: "CATEGORIES_ERROR"; message: string };
+
+function initialLoadReducer(state: InitialLoadState, action: InitialLoadAction): InitialLoadState {
+  switch (action.type) {
+    case "PRODUCTS_START":
+      return { ...state, productsLoading: true, error: "" };
+    case "PRODUCTS_SUCCESS":
+      return { ...state, productsLoading: false };
+    case "PRODUCTS_ERROR":
+      return { ...state, productsLoading: false, error: action.message };
+    case "CATEGORIES_START":
+      return { ...state, categoriesLoading: true, error: "" };
+    case "CATEGORIES_SUCCESS":
+      return { ...state, categoriesLoading: false };
+    case "CATEGORIES_ERROR":
+      return { ...state, categoriesLoading: false, error: action.message };
+    default:
+      return state;
+  }
+}
+
+const INITIAL_LOAD_STATE: InitialLoadState = {
+  productsLoading: true,
+  categoriesLoading: true,
+  error: "",
+};
+
+interface AdminProductsTableSectionProps {
+  filteredProducts: AdminProduct[];
+  productsLength: number;
+  lowStockThreshold: number;
+  startEditProduct: (product: AdminProduct) => void;
+  handleDeleteProduct: (product: AdminProduct) => void;
+  isDeletingProductId: number | null;
+  handleAssignCarousel: (product: AdminProduct) => void;
+  isSavingCarouselProductId: number | null;
+  getCarouselActionLabel: (product: AdminProduct) => string;
+  handleRemoveOffer: (productId: number) => void;
+  handleSetOffer: (product: AdminProduct) => void;
+  getOfferActionLabel: (product: AdminProduct) => string;
+  isSavingOfferProductId: number | null;
+}
+
+function AdminProductsTableSection({
+  filteredProducts,
+  productsLength,
+  lowStockThreshold,
+  startEditProduct,
+  handleDeleteProduct,
+  isDeletingProductId,
+  handleAssignCarousel,
+  isSavingCarouselProductId,
+  getCarouselActionLabel,
+  handleRemoveOffer,
+  handleSetOffer,
+  getOfferActionLabel,
+  isSavingOfferProductId,
+}: AdminProductsTableSectionProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedProducts = useMemo(() => {
+    const start = (safePage - 1) * PRODUCTS_PER_PAGE;
+    return filteredProducts.slice(start, start + PRODUCTS_PER_PAGE);
+  }, [filteredProducts, safePage]);
+
+  return (
+    <>
+      <p className="admin-toolbar-count">
+        Mostrando {paginatedProducts.length} de {filteredProducts.length} productos
+        {filteredProducts.length < productsLength && ` (${productsLength} total)`}
+      </p>
+      <div className="admin-table-scroll">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Precio</th>
+              <th>Stock</th>
+              <th>Mayoreo</th>
+              <th>Menudeo</th>
+              <th>Carrusel</th>
+              <th>Oferta</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedProducts.map((product) => (
+              <tr key={product.id}>
+                <td>{product.id}</td>
+                <td>{product.name}</td>
+                <td>{product.category}</td>
+                <td>${Number(product.price).toFixed(2)}</td>
+                <td>
+                  <span
+                    className={`admin-stock-pill ${
+                      product.stock <= lowStockThreshold ? "admin-stock-pill--low" : "admin-stock-pill--ok"
+                    }`}
+                  >
+                    {product.stock}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className={`admin-flag ${product.mayoreo ? "admin-flag--on" : "admin-flag--off"}`}
+                  >
+                    {product.mayoreo ? "Activo" : "No"}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className={`admin-flag ${product.menudeo ? "admin-flag--on" : "admin-flag--off"}`}
+                  >
+                    {product.menudeo ? "Activo" : "No"}
+                  </span>
+                </td>
+                <td>
+                  {product.homeCarouselSlot >= 1 && product.homeCarouselSlot <= 3 ? (
+                    <span className="admin-flag admin-flag--on">Carrusel {product.homeCarouselSlot}</span>
+                  ) : (
+                    <span className="admin-flag admin-flag--off">Sin carrusel</span>
+                  )}
+                </td>
+                <td>
+                  {product.isOffer === 1 && product.offerPrice !== null ? (
+                    <span className="admin-offer-price">${Number(product.offerPrice).toFixed(2)}</span>
+                  ) : (
+                    <span className="admin-flag admin-flag--off">Sin oferta</span>
+                  )}
+                </td>
+                <td>
+                  <div className="admin-row-actions">
+                    <button
+                      type="button"
+                      className="admin-row-action-button"
+                      onClick={() => startEditProduct(product)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-row-action-button admin-row-action-button--danger"
+                      onClick={() => handleDeleteProduct(product)}
+                      disabled={isDeletingProductId === product.id}
+                    >
+                      {isDeletingProductId === product.id ? "Eliminando..." : "Eliminar"}
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-row-action-button admin-row-action-button--ghost"
+                      onClick={() => void handleAssignCarousel(product)}
+                      disabled={isSavingCarouselProductId === product.id}
+                    >
+                      {getCarouselActionLabel(product)}
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-row-action-button admin-row-action-button--save"
+                      onClick={() =>
+                        product.isOffer === 1
+                          ? void handleRemoveOffer(product.id)
+                          : void handleSetOffer(product)
+                      }
+                      disabled={isSavingOfferProductId === product.id}
+                    >
+                      {getOfferActionLabel(product)}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {totalPages > 1 && (
+        <div className="admin-pagination">
+          <button
+            type="button"
+            disabled={safePage <= 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          >
+            ← Anterior
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter((page) => {
+              if (totalPages <= 7) return true;
+              if (page === 1 || page === totalPages) return true;
+              if (Math.abs(page - safePage) <= 1) return true;
+              return false;
+            })
+            .map((page, idx, arr) => {
+              const showEllipsis = idx > 0 && page - arr[idx - 1] > 1;
+              return (
+                <Fragment key={page}>
+                  {showEllipsis && <span className="admin-pagination-ellipsis">…</span>}
+                  <button
+                    type="button"
+                    className={safePage === page ? "active" : ""}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                </Fragment>
+              );
+            })}
+          <button
+            type="button"
+            disabled={safePage >= totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          >
+            Siguiente →
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
 export function AdminDashboard() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<AdminSectionView>("resumen");
@@ -89,12 +321,16 @@ export function AdminDashboard() {
     totalOrders: 0,
   });
   const [salesByProduct, setSalesByProduct] = useState<AdminSalesProductRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [initialLoad, dispatchInitialLoad] = useReducer(
+    initialLoadReducer,
+    INITIAL_LOAD_STATE
+  );
+  const isLoading = initialLoad.productsLoading;
+  const isLoadingCategories = initialLoad.categoriesLoading;
+  const error = initialLoad.error;
   const [isLoadingOffers, setIsLoadingOffers] = useState(true);
   const [isLoadingHomeSlides, setIsLoadingHomeSlides] = useState(true);
   const [isLoadingSales, setIsLoadingSales] = useState(true);
-  const [error, setError] = useState("");
   const [offerError, setOfferError] = useState("");
   const [offerSuccess, setOfferSuccess] = useState("");
   const [salesError, setSalesError] = useState("");
@@ -152,7 +388,6 @@ export function AdminDashboard() {
   const [filterMayoreo, setFilterMayoreo] = useState("");
   const [filterProblems, setFilterProblems] = useState("");
   const [sortOrder, setSortOrder] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [stockAlertsExpanded, setStockAlertsExpanded] = useState(false);
   const [createForm, setCreateForm] = useState<ProductCreateFormState>({
     name: "",
@@ -392,80 +627,111 @@ export function AdminDashboard() {
     }
   }
 
+  // Auth: redirigir si no hay token.
   useEffect(() => {
-    // Si no hay token, bloquea acceso al dashboard.
     const token = getAdminToken();
     if (!token) {
       navigate("/admin/login", { replace: true });
       return;
     }
-    const safeToken = token;
+    const mode = getAdminMode();
+    setAdminMode(mode === "api" ? mode : "unknown");
+  }, [navigate]);
 
-    async function loadProducts() {
-      setIsLoading(true);
-      setError("");
+  // Carga inicial de productos (reducer para reducir setState en el efecto).
+  useEffect(() => {
+    const token = getAdminToken();
+    if (!token) return;
 
-      // Modo guardado desde login (actualmente "api" cuando valida backend).
-      const mode = getAdminMode();
-      if (mode === "api") {
-        setAdminMode(mode);
-      } else {
-        setAdminMode("unknown");
-      }
+    let cancelled = false;
+    dispatchInitialLoad({ type: "PRODUCTS_START" });
 
+    (async () => {
       try {
-        // Carga de productos desde endpoint PHP.
-        const result = await fetchAdminProducts(safeToken);
-
+        const result = await fetchAdminProducts(token);
+        if (cancelled) return;
         if (!result.ok || !result.products) {
-          setError(result.message ?? "No se pudieron cargar los productos.");
-          setIsLoading(false);
+          dispatchInitialLoad({
+            type: "PRODUCTS_ERROR",
+            message: result.message ?? "No se pudieron cargar los productos.",
+          });
           return;
         }
-
         setProducts(result.products);
         setLastSyncAt(
-          new Date().toLocaleTimeString("es-MX", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
+          new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })
         );
-        setIsLoading(false);
+        dispatchInitialLoad({ type: "PRODUCTS_SUCCESS" });
       } catch (productsError) {
+        if (cancelled) return;
         console.error(productsError);
-        // Error de red/CORS/API.
-        setError("No se pudo conectar con la API de Hostinger para cargar productos.");
-        setIsLoading(false);
+        dispatchInitialLoad({
+          type: "PRODUCTS_ERROR",
+          message: "No se pudo conectar con la API de Hostinger para cargar productos.",
+        });
       }
-    }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    async function loadCategories() {
-      setIsLoadingCategories(true);
+  // Carga inicial de categorías (reducer para reducir setState en el efecto).
+  useEffect(() => {
+    const token = getAdminToken();
+    if (!token) return;
 
+    let cancelled = false;
+    dispatchInitialLoad({ type: "CATEGORIES_START" });
+
+    (async () => {
       try {
-        const result = await fetchAdminCategories(safeToken);
+        const result = await fetchAdminCategories(token);
+        if (cancelled) return;
         if (!result.ok || !result.categories) {
-          setError(result.message ?? "No se pudieron cargar las categorías.");
-          setIsLoadingCategories(false);
+          dispatchInitialLoad({
+            type: "CATEGORIES_ERROR",
+            message: result.message ?? "No se pudieron cargar las categorías.",
+          });
           return;
         }
-
-        const activeCategories = result.categories.filter((category) => category.isActive === 1);
+        const activeCategories = result.categories.filter((c) => c.isActive === 1);
         setCategories(activeCategories);
-        setIsLoadingCategories(false);
+        dispatchInitialLoad({ type: "CATEGORIES_SUCCESS" });
       } catch (categoriesError) {
+        if (cancelled) return;
         console.error(categoriesError);
-        setError("No se pudo conectar con la API de Hostinger para cargar categorías.");
-        setIsLoadingCategories(false);
+        dispatchInitialLoad({
+          type: "CATEGORIES_ERROR",
+          message: "No se pudo conectar con la API de Hostinger para cargar categorías.",
+        });
       }
-    }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    void loadProducts();
-    void loadCategories();
-    void loadOffers(safeToken);
-    void loadHomeSlides(safeToken);
-    void loadSalesToday(safeToken);
-  }, [loadHomeSlides, loadOffers, loadSalesToday, navigate]);
+  // Carga inicial de ofertas.
+  useEffect(() => {
+    const token = getAdminToken();
+    if (!token) return;
+    void loadOffers(token);
+  }, [loadOffers]);
+
+  // Carga inicial de slides del home.
+  useEffect(() => {
+    const token = getAdminToken();
+    if (!token) return;
+    void loadHomeSlides(token);
+  }, [loadHomeSlides]);
+
+  // Carga inicial de ingresos del día.
+  useEffect(() => {
+    const token = getAdminToken();
+    if (!token) return;
+    void loadSalesToday(token);
+  }, [loadSalesToday]);
 
   useEffect(() => {
     if (!createForm.categoryId && categories.length > 0) {
@@ -1160,17 +1426,11 @@ export function AdminDashboard() {
     return result;
   }, [products, searchQuery, filterCategory, filterMayoreo, filterProblems, sortOrder]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
-  const safePage = Math.min(currentPage, totalPages);
-  const paginatedProducts = useMemo(() => {
-    const start = (safePage - 1) * PRODUCTS_PER_PAGE;
-    return filteredProducts.slice(start, start + PRODUCTS_PER_PAGE);
-  }, [filteredProducts, safePage]);
+  const productsTableFilterKey = useMemo(
+    () => [searchQuery, filterCategory, filterMayoreo, filterProblems, sortOrder].join(","),
+    [searchQuery, filterCategory, filterMayoreo, filterProblems, sortOrder]
+  );
 
-  // Reset page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, filterCategory, filterMayoreo, filterProblems, sortOrder]);
   const offersCount = products.filter((product) => product.isOffer === 1).length;
 
   function scrollToTop() {
@@ -1749,161 +2009,23 @@ export function AdminDashboard() {
                     <option value="carrusel-off">Solo sin carrusel</option>
                   </select>
                 </div>
-                <p className="admin-toolbar-count">
-                  Mostrando {paginatedProducts.length} de {filteredProducts.length} productos
-                  {filteredProducts.length < products.length && ` (${products.length} total)`}
-                </p>
+                <AdminProductsTableSection
+                  key={productsTableFilterKey}
+                  filteredProducts={filteredProducts}
+                  productsLength={products.length}
+                  lowStockThreshold={lowStockThreshold}
+                  startEditProduct={startEditProduct}
+                  handleDeleteProduct={handleDeleteProduct}
+                  isDeletingProductId={isDeletingProductId}
+                  handleAssignCarousel={handleAssignCarousel}
+                  isSavingCarouselProductId={isSavingCarouselProductId}
+                  getCarouselActionLabel={getCarouselActionLabel}
+                  handleRemoveOffer={handleRemoveOffer}
+                  handleSetOffer={handleSetOffer}
+                  getOfferActionLabel={getOfferActionLabel}
+                  isSavingOfferProductId={isSavingOfferProductId}
+                />
               </div>
-              <div className="admin-table-scroll">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Categoría</th>
-                    <th>Precio</th>
-                    <th>Stock</th>
-                    <th>Mayoreo</th>
-                    <th>Menudeo</th>
-                    <th>Carrusel</th>
-                    <th>Oferta</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedProducts.map((product) => (
-                    <tr key={product.id}>
-                      <td>{product.id}</td>
-                      <td>{product.name}</td>
-                      <td>{product.category}</td>
-                      <td>${Number(product.price).toFixed(2)}</td>
-                      <td>
-                        <span
-                          className={`admin-stock-pill ${
-                            product.stock <= lowStockThreshold
-                              ? "admin-stock-pill--low"
-                              : "admin-stock-pill--ok"
-                          }`}
-                        >
-                          {product.stock}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={`admin-flag ${
-                            product.mayoreo ? "admin-flag--on" : "admin-flag--off"
-                          }`}
-                        >
-                          {product.mayoreo ? "Activo" : "No"}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={`admin-flag ${
-                            product.menudeo ? "admin-flag--on" : "admin-flag--off"
-                          }`}
-                        >
-                          {product.menudeo ? "Activo" : "No"}
-                        </span>
-                      </td>
-                      <td>
-                        {product.homeCarouselSlot >= 1 && product.homeCarouselSlot <= 3 ? (
-                          <span className="admin-flag admin-flag--on">Carrusel {product.homeCarouselSlot}</span>
-                        ) : (
-                          <span className="admin-flag admin-flag--off">Sin carrusel</span>
-                        )}
-                      </td>
-                      <td>
-                        {product.isOffer === 1 && product.offerPrice !== null ? (
-                          <span className="admin-offer-price">${Number(product.offerPrice).toFixed(2)}</span>
-                        ) : (
-                          <span className="admin-flag admin-flag--off">Sin oferta</span>
-                        )}
-                      </td>
-                      <td>
-                        <div className="admin-row-actions">
-                          <button
-                            type="button"
-                            className="admin-row-action-button"
-                            onClick={() => startEditProduct(product)}
-                          >
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            className="admin-row-action-button admin-row-action-button--danger"
-                            onClick={() => handleDeleteProduct(product)}
-                            disabled={isDeletingProductId === product.id}
-                          >
-                            {isDeletingProductId === product.id ? "Eliminando..." : "Eliminar"}
-                          </button>
-                          <button
-                            type="button"
-                            className="admin-row-action-button admin-row-action-button--ghost"
-                            onClick={() => void handleAssignCarousel(product)}
-                            disabled={isSavingCarouselProductId === product.id}
-                          >
-                            {getCarouselActionLabel(product)}
-                          </button>
-                          <button
-                            type="button"
-                            className="admin-row-action-button admin-row-action-button--save"
-                            onClick={() =>
-                              product.isOffer === 1
-                                ? void handleRemoveOffer(product.id)
-                                : void handleSetOffer(product)
-                            }
-                            disabled={isSavingOfferProductId === product.id}
-                          >
-                            {getOfferActionLabel(product)}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              </div>
-              {totalPages > 1 && (
-                <div className="admin-pagination">
-                  <button
-                    type="button"
-                    disabled={safePage <= 1}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  >
-                    ← Anterior
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter((page) => {
-                      if (totalPages <= 7) return true;
-                      if (page === 1 || page === totalPages) return true;
-                      if (Math.abs(page - safePage) <= 1) return true;
-                      return false;
-                    })
-                    .map((page, idx, arr) => {
-                      const showEllipsis = idx > 0 && page - arr[idx - 1] > 1;
-                      return (
-                        <Fragment key={page}>
-                          {showEllipsis && <span className="admin-pagination-ellipsis">…</span>}
-                          <button
-                            type="button"
-                            className={safePage === page ? "active" : ""}
-                            onClick={() => setCurrentPage(page)}
-                          >
-                            {page}
-                          </button>
-                        </Fragment>
-                      );
-                    })}
-                  <button
-                    type="button"
-                    disabled={safePage >= totalPages}
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  >
-                    Siguiente →
-                  </button>
-                </div>
-              )}
             </div>
           )}
 
