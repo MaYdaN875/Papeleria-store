@@ -365,11 +365,15 @@ export interface StoreCartGetResponse {
   ok: boolean;
   message?: string;
   items?: StoreCartItemData[];
+  /** true cuando el servidor responde 401 (sesión expirada) */
+  expired?: boolean;
 }
 
 export interface StoreCartSyncResponse {
   ok: boolean;
   message?: string;
+  /** true cuando el servidor responde 401 (sesión expirada) */
+  expired?: boolean;
 }
 
 export async function fetchStoreCart(token: string): Promise<StoreCartGetResponse> {
@@ -384,6 +388,14 @@ export async function fetchStoreCart(token: string): Promise<StoreCartGetRespons
         Authorization: `Bearer ${token}`,
       },
     });
+
+    if (response.status === 401) {
+      return {
+        ok: false,
+        expired: true,
+        message: body.message ?? "Sesión expirada.",
+      };
+    }
 
     if (!response.ok || !body.ok) {
       return {
@@ -420,6 +432,14 @@ export async function syncStoreCart(
       },
       body: JSON.stringify({ items }),
     });
+
+    if (response.status === 401) {
+      return {
+        ok: false,
+        expired: true,
+        message: body.message ?? "Sesión expirada.",
+      };
+    }
 
     if (!response.ok || !body.ok) {
       return {

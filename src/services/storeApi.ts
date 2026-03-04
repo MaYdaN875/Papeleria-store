@@ -88,7 +88,7 @@ function normalizeStoreProduct(raw: RawStoreProduct, apiBase: string): Product {
                 : 1,
         homeCarouselSlot: (() => {
             const rawSlot = Number(raw.home_carousel_slot ?? 0) || 0
-            return rawSlot >= 1 && rawSlot <= 3 ? rawSlot : 0
+            return rawSlot >= 1 && rawSlot <= 4 ? rawSlot : 0
         })(),
         isOffer: toBooleanFlag(raw.is_offer),
         price: finalPrice,

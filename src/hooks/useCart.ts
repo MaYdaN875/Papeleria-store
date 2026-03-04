@@ -8,7 +8,7 @@ import {
     syncCartCount,
     type CartItem,
 } from "../utils/cart"
-import { getStoreAuthChangedEventName, getStoreUserToken } from "../utils/storeSession"
+import { clearStoreSession, getStoreAuthChangedEventName, getStoreUserToken } from "../utils/storeSession"
 
 const CART_COUNT_ID = "cartCount"
 
@@ -24,6 +24,7 @@ export function useCart() {
     const [cartItems, setCartItems] = useState<CartItem[]>([])
     const [removingId, setRemovingId] = useState<number | null>(null)
     const [isFirstLoad, setIsFirstLoad] = useState(true)
+    const [sessionExpired, setSessionExpired] = useState(false)
 
     const loadCart = useCallback(() => {
         const localItems = getActiveCartItems()
@@ -49,19 +50,48 @@ export function useCart() {
                         .map((it) => ({ product_id: it.productId as number, quantity: it.quantity || 1 }))
 
                     if (payload.length > 0) {
-                        await syncStoreCart(token, payload)
+                        const syncResult = await syncStoreCart(token, payload)
+                        // Si el token ya expiró durante la migración, proteger datos locales
+                        if (syncResult.expired) {
+                            setSessionExpired(true)
+                            clearStoreSession()
+                            setIsFirstLoad(false)
+                            syncCartCount()
+                            return
+                        }
                     }
 
                     // Eliminar carrito de invitado para evitar reenvíos
                     try {
                         globalThis.localStorage.removeItem("cart_guest")
-                    } catch {}
+                    } catch {
+                        // Ignorar error al limpiar cart_guest (non-critical)
+                    }
                 }
 
                 const result = await fetchStoreCart(token)
 
+                // ── Sesión expirada (401): limpiar token, mantener carrito local ──
+                if (result.expired) {
+                    setSessionExpired(true)
+                    clearStoreSession()
+                    // NO reemplazar cartItems — mantener localItems
+                    setIsFirstLoad(false)
+                    syncCartCount()
+                    return
+                }
+
+                // ── Error de red u otro error del servidor: mantener carrito local ──
+                if (!result.ok) {
+                    // No reemplazar — los datos locales son la mejor fuente disponible
+                    setIsFirstLoad(false)
+                    syncCartCount()
+                    return
+                }
+
+                // ── Éxito: usar datos del servidor ──
                 let serverItems: CartItem[] = []
-                if (result.ok && result.items && result.items.length > 0) {
+                if (result.items && result.items.length > 0) {
                     serverItems = result.items.map((item) => {
                         const matchingLocal = localItems.find(
                             (local) =>
@@ -205,6 +235,7 @@ export function useCart() {
         total,
         itemCount,
         removingId,
+        sessionExpired,
         removeItem,
         updateQuantity,
         setQuantity,

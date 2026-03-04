@@ -38,7 +38,7 @@ function getItemConfig(product: Product): ProductCarouselSlideConfig | undefined
 }
 
 const PRODUCTS_PER_HOME_CAROUSEL = 6
-const HOME_SKELETON_SECTION_IDS = ["featured", "art", "school"] as const
+const HOME_SKELETON_SECTION_IDS = ["featured", "art", "school", "digital"] as const
 const HOME_SKELETON_CARD_IDS = ["card-1", "card-2", "card-3"] as const
 
 function appendUniqueProducts(
@@ -56,7 +56,7 @@ function appendUniqueProducts(
 
 function buildHomeCarouselProducts(
     products: Product[],
-    slot: 1 | 2 | 3
+    slot: 1 | 2 | 3 | 4
 ): Product[] {
     const selectedProducts: Product[] = []
     const usedProductIds = new Set<number>()
@@ -147,6 +147,9 @@ export const Home = () => {
     const schoolProducts = useMemo(() => {
         return buildHomeCarouselProducts(baseProducts, 3)
     }, [baseProducts])
+    const digitalProducts = useMemo(() => {
+        return buildHomeCarouselProducts(baseProducts, 4)
+    }, [baseProducts])
 
     const handleAddToCart = useCallback(
         (name: string, price: string, productId?: number, image?: string) => {
@@ -198,7 +201,7 @@ export const Home = () => {
                 ) : (
                     <>
                         <ProductCarousel
-                            title="⭐ Productos Destacados"
+                            title="🏢 Oficina y Escolares"
                             products={featuredProducts}
                             getItemConfig={getItemConfig}
                             onNavigate={handleNavigate}
@@ -214,8 +217,16 @@ export const Home = () => {
                             seeMorePath="/all-products"
                         />
                         <ProductCarousel
-                            title="📚 Útiles Escolares"
+                            title="🎁 Mitril y Regalos"
                             products={schoolProducts}
+                            getItemConfig={getItemConfig}
+                            onNavigate={handleNavigate}
+                            onAddToCart={handleAddToCart}
+                            seeMorePath="/all-products"
+                        />
+                        <ProductCarousel
+                            title="💻 Servicios Digitales e Impresiones"
+                            products={digitalProducts}
                             getItemConfig={getItemConfig}
                             onNavigate={handleNavigate}
                             onAddToCart={handleAddToCart}

@@ -10,28 +10,28 @@
 import { ChangeEvent, FormEvent, Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-    adminLogoutRequest,
-    createAdminHomeSlide,
-    createAdminProduct,
-    deleteAdminHomeSlide,
-    deleteAdminProduct,
-    fetchAdminCategories,
-    fetchAdminHomeSlides,
-    fetchAdminOffers,
-    fetchAdminProducts,
-    fetchAdminSalesToday,
-    removeAdminOffer,
-    updateAdminProduct,
-    uploadAdminProductImage,
-    upsertAdminOffer,
+  adminLogoutRequest,
+  createAdminHomeSlide,
+  createAdminProduct,
+  deleteAdminHomeSlide,
+  deleteAdminProduct,
+  fetchAdminCategories,
+  fetchAdminHomeSlides,
+  fetchAdminOffers,
+  fetchAdminProducts,
+  fetchAdminSalesToday,
+  removeAdminOffer,
+  updateAdminProduct,
+  uploadAdminProductImage,
+  upsertAdminOffer,
 } from "../services/adminApi";
 import type {
-    AdminCategory,
-    AdminHomeSlide,
-    AdminOffer,
-    AdminProduct,
-    AdminSalesProductRow,
-    AdminSalesTodaySummary,
+  AdminCategory,
+  AdminHomeSlide,
+  AdminOffer,
+  AdminProduct,
+  AdminSalesProductRow,
+  AdminSalesTodaySummary,
 } from "../types/admin";
 import { clearAdminSession, getAdminMode, getAdminToken } from "../utils/adminSession";
 import { downloadStockListPdf } from "../utils/stockListPdf";
@@ -69,8 +69,8 @@ interface HomeSlideCreateFormState {
   displayOrder: string;
 }
 
-type HomeCarouselSlotFormValue = "0" | "1" | "2" | "3";
-type HomeCarouselSlotValue = 0 | 1 | 2 | 3;
+type HomeCarouselSlotFormValue = "0" | "1" | "2" | "3" | "4";
+type HomeCarouselSlotValue = 0 | 1 | 2 | 3 | 4;
 type AdminSectionView = "resumen" | "productos" | "inicio" | "ofertas" | "ingresos";
 const MAX_PRODUCTS_PER_HOME_CAROUSEL = 6;
 const PRODUCTS_PER_PAGE = 20;
@@ -206,7 +206,7 @@ function AdminProductsTableSection({
                   </span>
                 </td>
                 <td>
-                  {product.homeCarouselSlot >= 1 && product.homeCarouselSlot <= 3 ? (
+                  {product.homeCarouselSlot >= 1 && product.homeCarouselSlot <= 4 ? (
                     <span className="admin-flag admin-flag--on">Carrusel {product.homeCarouselSlot}</span>
                   ) : (
                     <span className="admin-flag admin-flag--off">Sin carrusel</span>
@@ -487,7 +487,7 @@ export function AdminDashboard() {
 
   function getCarouselActionLabel(product: AdminProduct): string {
     if (isSavingCarouselProductId === product.id) return "Guardando...";
-    if (product.homeCarouselSlot >= 1 && product.homeCarouselSlot <= 3) {
+    if (product.homeCarouselSlot >= 1 && product.homeCarouselSlot <= 4) {
       return `Mover (C${product.homeCarouselSlot})`;
     }
     return "Asignar carrusel";
@@ -960,14 +960,14 @@ export function AdminDashboard() {
 
   async function handleAssignCarousel(product: AdminProduct) {
     const promptValue = globalThis.prompt(
-      `Carrusel para "${product.name}"\n\n0 = Sin carrusel\n1 = Carrusel 1 (Destacados)\n2 = Carrusel 2 (Arte y Manualidades)\n3 = Carrusel 3 (Oficina y Escolares)`,
+      `Carrusel para "${product.name}"\n\n0 = Sin carrusel\n1 = Carrusel 1 (Oficina y Escolares)\n2 = Carrusel 2 (Arte y Manualidades)\n3 = Carrusel 3 (Mitril y Regalos)\n4 = Carrusel 4 (Servicios Digitales e Impresiones)`,
       String(product.homeCarouselSlot ?? 0)
     );
     if (promptValue === null) return;
 
     const parsedSlot = Number(promptValue);
-    if (!Number.isInteger(parsedSlot) || parsedSlot < 0 || parsedSlot > 3) {
-      setCarouselError("Debes ingresar 0, 1, 2 o 3.");
+    if (!Number.isInteger(parsedSlot) || parsedSlot < 0 || parsedSlot > 4) {
+      setCarouselError("Debes ingresar 0, 1, 2, 3 o 4.");
       setCarouselSuccess("");
       return;
     }
@@ -1047,7 +1047,7 @@ export function AdminDashboard() {
     const parsedStock = Number(createForm.stock);
     const parsedHomeCarouselSlot = Number(createForm.homeCarouselSlot);
     const homeCarouselSlot = (
-      parsedHomeCarouselSlot >= 1 && parsedHomeCarouselSlot <= 3 ? parsedHomeCarouselSlot : 0
+      parsedHomeCarouselSlot >= 1 && parsedHomeCarouselSlot <= 4 ? parsedHomeCarouselSlot : 0
     ) as HomeCarouselSlotValue;
 
     if (!createForm.name.trim()) {
@@ -1144,7 +1144,7 @@ export function AdminDashboard() {
     const parsedStock = Number(editForm.stock);
     const parsedHomeCarouselSlot = Number(editForm.homeCarouselSlot);
     const homeCarouselSlot = (
-      parsedHomeCarouselSlot >= 1 && parsedHomeCarouselSlot <= 3 ? parsedHomeCarouselSlot : 0
+      parsedHomeCarouselSlot >= 1 && parsedHomeCarouselSlot <= 4 ? parsedHomeCarouselSlot : 0
     ) as HomeCarouselSlotValue;
 
     if (!editForm.name.trim()) {
@@ -1828,9 +1828,10 @@ export function AdminDashboard() {
                   }
                 >
                   <option value="0">Sin carrusel</option>
-                  <option value="1">Carrusel 1 (Destacados)</option>
+                  <option value="1">Carrusel 1 (Oficina y Escolares)</option>
                   <option value="2">Carrusel 2 (Arte y Manualidades)</option>
-                  <option value="3">Carrusel 3 (Oficina y Escolares)</option>
+                  <option value="3">Carrusel 3 (Mitril y Regalos)</option>
+                  <option value="4">Carrusel 4 (Servicios Digitales e Impresiones)</option>
                 </select>
               </label>
 
@@ -1865,11 +1866,11 @@ export function AdminDashboard() {
                 <img src={createForm.imageUrl} alt="Vista previa de producto" className="admin-image-preview" />
                 <button
                   type="button"
-                  className="admin-row-action-button admin-row-action-button--cancel"
-                  style={{ marginTop: 8 }}
+                  className="admin-image-clear-btn"
                   onClick={() => handleClearProductImage("create")}
+                  title="Quitar imagen"
                 >
-                  Quitar imagen
+                  ×
                 </button>
               </div>
             )}
@@ -2086,16 +2087,17 @@ export function AdminDashboard() {
                     }
                   >
                     <option value="0">Sin carrusel</option>
-                    <option value="1">Carrusel 1 (Destacados)</option>
+                    <option value="1">Carrusel 1 (Oficina y Escolares)</option>
                     <option value="2">Carrusel 2 (Arte y Manualidades)</option>
-                    <option value="3">Carrusel 3 (Oficina y Escolares)</option>
+                    <option value="3">Carrusel 3 (Mitril y Regalos)</option>
+                    <option value="4">Carrusel 4 (Servicios Digitales e Impresiones)</option>
                   </select>
                 </label>
 
                 <label className="admin-edit-label">
                   <span>Imagen (URL)</span>
                   <input
-                    type="url"
+                    type="text"
                     className="admin-edit-input"
                     value={editForm.imageUrl}
                     onChange={(event) =>
@@ -2123,11 +2125,11 @@ export function AdminDashboard() {
                   <img src={editForm.imageUrl} alt="Vista previa de producto" className="admin-image-preview" />
                   <button
                     type="button"
-                    className="admin-row-action-button admin-row-action-button--cancel"
-                    style={{ marginTop: 8 }}
+                    className="admin-image-clear-btn"
                     onClick={() => handleClearProductImage("edit")}
+                    title="Quitar imagen"
                   >
-                    Quitar imagen
+                    ×
                   </button>
                 </div>
               )}

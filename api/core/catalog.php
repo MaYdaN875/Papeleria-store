@@ -112,7 +112,7 @@ function adminNormalizeProductRow(array $product): array
     $product['is_offer'] = $product['is_offer'] ? 1 : 0;
   if (array_key_exists('home_carousel_slot', $product)) {
     $slot = (int) $product['home_carousel_slot'];
-    $product['home_carousel_slot'] = ($slot >= 1 && $slot <= 3) ? $slot : 0;
+    $product['home_carousel_slot'] = ($slot >= 1 && $slot <= 4) ? $slot : 0;
   }
   if (array_key_exists('offer_price', $product)) {
     $product['offer_price'] = isset($product['offer_price']) ? (float) $product['offer_price'] : null;
@@ -137,7 +137,7 @@ function adminUpsertHomeCarouselAssignment(PDO $pdo, int $productId, int $homeCa
     return;
   }
 
-  $slot = ($homeCarouselSlot >= 1 && $homeCarouselSlot <= 3) ? $homeCarouselSlot : 0;
+  $slot = ($homeCarouselSlot >= 1 && $homeCarouselSlot <= 4) ? $homeCarouselSlot : 0;
   if ($slot === 0) {
     $deleteStmt = $pdo->prepare('
       DELETE FROM home_carousel_assignments

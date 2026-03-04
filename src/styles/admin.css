@@ -10,7 +10,12 @@
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
   min-height: 100vh;
-  background: linear-gradient(180deg, #f7f9fb 0%, var(--color-light-bg) 42%, #f4f6f8 100%);
+  background: linear-gradient(
+    180deg,
+    #f7f9fb 0%,
+    var(--color-light-bg) 42%,
+    #f4f6f8 100%
+  );
   color: var(--color-text-dark);
 }
 
@@ -21,7 +26,12 @@
 }
 
 .admin-sidebar {
-  background: linear-gradient(180deg, #154b58 0%, var(--color-primary) 58%, #123f49 100%);
+  background: linear-gradient(
+    180deg,
+    #154b58 0%,
+    var(--color-primary) 58%,
+    #123f49 100%
+  );
   color: var(--color-white);
   padding: var(--spacing-xl) var(--spacing-lg);
   display: flex;
@@ -77,7 +87,9 @@
   color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   font-size: var(--font-size-base);
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .admin-nav-item:hover {
@@ -105,7 +117,9 @@
   color: var(--color-white);
   cursor: pointer;
   font-size: var(--font-size-sm);
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .admin-logout-button:hover {
@@ -167,7 +181,9 @@
   padding: 9px 12px;
   font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .admin-header-button:hover {
@@ -271,7 +287,10 @@
   gap: var(--spacing-sm);
   border: 1px solid var(--color-border-light);
   min-height: 190px;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .admin-card:hover {
@@ -451,7 +470,10 @@
   padding: 8px 10px;
   font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
   text-align: left;
 }
 
@@ -567,7 +589,9 @@
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   background: var(--color-white);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .admin-search-input:focus {
@@ -632,7 +656,11 @@
   font-weight: 500;
   cursor: pointer;
   padding: 0 10px;
-  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .admin-pagination button:hover:not(:disabled) {
@@ -846,7 +874,10 @@
   padding: 6px 10px;
   font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast), opacity var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    opacity var(--transition-fast);
 }
 
 .admin-row-action-button:hover {
@@ -948,7 +979,9 @@
   padding: 8px 10px;
   font-size: var(--font-size-base);
   outline: none;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .admin-edit-input:focus {
@@ -1024,6 +1057,7 @@
   margin-top: var(--spacing-sm);
   margin-bottom: var(--spacing-sm);
   display: inline-flex;
+  position: relative;
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   padding: 6px;
@@ -1035,6 +1069,34 @@
   height: 88px;
   object-fit: cover;
   border-radius: var(--radius-sm);
+}
+
+.admin-image-clear-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.admin-image-clear-btn:hover {
+  background: #c0392b;
+  transform: scale(1.15);
 }
 
 .admin-slide-preview-wrap {
@@ -1185,7 +1247,11 @@
   justify-content: center;
   padding: var(--spacing-xl) var(--spacing-lg);
   background:
-    radial-gradient(circle at 20% 15%, rgba(26, 95, 110, 0.13), transparent 42%),
+    radial-gradient(
+      circle at 20% 15%,
+      rgba(26, 95, 110, 0.13),
+      transparent 42%
+    ),
     radial-gradient(circle at 80% 78%, rgba(199, 91, 74, 0.1), transparent 34%),
     linear-gradient(160deg, #edf4f6 0%, #f6f4f1 100%);
 }
@@ -1264,7 +1330,9 @@
   border: 1px solid var(--color-border);
   font-size: var(--font-size-base);
   outline: none;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .admin-auth-password-wrap {
@@ -1284,7 +1352,9 @@
   padding: 0 12px;
   font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .admin-auth-password-toggle:hover {
@@ -1312,7 +1382,10 @@
   color: var(--color-white);
   font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .admin-auth-button:hover {
@@ -1386,7 +1459,12 @@
     z-index: 200;
     padding: 0 var(--spacing-md);
     height: 56px;
-    background: linear-gradient(135deg, #154b58 0%, var(--color-primary) 60%, #1b6d7d 100%);
+    background: linear-gradient(
+      135deg,
+      #154b58 0%,
+      var(--color-primary) 60%,
+      #1b6d7d 100%
+    );
     box-shadow: 0 4px 18px rgba(10, 39, 46, 0.25);
   }
 }
@@ -1453,7 +1531,9 @@
   height: 2px;
   background: #ffffff;
   border-radius: 2px;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .admin-mobile-hamburger--open .admin-hamburger-line:nth-child(1) {
@@ -1482,8 +1562,12 @@
 }
 
 @keyframes adminFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Menú lateral slide-in */
@@ -1561,7 +1645,9 @@
   font-size: var(--font-size-base);
   font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .admin-mobile-menu-item:active {

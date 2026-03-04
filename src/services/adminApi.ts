@@ -190,7 +190,7 @@ function toBinaryFlag(value: RawBinaryFlag | undefined): 0 | 1 {
 /** Normaliza respuesta cruda de PHP para usar tipos consistentes en React. */
 function normalizeAdminProduct(raw: RawAdminProduct): AdminProduct {
   const rawSlot = Number(raw.home_carousel_slot ?? 0) || 0;
-  const homeCarouselSlot = rawSlot >= 1 && rawSlot <= 3 ? (rawSlot as 1 | 2 | 3) : 0;
+  const homeCarouselSlot = rawSlot >= 1 && rawSlot <= 4 ? (rawSlot as 1 | 2 | 3 | 4) : 0;
 
   return {
     id: Number(raw.id) || 0,

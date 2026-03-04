@@ -32,7 +32,7 @@ try {
     WHERE table_schema = DATABASE()
       AND table_name = 'product_offers'
   ");
-  $offersTableExists = ((int)$offersTableStmt->fetchColumn()) > 0;
+  $offersTableExists = ((int) $offersTableStmt->fetchColumn()) > 0;
 
   $imagesTableStmt = $pdo->query("
     SELECT COUNT(*)
@@ -40,7 +40,7 @@ try {
     WHERE table_schema = DATABASE()
       AND table_name = 'product_images'
   ");
-  $imagesTableExists = ((int)$imagesTableStmt->fetchColumn()) > 0;
+  $imagesTableExists = ((int) $imagesTableStmt->fetchColumn()) > 0;
 
   $homeCarouselTableStmt = $pdo->query("
     SELECT COUNT(*)
@@ -48,7 +48,7 @@ try {
     WHERE table_schema = DATABASE()
       AND table_name = 'home_carousel_assignments'
   ");
-  $homeCarouselTableExists = ((int)$homeCarouselTableStmt->fetchColumn()) > 0;
+  $homeCarouselTableExists = ((int) $homeCarouselTableStmt->fetchColumn()) > 0;
 
   $imageHasIsPrimary = false;
   if ($imagesTableExists) {
@@ -59,7 +59,7 @@ try {
         AND table_name = 'product_images'
         AND column_name = 'is_primary'
     ");
-    $imageHasIsPrimary = ((int)$isPrimaryColumnStmt->fetchColumn()) > 0;
+    $imageHasIsPrimary = ((int) $isPrimaryColumnStmt->fetchColumn()) > 0;
   }
 
   $offersJoin = $offersTableExists
@@ -155,21 +155,21 @@ try {
   $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
   foreach ($products as &$product) {
-    $product['id'] = (int)$product['id'];
-    $product['stock'] = (int)$product['stock'];
+    $product['id'] = (int) $product['id'];
+    $product['stock'] = (int) $product['stock'];
     $product['mayoreo'] = $product['mayoreo'] ? 1 : 0;
     $product['menudeo'] = $product['menudeo'] ? 1 : 0;
-    $product['mayoreo_price'] = isset($product['mayoreo_price']) ? (float)$product['mayoreo_price'] : null;
-    $product['mayoreo_stock'] = isset($product['mayoreo_stock']) ? (int)$product['mayoreo_stock'] : 0;
-    $product['menudeo_price'] = isset($product['menudeo_price']) ? (float)$product['menudeo_price'] : null;
-    $product['menudeo_stock'] = isset($product['menudeo_stock']) ? (int)$product['menudeo_stock'] : 0;
-    $slot = isset($product['home_carousel_slot']) ? (int)$product['home_carousel_slot'] : 0;
-    $product['home_carousel_slot'] = ($slot >= 1 && $slot <= 3) ? $slot : 0;
+    $product['mayoreo_price'] = isset($product['mayoreo_price']) ? (float) $product['mayoreo_price'] : null;
+    $product['mayoreo_stock'] = isset($product['mayoreo_stock']) ? (int) $product['mayoreo_stock'] : 0;
+    $product['menudeo_price'] = isset($product['menudeo_price']) ? (float) $product['menudeo_price'] : null;
+    $product['menudeo_stock'] = isset($product['menudeo_stock']) ? (int) $product['menudeo_stock'] : 0;
+    $slot = isset($product['home_carousel_slot']) ? (int) $product['home_carousel_slot'] : 0;
+    $product['home_carousel_slot'] = ($slot >= 1 && $slot <= 4) ? $slot : 0;
     $product['is_offer'] = $product['is_offer'] ? 1 : 0;
-    $product['original_price'] = (float)$product['original_price'];
-    $product['offer_price'] = isset($product['offer_price']) ? (float)$product['offer_price'] : null;
-    $product['final_price'] = (float)$product['final_price'];
-    $product['discount_percentage'] = (int)$product['discount_percentage'];
+    $product['original_price'] = (float) $product['original_price'];
+    $product['offer_price'] = isset($product['offer_price']) ? (float) $product['offer_price'] : null;
+    $product['final_price'] = (float) $product['final_price'];
+    $product['discount_percentage'] = (int) $product['discount_percentage'];
     $product['category'] = $product['category'] ?? 'General';
     $product['description'] = $product['description'] ?? 'Producto disponible en tienda';
     $product['image'] = $product['image'] ?? '/images/boligrafos.jpg';

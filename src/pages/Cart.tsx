@@ -23,6 +23,7 @@ export const Cart = () => {
         total,
         itemCount,
         removingId,
+        sessionExpired,
         removeItem,
         setQuantity,
         clearCart,
@@ -105,6 +106,20 @@ export const Cart = () => {
                     <h2 id="cartTitle">
                         Mi Carrito ({itemCount} Artículos)
                     </h2>
+
+                    {sessionExpired && (
+                        <div className="cart-session-expired-banner">
+                            <i className="fas fa-exclamation-triangle" />
+                            <span>
+                                Tu sesión expiró. Tus productos siguen aquí.
+                                {" "}
+                                <Link to="/login?returnTo=/cart">
+                                    Inicia sesión de nuevo
+                                </Link>
+                                {" "} para sincronizar tu carrito.
+                            </span>
+                        </div>
+                    )}
 
                     <div className="cart-items">
                         {cartItems.map((item) => (

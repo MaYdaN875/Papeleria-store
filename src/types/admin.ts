@@ -1,5 +1,5 @@
 export type AdminBinaryFlag = 0 | 1;
-export type AdminHomeCarouselSlot = 0 | 1 | 2 | 3;
+export type AdminHomeCarouselSlot = 0 | 1 | 2 | 3 | 4;
 
 export interface AdminProduct {
   id: number;

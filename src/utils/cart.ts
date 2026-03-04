@@ -73,6 +73,9 @@ export function saveActiveCartItems(items: CartItem[]): void {
     const token = getStoreUserToken()
     if (!token) return
 
+    // No sincronizar un carrito vacío al servidor si podría ser producto de un error.
+    // La limpieza explícita del carrito (clearCart) sí pasa por aquí con items=[],
+    // pero eso es intencional del usuario.
     const payload = items
         .filter((item) => item.productId && item.productId > 0)
         .map((item) => ({

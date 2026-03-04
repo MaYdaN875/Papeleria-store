@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS home_carousel_assignments (
   carousel_slot TINYINT NOT NULL,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_home_carousel_slot (carousel_slot),
-  CONSTRAINT chk_home_carousel_slot CHECK (carousel_slot IN (1, 2, 3)),
+  CONSTRAINT chk_home_carousel_slot CHECK (carousel_slot IN (1, 2, 3, 4)),
   CONSTRAINT fk_home_carousel_product
     FOREIGN KEY (product_id) REFERENCES products(id)
     ON DELETE CASCADE

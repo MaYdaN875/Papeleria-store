@@ -93,6 +93,24 @@
   margin-bottom: 24px;
 }
 
+.cart-session-expired-banner {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #856404;
+  font-size: 0.95rem;
+}
+
+.cart-session-expired-banner a {
+  color: #856404;
+  font-weight: 600;
+}
+
 .cart-items {
   background: var(--color-white);
   border-radius: var(--radius-lg);
