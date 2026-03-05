@@ -39,9 +39,11 @@ const defaultBannerOffers: CarouselBannerSlide[] = [
     { id: 7, title: "Estuche Completo para Artistas", subtitle: "Todo lo que necesitas en un set", price: "A: $1,299.99", oldPrice: "De: $1,899.00", sku: "SKU: 543210", image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&h=500&fit=crop", bg: "linear-gradient(180deg, #A8E6E1 0%, #F4DCC9 100%)", badge: "PROMOCIÓN", description: "Incluye lápices, marcadores y más.", icon: "🎨" },
 ]
 
+const EMPTY_BANNER_SLIDES: CarouselBannerSlide[] = []
+
 export function Carusel({
     type = "offers",
-    bannerSlides = [],
+    bannerSlides = EMPTY_BANNER_SLIDES,
     showDefaultBannerFallback = true,
 }: CarouselProps) {
     const navigate = useNavigate()
