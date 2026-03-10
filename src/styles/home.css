@@ -199,6 +199,147 @@
   animation: fusion-slide-right 0.4s ease;
 }
 
+/* ========== BANNER PLACEHOLDER (sin API) ========== */
+.home-banner-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 50%, #1a5f6e 100%);
+  background-size: 200% 200%;
+  animation: bannerGradientShift 8s ease infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-banner-placeholder::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="30" cy="30" r="2" fill="rgba(255,255,255,0.08)"/><circle cx="170" cy="50" r="3" fill="rgba(255,255,255,0.06)"/><circle cx="100" cy="120" r="2.5" fill="rgba(255,255,255,0.07)"/><circle cx="50" cy="180" r="1.5" fill="rgba(255,255,255,0.05)"/><circle cx="150" cy="160" r="2" fill="rgba(255,255,255,0.06)"/></svg>');
+  pointer-events: none;
+}
+
+@keyframes bannerGradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.home-banner-placeholder-content {
+  text-align: center;
+  color: white;
+  z-index: 1;
+  padding: 40px 24px;
+}
+
+.home-banner-placeholder-content i {
+  font-size: 48px;
+  opacity: 0.9;
+  margin-bottom: 20px;
+  display: block;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+}
+
+.home-banner-placeholder-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+.home-banner-placeholder-content p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ========== ESTADO DE ERROR HOME (carruseles) ========== */
+.home-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 32px;
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.home-error-icon-wrapper {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fff8f0 0%, #ffeedb 100%);
+  border: 2px solid #ffd9b3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  animation: homeErrorFloat 3s ease-in-out infinite;
+}
+
+.home-error-icon-wrapper i {
+  font-size: 40px;
+  color: #e89840;
+}
+
+@keyframes homeErrorFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.home-error-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin: 0 0 12px 0;
+  letter-spacing: -0.01em;
+}
+
+.home-error-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  margin: 0 0 32px 0;
+  line-height: 1.6;
+}
+
+.home-error-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.home-error-retry-btn:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.2);
+}
+
+.home-error-retry-btn:active {
+  transform: translateY(0);
+}
+
+.home-error-retry-btn i {
+  font-size: 14px;
+  transition: transform 0.4s ease;
+}
+
+.home-error-retry-btn:hover i {
+  transform: rotate(180deg);
+}
+
 /* SECCIÓN PRODUCTOS */
 .products-section {
   padding: 48px 0 72px;

@@ -5,7 +5,6 @@ import {
     ProductCarousel,
     type ProductCarouselSlideConfig,
 } from "../components/product"
-import { products as staticProducts } from "../data/products"
 import { fetchStoreHomeSlides, fetchStoreProducts } from "../services/storeApi"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
@@ -70,55 +69,59 @@ function buildHomeCarouselProducts(
 export const Home = () => {
     const navigate = useNavigate()
     const [storeProducts, setStoreProducts] = useState<Product[]>([])
-    const [shouldUseStaticFallback, setShouldUseStaticFallback] = useState(false)
     const [isLoadingProducts, setIsLoadingProducts] = useState(true)
+    const [productsLoadError, setProductsLoadError] = useState(false)
     const [bannerSlides, setBannerSlides] = useState<CarouselBannerSlide[]>([])
+
+    const loadStoreProducts = useCallback(async () => {
+        setIsLoadingProducts(true)
+        setProductsLoadError(false)
+        try {
+            const result = await fetchStoreProducts()
+            if (result.ok && result.products) {
+                setStoreProducts(result.products)
+            } else {
+                setStoreProducts([])
+                setProductsLoadError(true)
+            }
+        } catch (loadError) {
+            console.error(loadError)
+            setStoreProducts([])
+            setProductsLoadError(true)
+        } finally {
+            setIsLoadingProducts(false)
+        }
+    }, [])
+
+    const loadHomeSlides = useCallback(async () => {
+        try {
+            const result = await fetchStoreHomeSlides()
+            if (!result.ok || !result.slides || result.slides.length === 0) {
+                setBannerSlides([])
+            } else {
+                setBannerSlides(
+                    result.slides.map((slide) => ({
+                        id: slide.id,
+                        title: `Slide ${slide.displayOrder}`,
+                        image: slide.imageUrl,
+                        fullImage: true,
+                        redirectPath: "/all-products",
+                    }))
+                )
+            }
+        } catch (loadSlidesError) {
+            console.error(loadSlidesError)
+            setBannerSlides([])
+        }
+    }, [])
+
+    const handleRetryAll = useCallback(() => {
+        void loadStoreProducts()
+        void loadHomeSlides()
+    }, [loadStoreProducts, loadHomeSlides])
 
     useEffect(() => {
         syncCartCount()
-
-        async function loadStoreProducts() {
-            setIsLoadingProducts(true)
-            try {
-                const result = await fetchStoreProducts()
-                if (result.ok && result.products) {
-                    setStoreProducts(result.products)
-                    setShouldUseStaticFallback(false)
-                } else {
-                    setStoreProducts([])
-                    setShouldUseStaticFallback(true)
-                }
-            } catch (loadError) {
-                console.error(loadError)
-                setStoreProducts([])
-                setShouldUseStaticFallback(true)
-            } finally {
-                setIsLoadingProducts(false)
-            }
-        }
-
-        async function loadHomeSlides() {
-            try {
-                const result = await fetchStoreHomeSlides()
-                if (!result.ok || !result.slides || result.slides.length === 0) {
-                    setBannerSlides([])
-                } else {
-                    setBannerSlides(
-                        result.slides.map((slide) => ({
-                            id: slide.id,
-                            title: `Slide ${slide.displayOrder}`,
-                            image: slide.imageUrl,
-                            fullImage: true,
-                            redirectPath: "/all-products",
-                        }))
-                    )
-                }
-            } catch (loadSlidesError) {
-                console.error(loadSlidesError)
-                setBannerSlides([])
-            }
-        }
-
         void loadStoreProducts()
         void loadHomeSlides()
 
@@ -134,9 +137,11 @@ export const Home = () => {
         return () => {
             document.removeEventListener("visibilitychange", handleVisibilityChange)
         }
-    }, [])
+    }, [loadStoreProducts, loadHomeSlides])
 
-    const baseProducts = shouldUseStaticFallback ? staticProducts : storeProducts
+    const baseProducts = storeProducts
+    const hasNoProducts = !isLoadingProducts && baseProducts.length === 0 && productsLoadError
+    const hasBannerError = !isLoadingProducts && bannerSlides.length === 0 && productsLoadError
     const featuredProducts = useMemo(
         () => buildHomeCarouselProducts(baseProducts, 1),
         [baseProducts]
@@ -165,13 +170,15 @@ export const Home = () => {
 
     return (
         <>
-            <section id="inicio" className="banner-principal">
-                <Carusel
-                    type="banner"
-                    bannerSlides={bannerSlides}
-                    showDefaultBannerFallback={false}
-                />
-            </section>
+            {!hasBannerError && (
+                <section id="inicio" className="banner-principal">
+                    <Carusel
+                        type="banner"
+                        bannerSlides={bannerSlides}
+                        showDefaultBannerFallback={false}
+                    />
+                </section>
+            )}
 
             <section className="products-section">
                 {isLoadingProducts ? (
@@ -197,6 +204,23 @@ export const Home = () => {
                                 </div>
                             </article>
                         ))}
+                    </div>
+                ) : hasNoProducts ? (
+                    <div className="home-error-state">
+                        <div className="home-error-icon-wrapper">
+                            <i className="fas fa-box-open" />
+                        </div>
+                        <h2 className="home-error-title">Catálogo no disponible</h2>
+                        <p className="home-error-subtitle">
+                            Estamos actualizando nuestra tienda. Por favor vuelve a intentarlo en unos momentos.
+                        </p>
+                        <button
+                            className="home-error-retry-btn"
+                            onClick={handleRetryAll}
+                        >
+                            <i className="fas fa-sync-alt" />
+                            Reintentar
+                        </button>
                     </div>
                 ) : (
                     <>

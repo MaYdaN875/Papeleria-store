@@ -318,6 +318,96 @@
   border: 1px dashed var(--color-border);
 }
 
+/* ========== ESTADO DE ERROR DE API ========== */
+.api-error-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 32px;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  gap: 0;
+}
+
+.api-error-icon-wrapper {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fff4f4 0%, #ffeaea 100%);
+  border: 2px solid #ffd5d5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  animation: errorPulse 2.5s ease-in-out infinite;
+}
+
+.api-error-icon-wrapper i {
+  font-size: 36px;
+  color: #e05252;
+}
+
+@keyframes errorPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(224, 82, 82, 0.15); }
+  50% { transform: scale(1.04); box-shadow: 0 0 0 12px rgba(224, 82, 82, 0); }
+}
+
+.api-error-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin: 0 0 10px 0;
+  letter-spacing: -0.01em;
+}
+
+.api-error-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  margin: 0 0 28px 0;
+  max-width: 360px;
+  line-height: 1.6;
+}
+
+.api-error-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.api-error-retry-btn:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.api-error-retry-btn:active {
+  transform: translateY(0);
+}
+
+.api-error-retry-btn i {
+  font-size: 14px;
+  transition: transform 0.4s ease;
+}
+
+.api-error-retry-btn:hover i {
+  transform: rotate(180deg);
+}
+
 .product-card-skeleton {
   background: var(--color-white);
   border: 1px solid var(--color-border-light);

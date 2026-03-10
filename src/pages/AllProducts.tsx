@@ -8,7 +8,6 @@ import {
     ProductCard,
     type ProductCardBadge,
 } from "../components/product"
-import { products as staticProducts } from "../data/products"
 import { filterProductsBySearch } from "../hooks/useProductSearch"
 import { fetchStoreProducts } from "../services/storeApi"
 import type { Product } from "../types/Product"
@@ -133,7 +132,6 @@ export const AllProducts = () => {
     const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
     const [isClosing, setIsClosing] = useState(false)
     const [storeProducts, setStoreProducts] = useState<Product[]>([])
-    const [shouldUseStaticFallback, setShouldUseStaticFallback] = useState(false)
     const [isLoadingProducts, setIsLoadingProducts] = useState(true)
     const [productsLoadError, setProductsLoadError] = useState("")
 
@@ -164,33 +162,30 @@ export const AllProducts = () => {
     }, [searchQuery])
 
     // Cargar productos al montar el componente
-    useEffect(() => {
-        async function loadStoreProducts() {
-            setIsLoadingProducts(true)
-            setProductsLoadError("")
+    const loadStoreProducts = useCallback(async () => {
+        setIsLoadingProducts(true)
+        setProductsLoadError("")
 
-            try {
-                const result = await fetchStoreProducts()
-                if (!result.ok || !result.products) {
-                    setProductsLoadError(result.message ?? "No se pudo cargar catálogo desde la API.")
-                    setStoreProducts([])
-                    setShouldUseStaticFallback(true)
-                    setIsLoadingProducts(false)
-                    return
-                }
-
-                setStoreProducts(result.products)
-                setShouldUseStaticFallback(false)
-                setIsLoadingProducts(false)
-            } catch (loadError) {
-                console.error(loadError)
-                setProductsLoadError("No se pudo conectar con la API. Se muestra catálogo local.")
+        try {
+            const result = await fetchStoreProducts()
+            if (!result.ok || !result.products) {
+                setProductsLoadError(result.message ?? "No se pudo cargar catálogo desde la API.")
                 setStoreProducts([])
-                setShouldUseStaticFallback(true)
                 setIsLoadingProducts(false)
+                return
             }
-        }
 
+            setStoreProducts(result.products)
+            setIsLoadingProducts(false)
+        } catch (loadError) {
+            console.error(loadError)
+            setProductsLoadError("No se pudo conectar con el servidor. Por favor intenta de nuevo.")
+            setStoreProducts([])
+            setIsLoadingProducts(false)
+        }
+    }, [])
+
+    useEffect(() => {
         void loadStoreProducts()
 
         // Refrescar productos al volver al foco de la pestaña
@@ -204,9 +199,9 @@ export const AllProducts = () => {
         return () => {
             document.removeEventListener("visibilitychange", handleVisibilityChange)
         }
-    }, [])
+    }, [loadStoreProducts])
 
-    const baseProducts = shouldUseStaticFallback ? staticProducts : storeProducts
+    const baseProducts = storeProducts
 
     // Primero filtrar por búsqueda si existe, luego aplicar filtros adicionales
     const productsAfterSearch = useMemo(() => {
@@ -385,7 +380,22 @@ export const AllProducts = () => {
                             </p>
                         )}
                         {!isLoadingProducts && productsLoadError && (
-                            <p className="no-products-message">{productsLoadError}</p>
+                            <div className="api-error-state">
+                                <div className="api-error-icon-wrapper">
+                                    <i className="fas fa-plug" />
+                                </div>
+                                <h2 className="api-error-title">No se pudo cargar el catálogo</h2>
+                                <p className="api-error-subtitle">
+                                    Estamos actualizando nuestra tienda. Por favor vuelve a intentarlo en unos momentos.
+                                </p>
+                                <button
+                                    className="api-error-retry-btn"
+                                    onClick={() => void loadStoreProducts()}
+                                >
+                                    <i className="fas fa-sync-alt" />
+                                    Reintentar
+                                </button>
+                            </div>
                         )}
                         <div className="all-products-grid" id="allProductsGrid">
                             {isLoadingProducts && ALL_PRODUCTS_SKELETON_IDS.map((skeletonId) => (
