@@ -36,6 +36,31 @@ export function ProductDetailActions({
     const totalStock = stockRanges?.totalStock ?? product.stock
     const maxQuantity = Math.min(20, Math.max(1, totalStock))
 
+    const isDigitalService = typeof product.category === 'string' && product.category.toLowerCase().includes('digitales');
+
+    const handleWhatsAppClick = () => {
+        const text = encodeURIComponent(`Hola, quiero solicitar el siguiente servicio: ${product.name}. Mi nombre completo es: `);
+        window.open(`https://wa.me/3318686645?text=${text}`, '_blank');
+    };
+
+    if (isDigitalService) {
+        return (
+            <div className="product-detail__actions">
+                <div className="product-detail__buttons">
+                    <button
+                        type="button"
+                        className="btn-add-cart product-detail__btn-add"
+                        onClick={handleWhatsAppClick}
+                        style={{ backgroundColor: '#25D366', width: '100%' }}
+                    >
+                        <i className="fab fa-whatsapp" aria-hidden />
+                        Solicitar servicio
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="product-detail__actions">
             <div className="product-detail__quantity-row">

@@ -2,6 +2,7 @@
  * Tarjeta de producto: imagen, nombre, marca, rating, precio y botón agregar al carrito.
  * Opcional badge (descuento/oferta) y precio tachado. Click en la tarjeta navega al detalle.
  */
+import React from "react";
 import { useNavigate } from "react-router";
 import type { Product } from "../../types/Product";
 
@@ -62,6 +63,14 @@ export function ProductCard({
         if (e.key === "Enter") handleClick()
     }
 
+    const isDigitalService = typeof product.category === 'string' && product.category.toLowerCase().includes('digitales');
+
+    const handleWhatsAppClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const text = encodeURIComponent(`Hola, quiero solicitar el siguiente servicio: ${product.name}. Mi nombre completo es: `);
+        window.open(`https://wa.me/3318686645?text=${text}`, '_blank');
+    };
+
     const content = (
         <>
             <div className="product-image">
@@ -97,17 +106,28 @@ export function ProductCard({
                         ${product.price.toFixed(2)}
                     </span>
                 </div>
-                <button
-                    type="button"
-                    className="btn-add-cart"
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        onAddToCart()
-                    }}
-                >
-                    <i className="fas fa-shopping-cart" aria-hidden /> Agregar
-                    al carrito
-                </button>
+                {isDigitalService ? (
+                    <button
+                        type="button"
+                        className="btn-add-cart"
+                        onClick={handleWhatsAppClick}
+                        style={{ backgroundColor: '#25D366' }}
+                    >
+                        <i className="fab fa-whatsapp" aria-hidden /> Solicitar servicio
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        className="btn-add-cart"
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            onAddToCart()
+                        }}
+                    >
+                        <i className="fas fa-shopping-cart" aria-hidden /> Agregar
+                        al carrito
+                    </button>
+                )}
             </div>
         </>
     )

@@ -5,27 +5,16 @@
 
 /* BANNER PRINCIPAL */
 .banner-principal {
-  background: linear-gradient(160deg, #f5f7fa 0%, #eef2f5 50%, #e8eef2 100%);
+  background: transparent;
   color: var(--color-text-dark);
-  padding: 80px 24px 100px;
+  padding: 0;
   text-align: center;
   position: relative;
   overflow: hidden;
 }
 
 .banner-principal::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(
-    ellipse 80% 50% at 50% 0%,
-    rgba(26, 95, 110, 0.06) 0%,
-    transparent 60%
-  );
-  pointer-events: none;
+  display: none;
 }
 
 /* Carrusel banner (fusion) */
@@ -33,28 +22,36 @@
   background: none !important;
   box-shadow: none !important;
   border-radius: 0 !important;
-  height: 340px;
-  min-height: 340px;
+  height: 64vh !important;
+  min-height: 64vh !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  gap: 0 !important;
   position: relative;
   z-index: 1;
 }
 
 .fusion-carousel-wrapper {
-  width: 100%;
-  overflow: visible;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  overflow: hidden;
   border-radius: 0;
   background: none;
-  height: 340px;
-  min-height: 340px;
+  height: 64vh !important;
+  min-height: 64vh !important;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 1;
 }
 
 .fusion-slide {
-  width: 100%;
-  height: 340px;
-  min-height: 340px;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 64vh !important;
+  min-height: 64vh !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -65,6 +62,7 @@
     opacity 0.4s ease;
   opacity: 1;
   z-index: 1;
+  overflow: hidden;
 }
 
 .fusion-slide-content {
@@ -422,7 +420,7 @@
 
 @media (max-width: 1024px) {
   .banner-principal {
-    padding: 60px 20px 80px;
+    padding: 0;
   }
 
   .fusion-carousel,

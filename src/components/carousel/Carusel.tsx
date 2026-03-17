@@ -110,10 +110,10 @@ export function Carusel({
                 ref={carouselRef}
                 className="carousel-container carousel-banner fusion-carousel"
                 style={{
-                    maxWidth: "98vw",
+                    maxWidth: "100%",
                     position: "relative",
                     background: offer.fullImage
-                        ? "linear-gradient(180deg, #eff4f6 0%, #e6edf0 100%)"
+                        ? "none"
                         : (offer.bg ?? "linear-gradient(180deg, #B8D8E8 0%, #A8CDE0 100%)"),
                 }}
             >

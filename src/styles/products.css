@@ -855,6 +855,7 @@
     .carousel-viewport {
         cursor: grab;
         touch-action: pan-y;
+        -webkit-user-select: none;
         user-select: none;
     }
 
@@ -874,7 +875,7 @@
     /* Indicadores más cerca del carrusel */
     .carousel-indicators {
         margin-top: 12px;
-        margin-bottom: 6px;
+        margin-bottom: 30px;
         gap: 8px;
     }
 }

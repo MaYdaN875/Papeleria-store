@@ -107,9 +107,26 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border-light);
-  height: fit-content;
+  max-height: calc(100vh - 120px);
   position: sticky;
   top: 90px;
+  overflow-y: auto;
+}
+
+.filter-panel::-webkit-scrollbar,
+.category-filters-sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+.filter-panel::-webkit-scrollbar-track,
+.category-filters-sidebar::-webkit-scrollbar-track {
+  background: var(--color-border-light);
+  border-radius: var(--radius-full);
+}
+.filter-panel::-webkit-scrollbar-thumb,
+.category-filters-sidebar::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  opacity: 0.5;
 }
 
 .filter-panel-title,

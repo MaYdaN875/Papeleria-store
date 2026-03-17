@@ -1958,13 +1958,44 @@ export function AdminDashboard() {
           {!isLoading && !error && products.length > 0 && (
             <div className="admin-table-wrapper admin-surface-card">
               <div className="admin-table-toolbar">
-                <input
-                  type="text"
-                  className="admin-search-input"
-                  placeholder="🔍 Buscar por nombre, categoría o ID..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                <div className="admin-search-wrapper" style={{ position: "relative", display: "flex", alignItems: "center", flex: 1 }}>
+                  <input
+                    type="text"
+                    className="admin-search-input"
+                    style={{ width: "100%", paddingRight: "36px" }}
+                    placeholder="🔍 Buscar por nombre, categoría o ID..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      className="admin-search-clear-btn"
+                      onClick={() => setSearchQuery("")}
+                      title="Limpiar búsqueda"
+                      style={{
+                        position: "absolute",
+                        right: "12px",
+                        background: "var(--color-text-muted)",
+                        color: "white",
+                        border: "none",
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "50%",
+                        cursor: "pointer",
+                        padding: "0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        opacity: 0.8
+                      }}
+                    >
+                      &times;
+                    </button>
+                  )}
+                </div>
                 <div className="admin-toolbar-filters">
                   <select
                     className="admin-filter-select"

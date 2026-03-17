@@ -206,6 +206,12 @@ export const ProductDetail = () => {
                             modeLabel={displayData.isApplyingMayoreo ? "Precio mayoreo aplicado" : undefined}
                         />
 
+                        {typeof product.category === 'string' && product.category.toLowerCase().includes('digitales') && (
+                            <div className="product-detail__digital-notice" style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '12px', borderRadius: '4px', marginBottom: '16px', border: '1px solid #ffeeba' }}>
+                                <strong>Nota importante:</strong> Estos servicios tienen que recogerse y pagarse en la papelería.
+                            </div>
+                        )}
+
                         {/* Mostrar mensaje de descuento por mayoreo */}
                         {product?.mayoreo && product?.mayoreoPrice != null && (
                             <div className="product-detail__mayoreo-info">
