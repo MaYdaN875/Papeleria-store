@@ -14,6 +14,8 @@ export interface FilterState {
 
 export interface FilterPanelProps {
     readonly onFilterChange: (filters: FilterState) => void
+    /** Callback para cerrar el panel (usado en móvil). */
+    readonly onClose?: () => void
 }
 
 const DEFAULT_MAX_PRICE_FILTER = 100000
@@ -146,7 +148,7 @@ const getBrands = (): string[] => {
    Panel lateral de filtros con múltiples opciones
    ================================ */
 
-export function FilterPanel({ onFilterChange }: FilterPanelProps) {
+export function FilterPanel({ onFilterChange, onClose }: FilterPanelProps) {
     /* Estado para controlar qué secciones están expandidas */
     const [expandedSections, setExpandedSections] = useState<
         Record<string, boolean>
@@ -234,7 +236,19 @@ export function FilterPanel({ onFilterChange }: FilterPanelProps) {
 
     return (
         <aside className="filter-panel">
-            <h3 className="filter-panel-title">Filtros</h3>
+            <div className="filter-panel-header">
+                <h3 className="filter-panel-title">Filtros</h3>
+                {onClose && (
+                    <button
+                        type="button"
+                        className="filter-panel-close-btn"
+                        onClick={onClose}
+                        aria-label="Cerrar filtros"
+                    >
+                        <i className="fas fa-times" />
+                    </button>
+                )}
+            </div>
 
             {/* SECCIÓN: FILTRO DE PRODUCTOS */}
             <div className="filter-section">

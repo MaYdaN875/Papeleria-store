@@ -51,7 +51,7 @@ export function ProductDetailActions({
                         type="button"
                         className="btn-add-cart product-detail__btn-add"
                         onClick={handleWhatsAppClick}
-                        style={{ backgroundColor: '#25D366', width: '100%' }}
+                        style={{ backgroundColor: '#25D366' }}
                     >
                         <i className="fab fa-whatsapp" aria-hidden />
                         Solicitar servicio

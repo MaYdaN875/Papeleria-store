@@ -30,8 +30,24 @@ const ALL_PRODUCTS_SKELETON_IDS = [
 /**
  * Página "Todos los productos".
  * Muestra grid de productos con filtros (categoría, marcas, precio, mayoreo/menudeo),
- * búsqueda por URL (?search=) y vista adaptada a móvil (drawer de filtros).
+ * búsqueda por URL (?search=), filtrado por categoría del navbar (?category=),
+ * y vista adaptada a móvil (drawer de filtros).
  */
+
+const CATEGORY_MAP: Record<string, string[]> = {
+    // Estos nombres de la derecha deben coincidir EXACTAMENTE con la categoría que viene de la base de datos
+    "oficina-escolares": ["oficina y escolares"],
+    "arte-manualidades": ["arte y manualidades"],
+    "mitril-regalos": ["mitril y regalos"],
+    "servicios-digitales-impresiones": ["servicios digitales e impresiones"]
+}
+
+const CATEGORY_NAMES: Record<string, string> = {
+    "oficina-escolares": "Oficina y Escolares",
+    "arte-manualidades": "Arte y Manualidades",
+    "mitril-regalos": "Mitril y Regalos",
+    "servicios-digitales-impresiones": "Servicios Digitales e Impresiones"
+}
 
 function getBrand(product: Product): string {
     return product.description.split(" ")[0] ?? ""
@@ -119,6 +135,7 @@ export const AllProducts = () => {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const searchQuery = searchParams.get("search") || ""
+    const categoryQuery = searchParams.get("category") || ""
     const pageFromUrl = Number.parseInt(searchParams.get("page") || "1", 10)
     const isMobile = useIsMobile()
 
@@ -154,12 +171,12 @@ export const AllProducts = () => {
         }, 300)
     }
 
-    // Resetear paginación solo cuando cambia la búsqueda
+    // Resetear paginación y drawer cuando cambia la búsqueda o categoría
     useEffect(() => {
         window.scrollTo(0, 0)
         syncCartCount()
         setIsFilterDrawerOpen(false)
-    }, [searchQuery])
+    }, [searchQuery, categoryQuery])
 
     // Cargar productos al montar el componente
     const loadStoreProducts = useCallback(async () => {
@@ -201,7 +218,24 @@ export const AllProducts = () => {
         }
     }, [loadStoreProducts])
 
-    const baseProducts = storeProducts
+    const baseProducts = useMemo(() => {
+        if (!categoryQuery) return storeProducts
+        
+        const allowedKeywords = CATEGORY_MAP[categoryQuery]
+        if (!allowedKeywords || allowedKeywords.length === 0) return storeProducts
+        
+        return storeProducts.filter(product => {
+            // Solo buscar en la categoría exacta para evitar falsos positivos
+            const productCategory = (product.category || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .trim()
+
+            // Filtro estrictamente igual: el nombre de la categoría debe machar 1 a 1
+            return allowedKeywords.some(keyword => productCategory === keyword)
+        })
+    }, [storeProducts, categoryQuery])
 
     // Primero filtrar por búsqueda si existe, luego aplicar filtros adicionales
     const productsAfterSearch = useMemo(() => {
@@ -318,11 +352,15 @@ export const AllProducts = () => {
                         <h1 className="page-title">
                             {searchQuery
                                 ? `Resultados de búsqueda: "${searchQuery}"`
+                                : categoryQuery && CATEGORY_NAMES[categoryQuery]
+                                ? `Categoría: ${CATEGORY_NAMES[categoryQuery]}`
                                 : "Todos Nuestros Productos"}
                         </h1>
                         <p className="page-subtitle">
                             {searchQuery
                                 ? `Mostrando ${filteredProducts.length} resultado(s) para tu búsqueda`
+                                : categoryQuery && CATEGORY_NAMES[categoryQuery]
+                                ? `Explora nuestros productos de ${CATEGORY_NAMES[categoryQuery]}`
                                 : "Explora nuestro catálogo completo por categoría"}
                         </p>
                     </div>
@@ -370,6 +408,7 @@ export const AllProducts = () => {
                         )}
                         <FilterPanel
                             onFilterChange={(newFilters) => setFilters(newFilters)}
+                            onClose={handleCloseDrawer}
                         />
                     </div>
 
