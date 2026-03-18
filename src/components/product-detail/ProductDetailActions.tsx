@@ -46,12 +46,11 @@ export function ProductDetailActions({
     if (isDigitalService) {
         return (
             <div className="product-detail__actions">
-                <div className="product-detail__buttons">
+                <div className="product-detail__buttons" style={{ marginTop: '1.5rem' }}>
                     <button
                         type="button"
-                        className="btn-add-cart product-detail__btn-add"
+                        className="product-detail__btn-whatsapp"
                         onClick={handleWhatsAppClick}
-                        style={{ backgroundColor: '#25D366' }}
                     >
                         <i className="fab fa-whatsapp" aria-hidden />
                         Solicitar servicio

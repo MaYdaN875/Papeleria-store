@@ -465,6 +465,17 @@
     transform: translateY(-1px);
 }
 
+/* Modifier class for WhatsApp buttons */
+.btn-whatsapp {
+    background-color: #25D366 !important;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+}
+
+.btn-whatsapp:hover {
+    background-color: #1ebc5a !important;
+    box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
+}
+
 .btn-add-cart:active {
     transform: translateY(0);
 }

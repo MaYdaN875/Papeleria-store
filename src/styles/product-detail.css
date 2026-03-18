@@ -218,6 +218,32 @@
   box-shadow: var(--shadow-md);
 }
 
+.product-detail__btn-whatsapp {
+  flex: 1;
+  width: auto !important;
+  max-width: 380px;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  background-color: #25D366;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+}
+
+.product-detail__btn-whatsapp:hover {
+  background-color: #1ebc5a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
+}
+
 /* Info de envío */
 .product-detail__shipping {
   background: var(--color-light-bg);

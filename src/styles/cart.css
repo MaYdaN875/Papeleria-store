@@ -236,6 +236,7 @@
 
 .quantity-steppers__input[type="number"] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .item-subtotal {
@@ -454,16 +455,20 @@
   }
 
   .cart-actions {
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
   }
 
   .btn-continue,
   .btn-checkout,
   .btn-clear-cart {
-    width: 100%;
+    width: auto;
+    flex: 1 1 auto;
     justify-content: center;
-    padding: 12px 16px;
+    padding: 10px 16px;
+    font-size: 0.95rem;
   }
 }
 
@@ -509,6 +514,22 @@
 
   #totalAmount {
     font-size: 1.35rem;
+  }
+
+  .cart-actions {
+    gap: 8px;
+  }
+
+  .btn-continue,
+  .btn-checkout,
+  .btn-clear-cart {
+    width: calc(50% - 4px); /* Pone los botones secundarios lado a lado si caben */
+    font-size: 0.85rem;
+    padding: 10px 8px;
+  }
+
+  .btn-checkout {
+    width: 100%; /* Deja el botón de pago abarcando el espacio restante por ser la acción principal */
   }
 }
 

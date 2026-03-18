@@ -109,9 +109,8 @@ export function ProductCard({
                 {isDigitalService ? (
                     <button
                         type="button"
-                        className="btn-add-cart"
+                        className="btn-add-cart btn-whatsapp"
                         onClick={handleWhatsAppClick}
-                        style={{ backgroundColor: '#25D366' }}
                     >
                         <i className="fab fa-whatsapp" aria-hidden /> Solicitar servicio
                     </button>
