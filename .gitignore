@@ -34,3 +34,6 @@ api/uploads/products/*
 # Stripe PHP SDK (manual install on server; do not commit)
 api/stripe-php/
 api/vendor/
+
+# TypeScript build info
+*.tsbuildinfo
