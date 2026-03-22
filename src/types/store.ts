@@ -17,3 +17,18 @@ export interface StoreHomeSlidesResponse {
   message?: string;
   slides?: StoreHomeSlide[];
 }
+
+export interface StoreCategoryNode {
+  id: number;
+  name: string;
+  children: Array<{
+    id: number;
+    name: string;
+  }>;
+}
+
+export interface StoreCategoriesResponse {
+  ok: boolean;
+  message?: string;
+  categories?: StoreCategoryNode[];
+}

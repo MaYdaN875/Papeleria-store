@@ -15,7 +15,7 @@ adminRequireMethod('GET');
 const ADMIN_CANONICAL_CATEGORY_NAMES = [
   'Oficina y Escolares',
   'Arte y Manualidades',
-  'Mitril y Regalos',
+  'Miselanea y Regalos',
   'Servicios Digitales e Impresiones',
 ];
 
@@ -182,10 +182,13 @@ function adminSyncCanonicalCategories(PDO $pdo): void {
 
   if ($hasIsActive && !empty($canonicalIds)) {
     $idPlaceholders = implode(', ', array_fill(0, count($canonicalIds), '?'));
+    $deactivateWhere = $hasParentId
+      ? "id NOT IN ($idPlaceholders) AND parent_id IS NULL"
+      : "id NOT IN ($idPlaceholders)";
     $deactivateStmt = $pdo->prepare("
       UPDATE categories
       SET is_active = 0
-      WHERE id NOT IN ($idPlaceholders)
+      WHERE $deactivateWhere
     ");
     $deactivateStmt->execute($canonicalIds);
   }

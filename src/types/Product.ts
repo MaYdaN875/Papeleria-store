@@ -18,5 +18,8 @@ export type Product = {
     menudeoPrice?: number | null
     menudeoStock?: number
     menudeoMinQty?: number
+    categorySlug?: string
+    parentCategory?: string
+    parentCategorySlug?: string
     homeCarouselSlot?: number
 }

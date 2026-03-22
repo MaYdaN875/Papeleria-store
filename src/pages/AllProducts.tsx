@@ -9,7 +9,7 @@ import {
     type ProductCardBadge,
 } from "../components/product"
 import { filterProductsBySearch } from "../hooks/useProductSearch"
-import { fetchStoreProducts } from "../services/storeApi"
+import { fetchStoreCategories, fetchStoreProducts } from "../services/storeApi"
 import type { Product } from "../types/Product"
 import { addProductToCart, syncCartCount } from "../utils/cart"
 
@@ -34,19 +34,26 @@ const ALL_PRODUCTS_SKELETON_IDS = [
  * y vista adaptada a móvil (drawer de filtros).
  */
 
-const CATEGORY_MAP: Record<string, string[]> = {
-    // Estos nombres de la derecha deben coincidir EXACTAMENTE con la categoría que viene de la base de datos
-    "oficina-escolares": ["oficina y escolares"],
-    "arte-manualidades": ["arte y manualidades"],
-    "mitril-regalos": ["mitril y regalos"],
-    "servicios-digitales-impresiones": ["servicios digitales e impresiones"]
+const CATEGORY_FALLBACK_NAMES: Record<string, string> = {
+    "oficina-y-escolares": "Oficina y Escolares",
+    "arte-y-manualidades": "Arte y Manualidades",
+    "mitril-y-regalos": "Mitril y Regalos",
+    "servicios-digitales-e-impresiones": "Servicios Digitales e Impresiones"
 }
 
-const CATEGORY_NAMES: Record<string, string> = {
-    "oficina-escolares": "Oficina y Escolares",
-    "arte-manualidades": "Arte y Manualidades",
-    "mitril-regalos": "Mitril y Regalos",
-    "servicios-digitales-impresiones": "Servicios Digitales e Impresiones"
+const CATEGORY_FALLBACK_ALIASES: Record<string, string[]> = {
+    "oficina-y-escolares": ["oficina y escolares"],
+    "arte-y-manualidades": ["arte y manualidades"],
+    "mitril-y-regalos": ["mitril y regalos"],
+    "servicios-digitales-e-impresiones": ["servicios digitales e impresiones"],
+}
+
+function normalizeCategoryText(value: string): string {
+    return value
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
 }
 
 function getBrand(product: Product): string {
@@ -136,6 +143,7 @@ export const AllProducts = () => {
     const [searchParams] = useSearchParams()
     const searchQuery = searchParams.get("search") || ""
     const categoryQuery = searchParams.get("category") || ""
+    const subCategoryQuery = searchParams.get("sub") || ""
     const pageFromUrl = Number.parseInt(searchParams.get("page") || "1", 10)
     const isMobile = useIsMobile()
 
@@ -151,6 +159,8 @@ export const AllProducts = () => {
     const [storeProducts, setStoreProducts] = useState<Product[]>([])
     const [isLoadingProducts, setIsLoadingProducts] = useState(true)
     const [productsLoadError, setProductsLoadError] = useState("")
+    const [categoryLabelMap, setCategoryLabelMap] = useState<Record<string, string>>({})
+    const [categoryAliasMap, setCategoryAliasMap] = useState<Record<string, string[]>>(CATEGORY_FALLBACK_ALIASES)
 
     // Resetear filtros al montar el componente para asegurar que se muestren todos los productos
     useEffect(() => {
@@ -176,7 +186,7 @@ export const AllProducts = () => {
         window.scrollTo(0, 0)
         syncCartCount()
         setIsFilterDrawerOpen(false)
-    }, [searchQuery, categoryQuery])
+    }, [searchQuery, categoryQuery, subCategoryQuery])
 
     // Cargar productos al montar el componente
     const loadStoreProducts = useCallback(async () => {
@@ -218,10 +228,36 @@ export const AllProducts = () => {
         }
     }, [loadStoreProducts])
 
+    useEffect(() => {
+        async function loadStoreCategories() {
+            try {
+                const result = await fetchStoreCategories()
+                if (!result.ok || !result.categories) return
+
+                const labels: Record<string, string> = {}
+                const aliases: Record<string, string[]> = {}
+                for (const categoryNode of result.categories) {
+                    const normalizedSlug = normalizeCategoryText(categoryNode.name).replace(/[^a-z0-9]+/g, "-")
+                    labels[normalizedSlug] = categoryNode.name
+                    aliases[normalizedSlug] = [
+                        normalizeCategoryText(categoryNode.name),
+                        ...categoryNode.children.map((child) => normalizeCategoryText(child.name))
+                    ]
+                }
+                setCategoryLabelMap(labels)
+                setCategoryAliasMap(aliases)
+            } catch (loadError) {
+                console.error(loadError)
+            }
+        }
+
+        void loadStoreCategories()
+    }, [])
+
     const baseProducts = useMemo(() => {
         if (!categoryQuery) return storeProducts
         
-        const allowedKeywords = CATEGORY_MAP[categoryQuery]
+        const allowedKeywords = categoryAliasMap[categoryQuery]
         if (!allowedKeywords || allowedKeywords.length === 0) return storeProducts
         
         return storeProducts.filter(product => {
@@ -235,14 +271,24 @@ export const AllProducts = () => {
             // Filtro estrictamente igual: el nombre de la categoría debe machar 1 a 1
             return allowedKeywords.some(keyword => productCategory === keyword)
         })
-    }, [storeProducts, categoryQuery])
+    }, [storeProducts, categoryQuery, categoryAliasMap])
+
+    const productsAfterSubcategory = useMemo(() => {
+        if (!subCategoryQuery) return baseProducts
+        const normalizedSubcategory = normalizeCategoryText(subCategoryQuery)
+
+        return baseProducts.filter((product) => {
+            const normalizedCategory = normalizeCategoryText(product.category || "")
+            return normalizedCategory === normalizedSubcategory
+        })
+    }, [baseProducts, subCategoryQuery])
 
     // Primero filtrar por búsqueda si existe, luego aplicar filtros adicionales
     const productsAfterSearch = useMemo(() => {
-        if (!searchQuery) return baseProducts
+        if (!searchQuery) return productsAfterSubcategory
 
-        return filterProductsBySearch(baseProducts, searchQuery)
-    }, [baseProducts, searchQuery])
+        return filterProductsBySearch(productsAfterSubcategory, searchQuery)
+    }, [productsAfterSubcategory, searchQuery])
 
     const filteredProducts = useMemo(
         () => filterProducts(productsAfterSearch, filters),
@@ -352,15 +398,15 @@ export const AllProducts = () => {
                         <h1 className="page-title">
                             {searchQuery
                                 ? `Resultados de búsqueda: "${searchQuery}"`
-                                : categoryQuery && CATEGORY_NAMES[categoryQuery]
-                                ? `Categoría: ${CATEGORY_NAMES[categoryQuery]}`
+                                : categoryQuery && (categoryLabelMap[categoryQuery] ?? CATEGORY_FALLBACK_NAMES[categoryQuery])
+                                ? `Categoría: ${categoryLabelMap[categoryQuery] ?? CATEGORY_FALLBACK_NAMES[categoryQuery]}`
                                 : "Todos Nuestros Productos"}
                         </h1>
                         <p className="page-subtitle">
                             {searchQuery
                                 ? `Mostrando ${filteredProducts.length} resultado(s) para tu búsqueda`
-                                : categoryQuery && CATEGORY_NAMES[categoryQuery]
-                                ? `Explora nuestros productos de ${CATEGORY_NAMES[categoryQuery]}`
+                                : categoryQuery && (categoryLabelMap[categoryQuery] ?? CATEGORY_FALLBACK_NAMES[categoryQuery])
+                                ? `Explora nuestros productos de ${categoryLabelMap[categoryQuery] ?? CATEGORY_FALLBACK_NAMES[categoryQuery]}`
                                 : "Explora nuestro catálogo completo por categoría"}
                         </p>
                     </div>

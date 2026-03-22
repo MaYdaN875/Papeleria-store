@@ -4,13 +4,13 @@
  * con subopciones por categoría en formato acordeón.
  * Mobile: mantiene menú lateral con botón de 3 líneas.
  */
-import { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router"
 import { products as staticProducts } from "../../data/products"
 import { useNotification } from "../../hooks/useNotification"
 import { fetchStoreCart, logoutStoreCustomer } from "../../services/customerApi"
 import { signOutFirebaseSession } from "../../services/firebaseAuth"
-import { fetchStoreProducts } from "../../services/storeApi"
+import { fetchStoreCategories, fetchStoreProducts, type StoreCategoryNode } from "../../services/storeApi"
 import type { Product } from "../../types/Product"
 import { syncCartCount } from "../../utils/cart"
 import {
@@ -30,35 +30,58 @@ interface NavbarCategory {
     subOptions: string[]
 }
 
-const MOCK_SUB_OPTIONS = Array.from(
-    { length: 15 },
-    (_, index) => `Opción ${index + 1}`
-)
+const CATEGORY_ICON_MAP: Record<string, string> = {
+    "oficina-y-escolares": "fas fa-briefcase",
+    "arte-y-manualidades": "fas fa-palette",
+    "mitril-y-regalos": "fas fa-gift",
+    "servicios-digitales-e-impresiones": "fas fa-print",
+}
 
-const CATEGORIES: NavbarCategory[] = [
+function slugifyLabel(value: string): string {
+    return value
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+}
+
+function buildNavbarCategories(nodes: StoreCategoryNode[]): NavbarCategory[] {
+    return nodes.map((node) => {
+        const slug = slugifyLabel(node.name)
+        return {
+            id: slug,
+            label: node.name,
+            icon: CATEGORY_ICON_MAP[slug] ?? "fas fa-folder",
+            subOptions: node.children.map((child) => child.name),
+        }
+    })
+}
+
+const DEFAULT_NAVBAR_CATEGORIES: NavbarCategory[] = [
     {
-        id: "oficina-escolares",
+        id: "oficina-y-escolares",
         label: "Oficina y Escolares",
         icon: "fas fa-briefcase",
-        subOptions: MOCK_SUB_OPTIONS,
+        subOptions: [],
     },
     {
-        id: "arte-manualidades",
+        id: "arte-y-manualidades",
         label: "Arte y Manualidades",
         icon: "fas fa-palette",
-        subOptions: MOCK_SUB_OPTIONS,
+        subOptions: [],
     },
     {
-        id: "mitril-regalos",
+        id: "mitril-y-regalos",
         label: "Mitril y Regalos",
         icon: "fas fa-gift",
-        subOptions: MOCK_SUB_OPTIONS,
+        subOptions: [],
     },
     {
-        id: "servicios-digitales-impresiones",
+        id: "servicios-digitales-e-impresiones",
         label: "Servicios Digitales e Impresiones",
         icon: "fas fa-print",
-        subOptions: MOCK_SUB_OPTIONS,
+        subOptions: [],
     },
 ]
 
@@ -84,11 +107,22 @@ export function Navbar() {
     const [isMenuClosing, setIsMenuClosing] = useState(false)
     const [searchProducts, setSearchProducts] = useState<Product[]>(staticProducts)
     const [storeUserName, setStoreUserName] = useState("")
+    const [categories, setCategories] = useState<NavbarCategory[]>(DEFAULT_NAVBAR_CATEGORIES)
     const [isDesktopCategoriesOpen, setIsDesktopCategoriesOpen] = useState(false)
     const [expandedDesktopCategoryId, setExpandedDesktopCategoryId] = useState<string | null>(null)
     const [expandedMobileCategoryId, setExpandedMobileCategoryId] = useState<string | null>(null)
     const desktopCloseTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null)
     const preventDesktopOpenUntilRef = useRef(0)
+    const menuRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (isDesktopCategoriesOpen && menuRef.current) {
+            const lists = menuRef.current.querySelectorAll(".desktop-suboptions-list")
+            lists.forEach((list) => {
+                list.scrollTop = 0
+            })
+        }
+    }, [isDesktopCategoriesOpen, expandedDesktopCategoryId])
 
     const handleContactClick = useCallback(() => {
         showNotification("¡Nos pondremos en contacto pronto!")
@@ -123,7 +157,7 @@ export function Navbar() {
         navigate(`/all-products?category=${categoryId}`)
     }
 
-    const handleSubOptionClick = (categoryId: string, subOptionIndex: number) => {
+    const handleSubOptionClick = (categoryId: string, subOptionName: string) => {
         if (desktopCloseTimeoutRef.current !== null) {
             globalThis.clearTimeout(desktopCloseTimeoutRef.current)
             desktopCloseTimeoutRef.current = null
@@ -132,7 +166,7 @@ export function Navbar() {
         preventDesktopOpenUntilRef.current = Date.now() + 500
         setIsDesktopCategoriesOpen(false)
         setExpandedDesktopCategoryId(null)
-        navigate(`/all-products?category=${categoryId}&sub=${subOptionIndex}`)
+        navigate(`/all-products?category=${categoryId}&sub=${encodeURIComponent(subOptionName)}`)
     }
 
     const toggleDesktopSubOptions = (categoryId: string) => {
@@ -158,6 +192,7 @@ export function Navbar() {
 
         desktopCloseTimeoutRef.current = globalThis.setTimeout(() => {
             setIsDesktopCategoriesOpen(false)
+            setExpandedDesktopCategoryId(null)
             desktopCloseTimeoutRef.current = null
         }, 330)
     }
@@ -175,6 +210,23 @@ export function Navbar() {
         }
 
         void loadSearchProducts()
+    }, [])
+
+    useEffect(() => {
+        async function loadCategories() {
+            try {
+                const result = await fetchStoreCategories()
+                if (!result.ok || !result.categories) return
+                const nextCategories = buildNavbarCategories(result.categories)
+                if (nextCategories.length > 0) {
+                    setCategories(nextCategories)
+                }
+            } catch (loadError) {
+                console.error(loadError)
+            }
+        }
+
+        void loadCategories()
     }, [])
 
     useEffect(() => {
@@ -326,12 +378,14 @@ export function Navbar() {
                                 />
                             </button>
                             <div
+                                ref={menuRef}
                                 className="desktop-categories-menu"
                                 onMouseEnter={openDesktopCategories}
                                 onMouseLeave={closeDesktopCategoriesWithDelay}
                                 onKeyDown={(event) => {
                                     if (event.key === "Escape") {
                                         setIsDesktopCategoriesOpen(false)
+                                        setExpandedDesktopCategoryId(null)
                                     }
                                 }}
                                 tabIndex={-1}
@@ -342,7 +396,7 @@ export function Navbar() {
                                     Explorar categorías
                                 </p>
                                 <div className="desktop-categories-grid">
-                                    {CATEGORIES.map((category) => (
+                                    {categories.map((category) => (
                                         <div
                                             key={category.id}
                                             className={`desktop-category-group ${
@@ -394,7 +448,7 @@ export function Navbar() {
                                             </div>
                                             <div className="desktop-suboptions-list">
                                                 {category.subOptions.map(
-                                                    (subOption, optionIndex) => (
+                                                            (subOption) => (
                                                         <button
                                                             key={`${category.id}-${subOption}`}
                                                             type="button"
@@ -402,7 +456,7 @@ export function Navbar() {
                                                             onClick={() =>
                                                                 handleSubOptionClick(
                                                                     category.id,
-                                                                    optionIndex + 1
+                                                                    subOption
                                                                 )
                                                             }
                                                         >
@@ -491,7 +545,7 @@ export function Navbar() {
                                 </button>
                             </div>
                             <div className="mobile-menu-categories">
-                                {CATEGORIES.map((category) => (
+                                {categories.map((category) => (
                                     <div
                                         key={category.id}
                                         className={`mobile-category-group ${expandedMobileCategoryId === category.id ? "mobile-category-group--open" : ""}`}
@@ -525,7 +579,7 @@ export function Navbar() {
                                         </div>
                                         <div className="mobile-suboptions-list">
                                             {category.subOptions.map(
-                                                (subOption, optionIndex) => (
+                                                (subOption) => (
                                                     <button
                                                         key={`${category.id}-mobile-${subOption}`}
                                                         type="button"
@@ -534,7 +588,7 @@ export function Navbar() {
                                                             closeMenu()
                                                             handleSubOptionClick(
                                                                 category.id,
-                                                                optionIndex + 1
+                                                                subOption
                                                             )
                                                         }}
                                                     >

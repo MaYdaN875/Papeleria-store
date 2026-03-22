@@ -1,8 +1,20 @@
 import type { Product } from "../types/Product"
-import type { StoreHomeSlide, StoreHomeSlidesResponse, StoreProductsResponse } from "../types/store"
+import type {
+    StoreCategoryNode,
+    StoreCategoriesResponse,
+    StoreHomeSlide,
+    StoreHomeSlidesResponse,
+    StoreProductsResponse
+} from "../types/store"
 import { buildCandidateApiBases, getApiBase } from "./api/base"
 
-export type { StoreHomeSlide, StoreHomeSlidesResponse, StoreProductsResponse } from "../types/store"
+export type {
+    StoreCategoryNode,
+    StoreCategoriesResponse,
+    StoreHomeSlide,
+    StoreHomeSlidesResponse,
+    StoreProductsResponse
+} from "../types/store"
 const API_BASE = getApiBase()
 
 type BinaryLike = 0 | 1 | "0" | "1" | boolean
@@ -11,6 +23,9 @@ interface RawStoreProduct {
     id: number | string
     name: string
     category: string
+    category_slug?: string
+    parent_category?: string
+    parent_category_slug?: string
     description?: string | null
     image?: string | null
     stock: number | string
@@ -35,6 +50,15 @@ interface RawStoreHomeSlide {
     id: number | string
     image_url: string
     display_order?: number | string
+}
+
+interface RawStoreCategoryNode {
+    id: number | string
+    name: string
+    children?: Array<{
+        id: number | string
+        name: string
+    }>
 }
 
 function toBooleanFlag(value: RawStoreProduct["mayoreo"]): boolean {
@@ -69,6 +93,9 @@ function normalizeStoreProduct(raw: RawStoreProduct, apiBase: string): Product {
         id: Number(raw.id) || 0,
         name: raw.name ?? "",
         category: raw.category ?? "General",
+        categorySlug: raw.category_slug ?? "",
+        parentCategory: raw.parent_category ?? "",
+        parentCategorySlug: raw.parent_category_slug ?? "",
         description: raw.description ?? "Producto disponible en tienda",
         image: resolveStoreImageUrl(raw.image, apiBase),
         stock: Number(raw.stock) || 0,
@@ -96,6 +123,17 @@ function normalizeStoreProduct(raw: RawStoreProduct, apiBase: string): Product {
         discountPercentage: hasDiscount
             ? Number(raw.discount_percentage) || Math.round(((originalPrice - finalPrice) / originalPrice) * 100)
             : undefined,
+    }
+}
+
+function normalizeStoreCategoryNode(raw: RawStoreCategoryNode): StoreCategoryNode {
+    return {
+        id: Number(raw.id) || 0,
+        name: raw.name ?? "",
+        children: (raw.children ?? []).map((child) => ({
+            id: Number(child.id) || 0,
+            name: child.name ?? "",
+        })),
     }
 }
 
@@ -238,6 +276,63 @@ export async function fetchStoreHomeSlides(): Promise<StoreHomeSlidesResponse> {
     return {
         ok: false,
         message: `No se pudo conectar a la API de slides. ${lastNetworkError}`,
+    }
+}
+
+export async function fetchStoreCategories(): Promise<StoreCategoriesResponse> {
+    const candidateBases = buildCandidateApiBases(API_BASE)
+    if (candidateBases.length === 0 || !candidateBases[0]) {
+        return {
+            ok: false,
+            message: "VITE_API_URL no esta configurada.",
+        }
+    }
+
+    let lastNetworkError = ""
+    const ordered = prioritizeCandidates(candidateBases)
+
+    for (const base of ordered) {
+        try {
+            const response = await fetchWithTimeout(
+                `${base}/public/categories.php`,
+                FETCH_TIMEOUT_MS
+            )
+
+            if (!response.ok) {
+                const errorBody = (await response.json().catch(() => ({}))) as Partial<StoreCategoriesResponse>
+                return {
+                    ok: false,
+                    message: errorBody.message ?? "No se pudieron cargar las categorias de la tienda.",
+                }
+            }
+
+            const body = (await response.json()) as {
+                ok: boolean
+                message?: string
+                categories?: RawStoreCategoryNode[]
+            }
+
+            if (!body.ok) {
+                return {
+                    ok: false,
+                    message: body.message ?? "No se pudieron cargar las categorias de la tienda.",
+                }
+            }
+
+            lastWorkingBase = base
+            return {
+                ok: true,
+                message: body.message,
+                categories: (body.categories ?? []).map(normalizeStoreCategoryNode),
+            }
+        } catch (error) {
+            lastNetworkError = error instanceof Error ? error.message : "Error de red desconocido"
+        }
+    }
+
+    return {
+        ok: false,
+        message: `No se pudo conectar a la API de categorias. ${lastNetworkError}`,
     }
 }
 

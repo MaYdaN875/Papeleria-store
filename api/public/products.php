@@ -26,6 +26,17 @@ try {
   $hasMayoreoMinQty = in_array('mayoreo_min_qty', $minQtyColumns, true);
   $hasMenudeoMinQty = in_array('menudeo_min_qty', $minQtyColumns, true);
 
+  $categoryColumnsStmt = $pdo->query("
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name = 'categories'
+      AND column_name IN ('slug', 'parent_id')
+  ");
+  $categoryColumns = $categoryColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
+  $hasCategorySlug = in_array('slug', $categoryColumns, true);
+  $hasCategoryParent = in_array('parent_id', $categoryColumns, true);
+
   $offersTableStmt = $pdo->query("
     SELECT COUNT(*)
     FROM information_schema.tables
@@ -117,6 +128,9 @@ try {
       p.id,
       p.name,
       c.name AS category,
+      " . ($hasCategorySlug ? "COALESCE(c.slug, '')" : "''") . " AS category_slug,
+      " . ($hasCategoryParent ? "cp.name" : "c.name") . " AS parent_category,
+      " . ($hasCategorySlug && $hasCategoryParent ? "COALESCE(cp.slug, c.slug, '')" : ($hasCategorySlug ? "COALESCE(c.slug, '')" : "''")) . " AS parent_category_slug,
       COALESCE(NULLIF(p.description, ''), 'Producto disponible en tienda') AS description,
       $imagesSelect
       p.stock,
@@ -144,6 +158,7 @@ try {
       END AS discount_percentage
     FROM products p
     LEFT JOIN categories c ON c.id = p.category_id
+    " . ($hasCategoryParent ? "LEFT JOIN categories cp ON cp.id = c.parent_id" : "") . "
     $offersJoin
     $homeCarouselJoin
     $imagesJoin
@@ -171,6 +186,9 @@ try {
     $product['final_price'] = (float) $product['final_price'];
     $product['discount_percentage'] = (int) $product['discount_percentage'];
     $product['category'] = $product['category'] ?? 'General';
+    $product['category_slug'] = $product['category_slug'] ?? '';
+    $product['parent_category'] = $product['parent_category'] ?? $product['category'];
+    $product['parent_category_slug'] = $product['parent_category_slug'] ?? $product['category_slug'];
     $product['description'] = $product['description'] ?? 'Producto disponible en tienda';
     $product['image'] = $product['image'] ?? '/images/boligrafos.jpg';
   }
