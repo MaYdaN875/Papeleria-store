@@ -34,7 +34,7 @@ export function ProductDetailActions({
     stockRanges,
 }: ProductDetailActionsProps) {
     const totalStock = stockRanges?.totalStock ?? product.stock
-    const maxQuantity = Math.min(20, Math.max(1, totalStock))
+    const maxQuantity = Math.min(500, Math.max(1, totalStock))
 
     const isDigitalService = typeof product.category === 'string' && product.category.toLowerCase().includes('digitales');
 

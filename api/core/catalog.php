@@ -108,6 +108,9 @@ function adminNormalizeProductRow(array $product): array
   if (array_key_exists('menudeo_min_qty', $product)) {
     $product['menudeo_min_qty'] = (int) ($product['menudeo_min_qty'] ?? 1);
   }
+  if (array_key_exists('low_stock_threshold', $product)) {
+    $product['low_stock_threshold'] = (int) ($product['low_stock_threshold'] ?? 5);
+  }
   if (array_key_exists('is_offer', $product))
     $product['is_offer'] = $product['is_offer'] ? 1 : 0;
   if (array_key_exists('home_carousel_slot', $product)) {

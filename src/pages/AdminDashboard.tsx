@@ -47,6 +47,7 @@ interface ProductEditFormState {
   mayoreoStock: string;
   mayoreoMinQty: string;
   menudeoStock: string;
+  lowStockThreshold: string;
   homeCarouselSlot: HomeCarouselSlotFormValue;
 }
 
@@ -61,6 +62,7 @@ interface ProductCreateFormState {
   mayoreoStock: string;
   mayoreoMinQty: string;
   menudeoStock: string;
+  lowStockThreshold: string;
   homeCarouselSlot: HomeCarouselSlotFormValue;
 }
 
@@ -117,7 +119,6 @@ const INITIAL_LOAD_STATE: InitialLoadState = {
 interface AdminProductsTableSectionProps {
   filteredProducts: AdminProduct[];
   productsLength: number;
-  lowStockThreshold: number;
   startEditProduct: (product: AdminProduct) => void;
   handleDeleteProduct: (product: AdminProduct) => void;
   isDeletingProductId: number | null;
@@ -133,7 +134,6 @@ interface AdminProductsTableSectionProps {
 function AdminProductsTableSection({
   filteredProducts,
   productsLength,
-  lowStockThreshold,
   startEditProduct,
   handleDeleteProduct,
   isDeletingProductId,
@@ -185,7 +185,7 @@ function AdminProductsTableSection({
                 <td>
                   <span
                     className={`admin-stock-pill ${
-                      product.stock <= lowStockThreshold ? "admin-stock-pill--low" : "admin-stock-pill--ok"
+                      product.stock <= (product.lowStockThreshold ?? 5) ? "admin-stock-pill--low" : "admin-stock-pill--ok"
                     }`}
                   >
                     {product.stock}
@@ -359,6 +359,7 @@ export function AdminDashboard() {
     mayoreoStock: "",
     mayoreoMinQty: "10",
     menudeoStock: "0",
+    lowStockThreshold: "5",
     homeCarouselSlot: "0",
   });
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
@@ -381,7 +382,6 @@ export function AdminDashboard() {
   const [isUploadingSlideImage, setIsUploadingSlideImage] = useState(false);
   const [slideImageUploadError, setSlideImageUploadError] = useState("");
   const [slideImageUploadSuccess, setSlideImageUploadSuccess] = useState("");
-  const [lowStockThreshold, setLowStockThreshold] = useState(5);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
@@ -400,6 +400,7 @@ export function AdminDashboard() {
     mayoreoStock: "",
     mayoreoMinQty: "10",
     menudeoStock: "0",
+    lowStockThreshold: "5",
     homeCarouselSlot: "0",
   });
   const [homeSlideCreateForm, setHomeSlideCreateForm] = useState<HomeSlideCreateFormState>({
@@ -774,6 +775,7 @@ export function AdminDashboard() {
       mayoreoStock: String(product.mayoreoStock ?? 0),
       mayoreoMinQty: String(product.mayoreoMinQty ?? 10),
       menudeoStock: String(product.menudeoStock ?? 0),
+      lowStockThreshold: String(product.lowStockThreshold ?? 5),
       homeCarouselSlot: String(product.homeCarouselSlot ?? 0) as HomeCarouselSlotFormValue,
     });
     // Auto-scroll al formulario de edición después de renderizar.
@@ -1009,6 +1011,7 @@ export function AdminDashboard() {
           menudeoPrice: null,
           menudeoStock: product.menudeoStock ?? 0,
           menudeoMinQty: product.menudeoMinQty ?? 1,
+          lowStockThreshold: product.lowStockThreshold ?? 5,
           homeCarouselSlot: parsedSlot as HomeCarouselSlotValue,
         },
         token
@@ -1102,6 +1105,7 @@ export function AdminDashboard() {
         menudeoPrice: null,
         menudeoStock: Math.max(0, parsedStock),
         menudeoMinQty: 1,
+        lowStockThreshold: Math.max(1, Number(createForm.lowStockThreshold) || 5),
         homeCarouselSlot,
       }, token);
 
@@ -1125,6 +1129,7 @@ export function AdminDashboard() {
         mayoreoStock: "",
         mayoreoMinQty: "10",
         menudeoStock: "0",
+        lowStockThreshold: "5",
         homeCarouselSlot: "0",
       }));
       setIsCreatingProduct(false);
@@ -1195,6 +1200,7 @@ export function AdminDashboard() {
         menudeoPrice: null,
         menudeoStock: Math.max(0, parsedStock),
         menudeoMinQty: 1,
+        lowStockThreshold: Math.max(1, Number(editForm.lowStockThreshold) || 5),
         homeCarouselSlot,
       }, token);
 
@@ -1371,8 +1377,8 @@ export function AdminDashboard() {
     return "Estado de conexión en verificación...";
   }
 
-  const totalCategories = new Set(products.map((product) => product.category)).size;
-  const lowStockProducts = products.filter((product) => product.stock <= lowStockThreshold);
+
+  const lowStockProducts = products.filter((product) => product.stock <= (product.lowStockThreshold ?? 5));
   const lowStockCount = lowStockProducts.length;
   const mayoreoEnabledCount = products.filter((product) => product.mayoreo === 1).length;
 
@@ -1597,11 +1603,10 @@ export function AdminDashboard() {
           <div className="admin-header-topline">
             <div>
               <span className="admin-header-eyebrow">Panel privado</span>
-              <h1>Control de catálogo</h1>
+              <h1>¡Hola! Resumen de tu negocio</h1>
               <p>
-                Panel actualizado con módulos de productos, ofertas e ingresos.
-                Ahora puedes activar ofertas por producto y revisar alertas de surtido
-                antes de que se agote inventario.
+                Desde aquí tienes el control total de tu inventario. Administra tus productos, 
+                activa precios especiales y revisa las alertas para surtir mercancía antes de que se agote.
               </p>
             </div>
             <div className="admin-header-actions">
@@ -1622,50 +1627,92 @@ export function AdminDashboard() {
             </div>
           </div>
           <div className="admin-status-chips">
-            <span className="admin-status-chip admin-status-chip--ok">Seguridad backend activa</span>
-            <span className="admin-status-chip">Productos con oferta: {offersCount}</span>
-            <span className="admin-status-chip">Alertas de inventario: {lowStockCount}</span>
-            {lastSyncAt && <span className="admin-status-chip">Sincronizado: {lastSyncAt}</span>}
+            <span className="admin-status-chip admin-status-chip--ok">
+              <i className="fas fa-shield-alt" aria-hidden style={{ marginRight: '4px' }} /> Conexión segura
+            </span>
+            <span className="admin-status-chip">
+              <i className="fas fa-tags" aria-hidden style={{ marginRight: '4px' }} /> {offersCount} en oferta
+            </span>
+            <span className="admin-status-chip">
+              <i className="fas fa-exclamation-triangle" aria-hidden style={{ marginRight: '4px' }} /> {lowStockCount} alertas
+            </span>
+            {lastSyncAt && <span className="admin-status-chip"><i className="fas fa-sync" aria-hidden style={{ marginRight: '4px' }} /> Sincronizado: {lastSyncAt}</span>}
           </div>
             </header>
 
             <section className="admin-cards-grid">
-          <article className="admin-card">
-            <h2>Catálogo de productos</h2>
-            <p className="admin-card-number">{products.length}</p>
-            <p className="admin-card-description">
-              Productos activos sincronizados desde MySQL.
-            </p>
-            <p className="admin-card-note">Gestión completa disponible: crear, editar y eliminar.</p>
-          </article>
+              <div
+                role="button"
+                tabIndex={0}
+                className="admin-card admin-card--clickable"
+                onClick={() => { setActiveSection("productos"); setTimeout(() => document.getElementById("section-products-list")?.scrollIntoView({ behavior: "smooth" }), 100); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveSection("productos"); setTimeout(() => document.getElementById("section-products-list")?.scrollIntoView({ behavior: "smooth" }), 100); } }}
+              >
+              <h2>
+                <i className="fas fa-box-open" aria-hidden style={{ marginRight: '8px', color: 'var(--color-primary)' }}/> 
+                Catálogo
+              </h2>
+              <p className="admin-card-number">{products.length}</p>
+              <p className="admin-card-description">
+                Total de artículos registrados en tu inventario listo para la venta.
+              </p>
+              <p className="admin-card-note">Haz clic para administrar &rarr;</p>
+            </div>
 
-          <article className="admin-card">
-            <h2>Ofertas activas</h2>
-            <p className="admin-card-number">{offersCount}</p>
-            <p className="admin-card-description">
-              Productos con precio promocional activo.
-            </p>
-            <p className="admin-card-note">Puedes quitarlas sin borrar el producto.</p>
-          </article>
+            <div
+              role="button"
+              tabIndex={0}
+              className="admin-card admin-card--clickable"
+              onClick={() => setActiveSection("ofertas")}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveSection("ofertas"); } }}
+            >
+              <h2>
+                <i className="fas fa-percentage" aria-hidden style={{ marginRight: '8px', color: 'var(--color-primary)' }}/> 
+                Ofertas
+              </h2>
+              <p className="admin-card-number">{offersCount}</p>
+              <p className="admin-card-description">
+                Productos destacados con un precio promocional activo.
+              </p>
+              <p className="admin-card-note">Haz clic para administrarlas &rarr;</p>
+            </div>
 
-          <article className="admin-card">
-            <h2>Stock bajo</h2>
-            <p className="admin-card-number">{lowStockCount}</p>
-            <p className="admin-card-description">
-              Productos con stock menor o igual a {lowStockThreshold} unidades.
-            </p>
-            <p className="admin-card-note">Métrica visual para decisiones rápidas de inventario.</p>
-          </article>
+            <div
+              role="button"
+              tabIndex={0}
+              className="admin-card admin-card--clickable"
+              onClick={() => { setActiveSection("productos"); setTimeout(() => document.getElementById("section-stock-alerts")?.scrollIntoView({ behavior: "smooth" }), 100); }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveSection("productos"); setTimeout(() => document.getElementById("section-stock-alerts")?.scrollIntoView({ behavior: "smooth" }), 100); } }}
+            >
+              <h2>
+                <i className="fas fa-exclamation-circle" aria-hidden style={{ marginRight: '8px', color: 'var(--color-accent)' }}/> 
+                Stock crítico
+              </h2>
+              <p className="admin-card-number">{lowStockCount}</p>
+              <p className="admin-card-description">
+                Artículos que alcanzaron tu límite de aviso individual y requieren surtido.
+              </p>
+              <p className="admin-card-note">Haz clic para ver la lista &rarr;</p>
+            </div>
 
-          <article className="admin-card">
-            <h2>Mayoreo habilitado</h2>
-            <p className="admin-card-number">{mayoreoEnabledCount}</p>
-            <p className="admin-card-description">
-              Productos que actualmente permiten compra por mayoreo.
-            </p>
-            <p className="admin-card-note">Categorías detectadas en catálogo: {totalCategories}.</p>
-          </article>
-            </section>
+            <div
+              role="button"
+              tabIndex={0}
+              className="admin-card admin-card--clickable"
+              onClick={() => { setActiveSection("productos"); setTimeout(() => document.getElementById("section-products-list")?.scrollIntoView({ behavior: "smooth" }), 100); }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveSection("productos"); setTimeout(() => document.getElementById("section-products-list")?.scrollIntoView({ behavior: "smooth" }), 100); } }}
+            >
+              <h2>
+                <i className="fas fa-boxes" aria-hidden style={{ marginRight: '8px', color: 'var(--color-primary)' }}/> 
+                Mayoreo
+              </h2>
+              <p className="admin-card-number">{mayoreoEnabledCount}</p>
+              <p className="admin-card-description">
+                Artículos configurados para venta automática por volumen o menudeo.
+              </p>
+              <p className="admin-card-note">Haz clic para configurar &rarr;</p>
+            </div>
+          </section>
           </>
         )}
 
@@ -1678,20 +1725,9 @@ export function AdminDashboard() {
               También incluye alertas de inventario para surtir antes de que se agoten productos.
             </p>
           </div>
-          <div className="admin-surface-card admin-stock-alerts-panel">
+          <div className="admin-surface-card admin-stock-alerts-panel" id="section-stock-alerts">
             <div className="admin-stock-alerts-header">
               <h3>Aviso de inventario</h3>
-              <label className="admin-threshold-label">
-                <span>Stock mínimo</span>
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  className="admin-edit-input"
-                  value={lowStockThreshold}
-                  onChange={(event) => setLowStockThreshold(Math.max(1, Number(event.target.value) || 1))}
-                />
-              </label>
             </div>
             {lowStockProducts.length === 0 && (
               <p className="admin-stock-alerts-empty">
@@ -1710,7 +1746,7 @@ export function AdminDashboard() {
                   onClick={() =>
                     downloadStockListPdf(
                       lowStockProducts.map((p) => ({ id: p.id, name: p.name, stock: p.stock })),
-                      lowStockThreshold
+                      0
                     )
                   }
                 >
@@ -1726,9 +1762,14 @@ export function AdminDashboard() {
                         onClick={() => startEditProduct(product)}
                         title="Click para editar este producto"
                       >
-                        <span className="admin-stock-alert-name">{product.name}</span>
+                        <div className="admin-stock-alert-info">
+                          <span className="admin-stock-alert-name">{product.name}</span>
+                          <span className="admin-stock-alert-meta">
+                            ID {product.id} • Límite configurado: {product.lowStockThreshold ?? 5}
+                          </span>
+                        </div>
                         <span className={`admin-stock-pill ${product.stock === 0 ? "admin-stock-pill--critical" : "admin-stock-pill--low"}`}>
-                          {product.stock}
+                          {product.stock === 0 ? "Agotado (0)" : `${product.stock} disp.`}
                         </span>
                       </button>
                     </li>
@@ -1812,6 +1853,21 @@ export function AdminDashboard() {
                     setCreateForm((prevForm) => ({ ...prevForm, stock: event.target.value }))
                   }
                   placeholder="Unidades disponibles a precio normal (1 a N)"
+                />
+              </label>
+
+              <label className="admin-edit-label">
+                <span>Aviso stock bajo</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  className="admin-edit-input"
+                  value={createForm.lowStockThreshold}
+                  onChange={(event) =>
+                    setCreateForm((prevForm) => ({ ...prevForm, lowStockThreshold: event.target.value }))
+                  }
+                  placeholder="Avisar stock bajo desde"
                 />
               </label>
 
@@ -1918,20 +1974,7 @@ export function AdminDashboard() {
                       placeholder="Ej: 8 (mayoreo desde 8)"
                     />
                   </label>
-                  <label className="admin-edit-label">
-                    <span>Stock mayoreo (unidades)</span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      className="admin-edit-input"
-                      value={createForm.mayoreoStock}
-                      onChange={(event) =>
-                        setCreateForm((prevForm) => ({ ...prevForm, mayoreoStock: event.target.value }))
-                      }
-                      placeholder="Ej: 8 (mayoreo 8-15)"
-                    />
-                  </label>
+
                 </div>
               )}
             </div>
@@ -1956,7 +1999,7 @@ export function AdminDashboard() {
             <p>No hay productos registrados.</p>
           )}
           {!isLoading && !error && products.length > 0 && (
-            <div className="admin-table-wrapper admin-surface-card">
+            <div className="admin-table-wrapper admin-surface-card" id="section-products-list">
               <div className="admin-table-toolbar">
                 <div className="admin-search-wrapper" style={{ position: "relative", display: "flex", alignItems: "center", flex: 1 }}>
                   <input
@@ -2045,7 +2088,6 @@ export function AdminDashboard() {
                   key={productsTableFilterKey}
                   filteredProducts={filteredProducts}
                   productsLength={products.length}
-                  lowStockThreshold={lowStockThreshold}
                   startEditProduct={startEditProduct}
                   handleDeleteProduct={handleDeleteProduct}
                   isDeletingProductId={isDeletingProductId}
@@ -2102,6 +2144,21 @@ export function AdminDashboard() {
                       setEditForm((prevForm) => ({ ...prevForm, stock: event.target.value }))
                     }
                     placeholder="Unidades disponibles a precio normal (1 a N)"
+                  />
+                </label>
+
+                <label className="admin-edit-label">
+                  <span>Aviso stock bajo</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    className="admin-edit-input"
+                    value={editForm.lowStockThreshold}
+                    onChange={(event) =>
+                      setEditForm((prevForm) => ({ ...prevForm, lowStockThreshold: event.target.value }))
+                    }
+                    placeholder="Avisar stock bajo desde"
                   />
                 </label>
 
@@ -2206,20 +2263,6 @@ export function AdminDashboard() {
                           setEditForm((prevForm) => ({ ...prevForm, mayoreoMinQty: event.target.value }))
                         }
                         placeholder="Ej: 8 (mayoreo desde 8)"
-                      />
-                    </label>
-                    <label className="admin-edit-label">
-                      <span>Stock mayoreo (unidades)</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        className="admin-edit-input"
-                        value={editForm.mayoreoStock}
-                        onChange={(event) =>
-                          setEditForm((prevForm) => ({ ...prevForm, mayoreoStock: event.target.value }))
-                        }
-                        placeholder="Ej: 8 (mayoreo 8-15)"
                       />
                     </label>
                   </div>

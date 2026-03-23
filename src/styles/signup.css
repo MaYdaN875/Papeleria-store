@@ -38,7 +38,7 @@
 
 /* Contenedor principal - centra la tarjeta de registro en la pantalla */
 .signup-container {
-  min-height: 100vh;           /* Ocupa toda la altura de la pantalla */
+  min-height: 100dvh;           /* Ocupa toda la altura de la pantalla */
   display: flex;
   align-items: flex-start;     /* Permite scroll natural sin recorte */
   justify-content: center;     /* Centra horizontalmente */
@@ -103,8 +103,10 @@
   font-weight: 700;
   transition: all 0.15s ease;
   margin-bottom: 25px;
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
   text-decoration: none;
   position: relative;
@@ -112,6 +114,7 @@
   outline: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  appearance: none;
 }
 
 .back-to-home-btn:hover {
@@ -169,6 +172,7 @@
   padding: 20px 15px;
   background: rgba(255, 255, 255, 0.15);
   border-radius: 12px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   text-align: center;
@@ -354,6 +358,7 @@
   font-size: 13px;
   color: var(--color-text-dark);
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
   line-height: 1.5;
   margin: 8px 0;

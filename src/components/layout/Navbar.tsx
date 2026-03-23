@@ -396,6 +396,17 @@ export function Navbar() {
                                     Explorar categorías
                                 </p>
                                 <div className="desktop-categories-grid">
+                                    <button
+                                        type="button"
+                                        className="desktop-category-view-all"
+                                        onClick={() => {
+                                            setIsDesktopCategoriesOpen(false)
+                                            navigate("/all-products")
+                                        }}
+                                    >
+                                        <i className="fas fa-th-large" aria-hidden="true" />
+                                        <span>Ver todo el catálogo</span>
+                                    </button>
                                     {categories.map((category) => (
                                         <div
                                             key={category.id}
@@ -545,6 +556,17 @@ export function Navbar() {
                                 </button>
                             </div>
                             <div className="mobile-menu-categories">
+                                <button
+                                    type="button"
+                                    className="mobile-category-view-all"
+                                    onClick={() => {
+                                        closeMenu()
+                                        navigate("/all-products")
+                                    }}
+                                >
+                                    <i className="fas fa-th-large" aria-hidden="true" />
+                                    <span>Ver todo el catálogo</span>
+                                </button>
                                 {categories.map((category) => (
                                     <div
                                         key={category.id}

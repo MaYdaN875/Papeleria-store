@@ -21,11 +21,12 @@ try {
     FROM information_schema.columns
     WHERE table_schema = DATABASE()
       AND table_name = 'products'
-      AND column_name IN ('mayoreo_min_qty', 'menudeo_min_qty')
+      AND column_name IN ('mayoreo_min_qty', 'menudeo_min_qty', 'low_stock_threshold')
   ");
   $minQtyColumns = $minQtyColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
   $hasMayoreoMinQty = in_array('mayoreo_min_qty', $minQtyColumns, true);
   $hasMenudeoMinQty = in_array('menudeo_min_qty', $minQtyColumns, true);
+  $hasLowStockThreshold = in_array('low_stock_threshold', $minQtyColumns, true);
 
   $mayoreoMinQtySelect = $hasMayoreoMinQty
     ? "COALESCE(p.mayoreo_min_qty, 10) AS mayoreo_min_qty,"
@@ -34,6 +35,10 @@ try {
   $menudeoMinQtySelect = $hasMenudeoMinQty
     ? "COALESCE(p.menudeo_min_qty, 1) AS menudeo_min_qty,"
     : "1 AS menudeo_min_qty,";
+
+  $lowStockThresholdSelect = $hasLowStockThreshold
+    ? "COALESCE(p.low_stock_threshold, 5) AS low_stock_threshold,"
+    : "5 AS low_stock_threshold,";
 
   $offerSql = adminOfferSqlParts($pdo, 'p', 'po');
   $imageSql = adminImageSqlParts($pdo, 'p', 'pimg');
@@ -54,6 +59,7 @@ try {
       p.menudeo_price,
       p.menudeo_stock,
       {$menudeoMinQtySelect}
+      {$lowStockThresholdSelect}
       {$homeCarouselSql['select']},
       {$offerSql['select']},
       {$imageSql['select']},

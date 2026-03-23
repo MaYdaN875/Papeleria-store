@@ -6,7 +6,7 @@
 .cart-main {
   background: var(--color-light-bg);
   padding: 12px 24px 48px;
-  min-height: calc(100vh - 200px);
+  min-height: calc(100dvh - 200px);
   max-width: 900px;
   margin: 0 auto;
 }

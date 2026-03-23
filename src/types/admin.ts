@@ -16,6 +16,7 @@ export interface AdminProduct {
   menudeoPrice: number | null;
   menudeoStock: number;
   menudeoMinQty: number;
+  lowStockThreshold: number;
   homeCarouselSlot: AdminHomeCarouselSlot;
   category: string;
   isOffer: AdminBinaryFlag;
@@ -73,6 +74,7 @@ export interface UpdateAdminProductInput {
   menudeoPrice: number | null;
   menudeoStock: number;
   menudeoMinQty: number;
+  lowStockThreshold: number;
   homeCarouselSlot: AdminHomeCarouselSlot;
 }
 
@@ -90,6 +92,7 @@ export interface CreateAdminProductInput {
   menudeoPrice: number | null;
   menudeoStock: number;
   menudeoMinQty: number;
+  lowStockThreshold: number;
   homeCarouselSlot: AdminHomeCarouselSlot;
 }
 

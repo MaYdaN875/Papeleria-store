@@ -47,6 +47,7 @@ $mayoreoMinQty = isset($data['mayoreo_min_qty']) ? (int) $data['mayoreo_min_qty'
 $menudeoPrice = isset($data['menudeo_price']) && $data['menudeo_price'] !== null ? (float) $data['menudeo_price'] : null;
 $menudeoStock = isset($data['menudeo_stock']) ? (int) $data['menudeo_stock'] : 0;
 $menudeoMinQty = isset($data['menudeo_min_qty']) ? (int) $data['menudeo_min_qty'] : 1;
+$lowStockThreshold = isset($data['low_stock_threshold']) ? (int) $data['low_stock_threshold'] : 5;
 
 if ($categoryId <= 0 || $name === '' || $price < 0 || $stock < 0) {
   adminJsonResponse(400, ['ok' => false, 'message' => 'Datos inválidos para crear producto']);
@@ -65,11 +66,12 @@ try {
     FROM information_schema.columns
     WHERE table_schema = DATABASE()
       AND table_name = 'products'
-      AND column_name IN ('mayoreo_min_qty', 'menudeo_min_qty')
+      AND column_name IN ('mayoreo_min_qty', 'menudeo_min_qty', 'low_stock_threshold')
   ");
   $minQtyColumns = $minQtyColumnsStmt->fetchAll(PDO::FETCH_COLUMN);
   $hasMayoreoMinQty = in_array('mayoreo_min_qty', $minQtyColumns, true);
   $hasMenudeoMinQty = in_array('menudeo_min_qty', $minQtyColumns, true);
+  $hasLowStockThreshold = in_array('low_stock_threshold', $minQtyColumns, true);
 
   // Validación de categoría existente.
   $categoryStmt = $pdo->prepare('SELECT id FROM categories WHERE id = :id LIMIT 1');
@@ -158,6 +160,12 @@ try {
     $insertParams['menudeo_min_qty'] = $menudeoMinQty;
   }
 
+  if ($hasLowStockThreshold) {
+    $insertColumns[] = 'low_stock_threshold';
+    $insertValues[] = ':low_stock_threshold';
+    $insertParams['low_stock_threshold'] = $lowStockThreshold;
+  }
+
   $insertColumns[] = 'is_active';
   $insertValues[] = '1';
 
@@ -190,6 +198,7 @@ try {
       p.menudeo_price,
       p.menudeo_stock,
       " . ($hasMenudeoMinQty ? "COALESCE(p.menudeo_min_qty, 1)" : "1") . " AS menudeo_min_qty,
+      " . ($hasLowStockThreshold ? "COALESCE(p.low_stock_threshold, 5)" : "5") . " AS low_stock_threshold,
       {$homeCarouselSql['select']},
       {$offerSql['select']},
       {$imageSql['select']},

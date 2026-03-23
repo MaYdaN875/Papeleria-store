@@ -139,6 +139,7 @@ interface RawAdminProduct {
   menudeo_price?: number | string | null;
   menudeo_stock?: number | string;
   menudeo_min_qty?: number | string;
+  low_stock_threshold?: number | string;
   home_carousel_slot?: number | string;
   category: string;
   is_offer?: RawBinaryFlag;
@@ -215,6 +216,10 @@ function normalizeAdminProduct(raw: RawAdminProduct): AdminProduct {
       raw.menudeo_min_qty !== undefined && raw.menudeo_min_qty !== null && raw.menudeo_min_qty !== ""
         ? Number(raw.menudeo_min_qty) || 1
         : 1,
+    lowStockThreshold:
+      raw.low_stock_threshold !== undefined && raw.low_stock_threshold !== null && raw.low_stock_threshold !== ""
+        ? Number(raw.low_stock_threshold) || 5
+        : 5,
     homeCarouselSlot,
     category: raw.category ?? "",
     isOffer: toBinaryFlag(raw.is_offer),
@@ -416,6 +421,7 @@ export async function updateAdminProduct(
       menudeo_price: payload.menudeoPrice,
       menudeo_stock: payload.menudeoStock,
       menudeo_min_qty: payload.menudeoMinQty,
+      low_stock_threshold: payload.lowStockThreshold,
       home_carousel_slot: payload.homeCarouselSlot,
     }),
   });
