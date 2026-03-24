@@ -31,7 +31,6 @@ import type {
   AdminHomeSlide,
   AdminOffer,
   AdminOrder,
-  AdminOrderItem,
   AdminProduct,
   AdminSalesProductRow,
   AdminSalesTodaySummary,
