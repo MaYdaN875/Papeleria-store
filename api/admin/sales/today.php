@@ -95,6 +95,7 @@ try {
     FROM order_items oi
     INNER JOIN orders o ON o.id = oi.order_id
     WHERE DATE(o.created_at) = CURDATE()
+      AND o.status = 'paid'
   ";
 
   $summaryStmt = $pdo->query($summarySql);
@@ -115,6 +116,7 @@ try {
     INNER JOIN orders o ON o.id = oi.order_id
     LEFT JOIN products p ON p.id = oi.product_id
     WHERE DATE(o.created_at) = CURDATE()
+      AND o.status = 'paid'
     GROUP BY oi.product_id, product_name
     ORDER BY total_revenue DESC
   ";

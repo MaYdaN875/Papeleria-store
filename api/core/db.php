@@ -4,12 +4,15 @@
  */
 
 function adminGetPdo(): PDO {
-  return new PDO(
+  $pdo = new PDO(
     "mysql:host=" . ADMIN_DB_HOST . ";dbname=" . ADMIN_DB_NAME . ";charset=utf8mb4",
     ADMIN_DB_USER,
     ADMIN_DB_PASS,
     [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
   );
+  // Sincronizamos la zona horaria con México
+  $pdo->exec("SET time_zone = '-06:00'");
+  return $pdo;
 }
 
 /**

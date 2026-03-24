@@ -18,6 +18,7 @@ import {
   fetchAdminCategories,
   fetchAdminHomeSlides,
   fetchAdminOffers,
+  fetchAdminOrders,
   fetchAdminProducts,
   fetchAdminSalesToday,
   removeAdminOffer,
@@ -29,6 +30,8 @@ import type {
   AdminCategory,
   AdminHomeSlide,
   AdminOffer,
+  AdminOrder,
+  AdminOrderItem,
   AdminProduct,
   AdminSalesProductRow,
   AdminSalesTodaySummary,
@@ -73,7 +76,7 @@ interface HomeSlideCreateFormState {
 
 type HomeCarouselSlotFormValue = "0" | "1" | "2" | "3" | "4";
 type HomeCarouselSlotValue = 0 | 1 | 2 | 3 | 4;
-type AdminSectionView = "resumen" | "productos" | "inicio" | "ofertas" | "ingresos";
+type AdminSectionView = "resumen" | "productos" | "inicio" | "ofertas" | "ingresos" | "ordenes";
 const MAX_PRODUCTS_PER_HOME_CAROUSEL = 6;
 const PRODUCTS_PER_PAGE = 20;
 
@@ -340,6 +343,12 @@ export function AdminDashboard() {
   const [adminMode, setAdminMode] = useState<"api" | "unknown">("unknown");
   const [lastSyncAt, setLastSyncAt] = useState("");
 
+  // Estado de órdenes
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
+  const [ordersError, setOrdersError] = useState("");
+  const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+
   // Estado del formulario de edición de producto.
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const editFormRef = useRef<HTMLFormElement>(null);
@@ -478,6 +487,27 @@ export function AdminDashboard() {
       console.error(salesLoadError);
       setSalesError("No se pudo conectar con la API para cargar ingresos.");
       setIsLoadingSales(false);
+    }
+  }, []);
+
+  const loadOrders = useCallback(async (token: string) => {
+    setIsLoadingOrders(true);
+    setOrdersError("");
+
+    try {
+      const result = await fetchAdminOrders(token);
+      if (!result.ok) {
+        setOrdersError(result.message ?? "No se pudo cargar el historial de órdenes.");
+        setIsLoadingOrders(false);
+        return;
+      }
+
+      setOrders(result.orders ?? []);
+      setIsLoadingOrders(false);
+    } catch (ordersLoadError) {
+      console.error(ordersLoadError);
+      setOrdersError("No se pudo conectar con la API para cargar órdenes.");
+      setIsLoadingOrders(false);
     }
   }, []);
 
@@ -733,6 +763,13 @@ export function AdminDashboard() {
     if (!token) return;
     void loadSalesToday(token);
   }, [loadSalesToday]);
+
+  useEffect(() => {
+    if (activeSection === "ordenes") {
+      const token = getAdminToken();
+      if (token) void loadOrders(token);
+    }
+  }, [activeSection, loadOrders]);
 
   useEffect(() => {
     if (!createForm.categoryId && categories.length > 0) {
@@ -1502,6 +1539,7 @@ export function AdminDashboard() {
             { key: "inicio" as const, label: "🖼️ Inicio (Slides)" },
             { key: "ofertas" as const, label: "🏷️ Ofertas" },
             { key: "ingresos" as const, label: "💰 Ingresos" },
+            { key: "ordenes" as const, label: "📋 Órdenes" },
           ]).map((item) => (
             <button
               key={item.key}
@@ -1572,6 +1610,13 @@ export function AdminDashboard() {
             onClick={() => setActiveSection("ingresos")}
           >
             Ingresos
+          </button>
+          <button
+            type="button"
+            className={`admin-nav-item ${activeSection === "ordenes" ? "admin-nav-item--active" : ""}`}
+            onClick={() => setActiveSection("ordenes")}
+          >
+            Órdenes
           </button>
           <button
             type="button"
@@ -2522,6 +2567,121 @@ export function AdminDashboard() {
               )}
             </>
           )}
+          </section>
+        )}
+
+        {activeSection === "ordenes" && (
+          <section className="admin-info-panel admin-module-section">
+            <div className="admin-panel-header">
+              <h2>Historial de Órdenes</h2>
+              <p>
+                Listado detallado de todas las compras realizadas en la tienda. 
+                Haz clic en una orden para ver los productos que contiene.
+              </p>
+            </div>
+
+            {isLoadingOrders && <p>Cargando historial de órdenes...</p>}
+            {!isLoadingOrders && ordersError && <p className="admin-auth-error">{ordersError}</p>}
+            {!isLoadingOrders && !ordersError && orders.length === 0 && (
+              <p>No se han registrado órdenes todavía.</p>
+            )}
+
+            {!isLoadingOrders && !ordersError && orders.length > 0 && (
+              <div className="admin-orders-list">
+                {orders.map((order) => {
+                  const isExpanded = expandedOrderId === order.id;
+                  const dateObj = new Date(order.createdAt);
+                  const formattedDate = dateObj.toLocaleDateString("es-MX", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+
+                  return (
+                    <article 
+                      key={order.id} 
+                      className={`admin-order-card admin-surface-card ${isExpanded ? "admin-order-card--expanded" : ""}`}
+                    >
+                      <header 
+                        className="admin-order-card-header"
+                        onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            setExpandedOrderId(isExpanded ? null : order.id);
+                          }
+                        }}
+                      >
+                        <div className="admin-order-header-info">
+                          <div className="admin-order-id-block">
+                            <span className="admin-order-badge">#{order.id}</span>
+                            <time className="admin-order-time">{formattedDate}</time>
+                          </div>
+                          <div className="admin-order-customer">
+                            <strong>{order.customerName}</strong>
+                            <span className="admin-order-email">{order.customerEmail}</span>
+                          </div>
+                        </div>
+
+                        <div className="admin-order-header-meta">
+                          <div className="admin-order-total">
+                            <span className="admin-order-total-label">Total pagado</span>
+                            <span className="admin-order-total-value">
+                              ${order.total.toFixed(2)} {order.currency.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="admin-order-status-wrap">
+                            <span className={`admin-order-status-pill admin-order-status-pill--${order.status}`}>
+                              {order.status === "paid" ? "Pagado" : 
+                               order.status === "pending" ? "Pendiente" : 
+                               order.status === "cancelled" ? "Cancelado" : order.status}
+                            </span>
+                            <span className="admin-order-chevron">
+                              {isExpanded ? "▲" : "▼"}
+                            </span>
+                          </div>
+                        </div>
+                      </header>
+
+                      {isExpanded && (
+                        <div className="admin-order-detail-content">
+                          <hr className="admin-order-divider" />
+                          <table className="admin-order-items-table">
+                            <thead>
+                              <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio unit.</th>
+                                <th>Subtotal</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {order.items.map((item) => (
+                                <tr key={item.id}>
+                                  <td>{item.productName}</td>
+                                  <td>{item.quantity}</td>
+                                  <td>${item.price.toFixed(2)}</td>
+                                  <td>${(item.price * item.quantity).toFixed(2)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                            <tfoot>
+                              <tr>
+                                <td colSpan={3} style={{ textAlign: "right", fontWeight: "bold" }}>Total</td>
+                                <td style={{ fontWeight: "bold" }}>${order.total.toFixed(2)}</td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            )}
           </section>
         )}
       </main>

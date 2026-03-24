@@ -40,6 +40,26 @@ export interface AdminSalesProductRow {
   totalOrders: number;
 }
 
+export interface AdminOrderItem {
+  id: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  price: number;
+}
+
+export interface AdminOrder {
+  id: number;
+  customerUserId: number | null;
+  customerName: string;
+  customerEmail: string;
+  total: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+  items: AdminOrderItem[];
+}
+
 export interface AdminSalesTodaySummary {
   totalRevenue: number;
   totalUnits: number;

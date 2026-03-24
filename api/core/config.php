@@ -1,7 +1,8 @@
-<?php
 /**
  * Configuración central de API admin.
  */
+
+date_default_timezone_set('America/Mexico_City');
 
 // ⚠️ CONFIGURA ESTOS VALORES CON TUS CREDENCIALES DE HOSTINGER
 

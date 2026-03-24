@@ -13,6 +13,8 @@ import type {
     AdminProduct,
     AdminSalesProductRow,
     AdminSalesTodaySummary,
+    AdminOrder,
+    AdminOrderItem,
     CreateAdminHomeSlideInput,
     CreateAdminProductInput,
     DeleteAdminHomeSlideInput,
@@ -30,6 +32,8 @@ export type {
     AdminProduct,
     AdminSalesProductRow,
     AdminSalesTodaySummary,
+    AdminOrder,
+    AdminOrderItem,
     CreateAdminHomeSlideInput,
     CreateAdminProductInput,
     DeleteAdminHomeSlideInput,
@@ -101,6 +105,12 @@ interface AdminSalesTodayResponse {
   message?: string;
   summary?: AdminSalesTodaySummary;
   products?: AdminSalesProductRow[];
+}
+
+interface AdminOrdersResponse {
+  ok: boolean;
+  message?: string;
+  orders?: AdminOrder[];
 }
 
 interface AdminHomeSlidesResponse {
@@ -932,5 +942,30 @@ export async function fetchAdminSalesToday(token: string): Promise<AdminSalesTod
     ),
     products: (body.products ?? []).map(normalizeAdminSalesProductRow),
   };
+}
+
+/** Obtiene el historial completo de órdenes para el admin. */
+export async function fetchAdminOrders(token: string): Promise<AdminOrdersResponse> {
+  if (!API_BASE) {
+    return {
+      ok: false,
+      message: "Falta configurar VITE_API_URL para conectar con PHP.",
+    };
+  }
+
+  const response = await fetch(`${API_BASE}/admin/orders/list.php`, {
+    headers: buildAuthHeaders(token),
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<AdminOrdersResponse>;
+    return {
+      ok: false,
+      message: errorBody.message ?? "No se pudo cargar el historial de órdenes.",
+    };
+  }
+
+  const body = (await response.json()) as AdminOrdersResponse;
+  return body;
 }
 
