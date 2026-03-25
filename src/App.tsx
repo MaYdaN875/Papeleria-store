@@ -11,6 +11,7 @@
 import { useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import { FloatingWhatsAppButton, Footer, MobileBottomNav, Navbar } from "./components/layout";
+import { InstallPWA } from "./components/pwa/InstallPWA";
 import {
   AllProducts,
   AdminDashboard,
@@ -75,6 +76,7 @@ function AppContent() {
         </Route>
       </Routes>
       {!hideLayout && <FloatingWhatsAppButton />}
+      {!hideLayout && <InstallPWA />}
       {!hideLayout && <Footer />}
       {!hideLayout && <MobileBottomNav />}
     </>

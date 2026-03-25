@@ -241,7 +241,7 @@ export const Home = () => {
                             seeMorePath="/all-products"
                         />
                         <ProductCarousel
-                            title="🎁 Mitril y Regalos"
+                            title="🎁 Miscelánea y Regalos"
                             products={schoolProducts}
                             getItemConfig={getItemConfig}
                             onNavigate={handleNavigate}

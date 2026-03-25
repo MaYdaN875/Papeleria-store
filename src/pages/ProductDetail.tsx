@@ -108,7 +108,7 @@ export const ProductDetail = () => {
                 <h2>Producto no encontrado</h2>
                 <button
                     className="btn-return"
-                    onClick={() => navigate(`/all-products?page=${pageNumber}`)}
+                    onClick={() => navigate(-1)}
                 >
                     Volver a la tienda
                 </button>
@@ -184,7 +184,9 @@ export const ProductDetail = () => {
                         if (returnTo) {
                             navigate(returnTo)
                         } else {
-                            navigate(`/all-products?page=${pageNumber}`)
+                            // Usar el historial del navegador para volver
+                            // Esto mantiene los filtros y la posición de scroll
+                            navigate(-1)
                         }
                     }}
                 >

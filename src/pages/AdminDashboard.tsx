@@ -998,7 +998,7 @@ export function AdminDashboard() {
 
   async function handleAssignCarousel(product: AdminProduct) {
     const promptValue = globalThis.prompt(
-      `Carrusel para "${product.name}"\n\n0 = Sin carrusel\n1 = Carrusel 1 (Oficina y Escolares)\n2 = Carrusel 2 (Arte y Manualidades)\n3 = Carrusel 3 (Mitril y Regalos)\n4 = Carrusel 4 (Servicios Digitales e Impresiones)`,
+      `Carrusel para "${product.name}"\n\n0 = Sin carrusel\n1 = Carrusel 1 (Oficina y Escolares)\n2 = Carrusel 2 (Arte y Manualidades)\n3 = Carrusel 3 (Miscelánea y Regalos)\n4 = Carrusel 4 (Servicios Digitales e Impresiones)`,
       String(product.homeCarouselSlot ?? 0)
     );
     if (promptValue === null) return;
@@ -1930,7 +1930,7 @@ export function AdminDashboard() {
                   <option value="0">Sin carrusel</option>
                   <option value="1">Carrusel 1 (Oficina y Escolares)</option>
                   <option value="2">Carrusel 2 (Arte y Manualidades)</option>
-                  <option value="3">Carrusel 3 (Mitril y Regalos)</option>
+                  <option value="3">Carrusel 3 (Miscelánea y Regalos)</option>
                   <option value="4">Carrusel 4 (Servicios Digitales e Impresiones)</option>
                 </select>
               </label>
@@ -2221,7 +2221,7 @@ export function AdminDashboard() {
                     <option value="0">Sin carrusel</option>
                     <option value="1">Carrusel 1 (Oficina y Escolares)</option>
                     <option value="2">Carrusel 2 (Arte y Manualidades)</option>
-                    <option value="3">Carrusel 3 (Mitril y Regalos)</option>
+                    <option value="3">Carrusel 3 (Miscelánea y Regalos)</option>
                     <option value="4">Carrusel 4 (Servicios Digitales e Impresiones)</option>
                   </select>
                 </label>

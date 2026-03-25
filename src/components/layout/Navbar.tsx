@@ -33,7 +33,7 @@ interface NavbarCategory {
 const CATEGORY_ICON_MAP: Record<string, string> = {
     "oficina-y-escolares": "fas fa-briefcase",
     "arte-y-manualidades": "fas fa-palette",
-    "mitril-y-regalos": "fas fa-gift",
+    "miscelanea-y-regalos": "fas fa-gift",
     "servicios-digitales-e-impresiones": "fas fa-print",
 }
 
@@ -72,8 +72,8 @@ const DEFAULT_NAVBAR_CATEGORIES: NavbarCategory[] = [
         subOptions: [],
     },
     {
-        id: "mitril-y-regalos",
-        label: "Mitril y Regalos",
+        id: "miscelanea-y-regalos",
+        label: "Miscelánea y Regalos",
         icon: "fas fa-gift",
         subOptions: [],
     },

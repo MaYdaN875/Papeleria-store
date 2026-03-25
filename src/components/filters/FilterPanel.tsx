@@ -13,6 +13,7 @@ export interface FilterState {
 }
 
 export interface FilterPanelProps {
+    readonly initialFilters?: FilterState
     readonly onFilterChange: (filters: FilterState) => void
     /** Callback para cerrar el panel (usado en móvil). */
     readonly onClose?: () => void
@@ -24,12 +25,19 @@ const getProducts = (): string[] => {
     return [
         "Bolígrafos",
         "Carpetas",
+        "Cinta",
+        "Corrector",
         "Cuaderno",
         "Cuadernos",
+        "Engrapadora",
         "Estuches",
         "Gomas",
+        "Lápices",
+        "Lápiz",
         "Marcadores",
         "Papel",
+        "Pegamento",
+        "Plumas",
     ]
 }
 
@@ -148,7 +156,7 @@ const getBrands = (): string[] => {
    Panel lateral de filtros con múltiples opciones
    ================================ */
 
-export function FilterPanel({ onFilterChange, onClose }: FilterPanelProps) {
+export function FilterPanel({ initialFilters, onFilterChange, onClose }: FilterPanelProps) {
     /* Estado para controlar qué secciones están expandidas */
     const [expandedSections, setExpandedSections] = useState<
         Record<string, boolean>
@@ -161,13 +169,15 @@ export function FilterPanel({ onFilterChange, onClose }: FilterPanelProps) {
     })
 
     /* Estado principal de filtros */
-    const [filters, setFilters] = useState<FilterState>({
-        productos: [],
-        brands: [],
-        mayoreo: false,
-        menudeo: false,
-        priceRange: [0, DEFAULT_MAX_PRICE_FILTER],
-    })
+    const [filters, setFilters] = useState<FilterState>(
+        initialFilters ?? {
+            productos: [],
+            brands: [],
+            mayoreo: false,
+            menudeo: false,
+            priceRange: [0, DEFAULT_MAX_PRICE_FILTER],
+        }
+    )
 
     const filterProducts = getProducts()
     const brands = getBrands()

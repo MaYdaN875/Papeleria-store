@@ -37,14 +37,14 @@ const ALL_PRODUCTS_SKELETON_IDS = [
 const CATEGORY_FALLBACK_NAMES: Record<string, string> = {
     "oficina-y-escolares": "Oficina y Escolares",
     "arte-y-manualidades": "Arte y Manualidades",
-    "mitril-y-regalos": "Mitril y Regalos",
+    "miscelanea-y-regalos": "Miscelánea y Regalos",
     "servicios-digitales-e-impresiones": "Servicios Digitales e Impresiones"
 }
 
 const CATEGORY_FALLBACK_ALIASES: Record<string, string[]> = {
     "oficina-y-escolares": ["oficina y escolares"],
     "arte-y-manualidades": ["arte y manualidades"],
-    "mitril-y-regalos": ["mitril y regalos"],
+    "miscelanea-y-regalos": ["miscelánea y regalos"],
     "servicios-digitales-e-impresiones": ["servicios digitales e impresiones"],
 }
 
@@ -71,23 +71,57 @@ function getBadgeForProduct(product: Product): ProductCardBadge | undefined {
     return { type: "discount", value: `-${discountPercent}%` }
 }
 
+function normalizeText(text: string): string {
+    return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+}
+
 function filterProducts(productsList: Product[], filters: FilterState): Product[] {
     return productsList.filter((product) => {
         const brand = getBrand(product)
 
-        if (filters.productos.length > 0 && !filters.productos.includes(brand)) return false
+        // Filtro de "Productos" (tipos/categorías manuales)
+        if (filters.productos.length > 0) {
+            const isTypeMatch = filters.productos.some((type) => {
+                const searchLower = normalizeText(type)
+                // Intentar coincidencia con la palabra raíz (sin 's' final para disparidad singular/plural)
+                const root = (searchLower.length > 3 && searchLower.endsWith('s')) 
+                    ? searchLower.slice(0, -1) 
+                    : searchLower
+
+                const prodName = normalizeText(product.name)
+                const prodCat = normalizeText(product.category || "")
+
+                return (
+                    prodName.includes(root) ||
+                    prodCat.includes(root)
+                )
+            })
+            if (!isTypeMatch) return false
+        }
+
+        // Filtro de Marcas
         if (filters.brands.length > 0 && !filters.brands.includes(brand)) return false
+
         if (filters.mayoreo && !product.mayoreo) return false
         if (filters.menudeo && !product.menudeo) return false
 
         // Usar el precio correspondiente al modo activo para el filtro de rango
-        const activePrice = filters.mayoreo && product.mayoreoPrice != null
-            ? product.mayoreoPrice
-            : filters.menudeo && product.menudeoPrice != null
-                ? product.menudeoPrice
-                : product.price
+        const activePrice =
+            filters.mayoreo && product.mayoreoPrice != null
+                ? product.mayoreoPrice
+                : filters.menudeo && product.menudeoPrice != null
+                    ? product.menudeoPrice
+                    : product.price
 
-        if (activePrice < filters.priceRange[0] || activePrice > filters.priceRange[1]) return false
+        if (
+            activePrice < filters.priceRange[0] ||
+            activePrice > filters.priceRange[1]
+        )
+            return false
 
         return true
     })
@@ -147,13 +181,25 @@ export const AllProducts = () => {
     const pageFromUrl = Number.parseInt(searchParams.get("page") || "1", 10)
     const isMobile = useIsMobile()
 
-    const [filters, setFilters] = useState<FilterState>({
-        productos: [],
-        brands: [],
-        mayoreo: false,
-        menudeo: false,
-        priceRange: [0, DEFAULT_MAX_PRICE_FILTER],
-    })
+    // Inicializar filtros desde la URL si existen
+    const initialFilters = useMemo<FilterState>(() => {
+        const productos = searchParams.get("filter_productos")?.split(",").filter(Boolean) || []
+        const brands = searchParams.get("filter_brands")?.split(",").filter(Boolean) || []
+        const mayoreo = searchParams.get("filter_mayoreo") === "true"
+        const menudeo = searchParams.get("filter_menudeo") === "true"
+        const minPrice = Number(searchParams.get("filter_min") || "0")
+        const maxPrice = Number(searchParams.get("filter_max") || String(DEFAULT_MAX_PRICE_FILTER))
+
+        return {
+            productos,
+            brands,
+            mayoreo,
+            menudeo,
+            priceRange: [minPrice, maxPrice],
+        }
+    }, [searchParams])
+
+    const [filters, setFilters] = useState<FilterState>(initialFilters)
     const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
     const [isClosing, setIsClosing] = useState(false)
     const [storeProducts, setStoreProducts] = useState<Product[]>([])
@@ -162,16 +208,47 @@ export const AllProducts = () => {
     const [categoryLabelMap, setCategoryLabelMap] = useState<Record<string, string>>({})
     const [categoryAliasMap, setCategoryAliasMap] = useState<Record<string, string[]>>(CATEGORY_FALLBACK_ALIASES)
 
-    // Resetear filtros al montar el componente para asegurar que se muestren todos los productos
-    useEffect(() => {
-        setFilters({
-            productos: [],
-            brands: [],
-            mayoreo: false,
-            menudeo: false,
-            priceRange: [0, DEFAULT_MAX_PRICE_FILTER],
-        })
-    }, [])
+    // Sincronizar filtros con la URL cuando cambian
+    const handleFilterChange = (newFilters: FilterState) => {
+        setFilters(newFilters)
+        
+        const params = new URLSearchParams(searchParams)
+        
+        if (newFilters.productos.length > 0) {
+            params.set("filter_productos", newFilters.productos.join(","))
+        } else {
+            params.delete("filter_productos")
+        }
+        
+        if (newFilters.brands.length > 0) {
+            params.set("filter_brands", newFilters.brands.join(","))
+        } else {
+            params.delete("filter_brands")
+        }
+        
+        if (newFilters.mayoreo) params.set("filter_mayoreo", "true")
+        else params.delete("filter_mayoreo")
+        
+        if (newFilters.menudeo) params.set("filter_menudeo", "true")
+        else params.delete("filter_menudeo")
+        
+        if (newFilters.priceRange[0] > 0) {
+            params.set("filter_min", String(newFilters.priceRange[0]))
+        } else {
+            params.delete("filter_min")
+        }
+        
+        if (newFilters.priceRange[1] < DEFAULT_MAX_PRICE_FILTER) {
+            params.set("filter_max", String(newFilters.priceRange[1]))
+        } else {
+            params.delete("filter_max")
+        }
+
+        // Siempre resetear a página 1 cuando cambian los filtros
+        params.delete("page")
+        
+        navigate(`/all-products?${params.toString()}`, { replace: true })
+    }
 
     const handleCloseDrawer = () => {
         setIsClosing(true)
@@ -379,13 +456,13 @@ export const AllProducts = () => {
     }, [])
 
     const handleNavigateToProduct = useCallback((productId: number) => {
-        const params = new URLSearchParams()
-        params.append("page", String(pageFromUrl))
+        // Preservar todos los parámetros de búsqueda actuales (filtros, página, modo, etc.)
+        const currentParams = new URLSearchParams(searchParams)
         if (activeMode) {
-            params.append("mode", activeMode)
+            currentParams.append("mode", activeMode)
         }
-        navigate(`/product/${productId}?${params.toString()}`)
-    }, [navigate, activeMode, pageFromUrl])
+        navigate(`/product/${productId}?${currentParams.toString()}`)
+    }, [navigate, activeMode, searchParams])
 
     return (
         <>
@@ -453,7 +530,8 @@ export const AllProducts = () => {
                             </button>
                         )}
                         <FilterPanel
-                            onFilterChange={(newFilters) => setFilters(newFilters)}
+                            initialFilters={filters}
+                            onFilterChange={handleFilterChange}
                             onClose={handleCloseDrawer}
                         />
                     </div>
