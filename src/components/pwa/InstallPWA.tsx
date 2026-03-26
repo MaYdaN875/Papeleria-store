@@ -20,10 +20,12 @@ function isStandalone(): boolean {
     )
 }
 
-/** Detecta si es Safari en iOS (no Chrome ni otros). */
+/** Detecta si es Safari REAL en iOS (no Chrome, Google App, Facebook, Instagram, etc). */
 function isIOSSafari(): boolean {
     const ua = navigator.userAgent
-    return isIOS() && /safari/i.test(ua) && !/crios|fxios|opios|edgios/i.test(ua)
+    // Excluir: CriOS=Chrome, FxiOS=Firefox, OPiOS=Opera, EdgiOS=Edge, GSA=Google App,
+    // FBAN/FBAV=Facebook, Instagram, Line, etc.
+    return isIOS() && /safari/i.test(ua) && !/crios|fxios|opios|edgios|gsa\/|fban|fbav|instagram|line\//i.test(ua)
 }
 
 interface BeforeInstallPromptEvent extends Event {
