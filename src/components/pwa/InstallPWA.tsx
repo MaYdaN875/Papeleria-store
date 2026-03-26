@@ -129,21 +129,21 @@ export function InstallPWA() {
                         <strong>¡Instala God Art!</strong>
                         {isSafari ? (
                             <span>
-                                Pulsa el botón{" "}
+                                Pulsa{" "}
+                                <i className="fas fa-ellipsis-h" aria-hidden="true" />{" "}
+                                →{" "}
                                 <i className="fas fa-share-square" aria-hidden="true" />{" "}
-                                <strong>Compartir</strong> y luego{" "}
-                                <strong>&ldquo;Agregar a inicio&rdquo;</strong>.
+                                <strong>Compartir</strong> →{" "}
+                                <strong>&ldquo;Agregar al inicio&rdquo;</strong>.
+                                ¡Y listo! 🎉
                             </span>
                         ) : (
                             <span>
                                 Pulsa{" "}
                                 <i className="fas fa-share-square" aria-hidden="true" />{" "}
                                 <strong>Compartir</strong> →{" "}
-                                <strong>&ldquo;Abrir en Safari&rdquo;</strong>.
-                                Ya en Safari, pulsa{" "}
-                                <i className="fas fa-ellipsis-h" aria-hidden="true" />{" "}
-                                → Compartir →{" "}
-                                <strong>&ldquo;Agregar al inicio&rdquo;</strong>.
+                                <strong>&ldquo;Abrir en Safari&rdquo;</strong>{" "}
+                                para continuar con la instalación.
                             </span>
                         )}
                     </div>

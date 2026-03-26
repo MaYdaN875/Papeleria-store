@@ -71,6 +71,18 @@
     font-size: 0.85rem;
 }
 
+.install-pwa-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.install-pwa-step {
+    font-size: 0.82rem;
+    opacity: 0.95;
+    line-height: 1.4;
+}
+
 .install-pwa-actions {
     display: flex;
     align-items: center;
