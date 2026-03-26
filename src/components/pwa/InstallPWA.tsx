@@ -115,7 +115,7 @@ export function InstallPWA() {
         )
     }
 
-    // Guía para iOS (Safari y Chrome)
+    // Guía para iOS
     if (showIOSGuide) {
         const isSafari = isIOSSafari()
 
@@ -134,15 +134,33 @@ export function InstallPWA() {
                             </span>
                         ) : (
                             <span>
-                                Pulsa el menú{" "}
-                                <i className="fas fa-ellipsis-v" aria-hidden="true" />{" "}
-                                <strong>(3 puntos)</strong> y luego{" "}
-                                <strong>&ldquo;Agregar a pantalla de inicio&rdquo;</strong>.
+                                Para instalar la app, abre esta página en{" "}
+                                <strong>Safari</strong>{" "}
+                                <i className="fab fa-safari" aria-hidden="true" />{" "}
+                                y pulsa Compartir → &ldquo;Agregar a inicio&rdquo;.
                             </span>
                         )}
                     </div>
                 </div>
                 <div className="install-pwa-actions">
+                    {!isSafari && (
+                        <button
+                            className="install-pwa-btn install-pwa-btn--copy"
+                            onClick={() => {
+                                void navigator.clipboard.writeText(window.location.href)
+                                const btn = document.querySelector(".install-pwa-btn--copy")
+                                if (btn) {
+                                    btn.textContent = "¡Copiado!"
+                                    setTimeout(() => {
+                                        btn.innerHTML = '<i class="fas fa-copy"></i> Copiar enlace'
+                                    }, 2000)
+                                }
+                            }}
+                        >
+                            <i className="fas fa-copy" aria-hidden="true" />
+                            Copiar enlace
+                        </button>
+                    )}
                     <button
                         className="install-pwa-btn install-pwa-btn--dismiss"
                         onClick={handleDismiss}

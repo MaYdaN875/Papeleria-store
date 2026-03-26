@@ -13,6 +13,8 @@
   border-bottom: none;
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
+  /* Soporte para Dynamic Island / notch en modo PWA standalone */
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .header-container {
@@ -810,6 +812,7 @@
 
 .mobile-menu-header {
   padding: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
   border-bottom: 1px solid var(--color-border);
   background: var(--color-light-bg);
   display: flex;
