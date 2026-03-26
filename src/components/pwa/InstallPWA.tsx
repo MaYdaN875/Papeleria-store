@@ -136,33 +136,19 @@ export function InstallPWA() {
                             </span>
                         ) : (
                             <span>
-                                Para instalar la app, abre esta página en{" "}
-                                <strong>Safari</strong>{" "}
-                                <i className="fab fa-safari" aria-hidden="true" />{" "}
-                                y pulsa Compartir → &ldquo;Agregar a inicio&rdquo;.
+                                Pulsa{" "}
+                                <i className="fas fa-share-square" aria-hidden="true" />{" "}
+                                <strong>Compartir</strong> →{" "}
+                                <strong>&ldquo;Abrir en Safari&rdquo;</strong>.
+                                Ya en Safari, pulsa{" "}
+                                <i className="fas fa-ellipsis-h" aria-hidden="true" />{" "}
+                                → Compartir →{" "}
+                                <strong>&ldquo;Agregar al inicio&rdquo;</strong>.
                             </span>
                         )}
                     </div>
                 </div>
                 <div className="install-pwa-actions">
-                    {!isSafari && (
-                        <button
-                            className="install-pwa-btn install-pwa-btn--copy"
-                            onClick={() => {
-                                void navigator.clipboard.writeText(window.location.href)
-                                const btn = document.querySelector(".install-pwa-btn--copy")
-                                if (btn) {
-                                    btn.textContent = "¡Copiado!"
-                                    setTimeout(() => {
-                                        btn.innerHTML = '<i class="fas fa-copy"></i> Copiar enlace'
-                                    }, 2000)
-                                }
-                            }}
-                        >
-                            <i className="fas fa-copy" aria-hidden="true" />
-                            Copiar enlace
-                        </button>
-                    )}
                     <button
                         className="install-pwa-btn install-pwa-btn--dismiss"
                         onClick={handleDismiss}
