@@ -116,7 +116,7 @@ export const ProductDetail = () => {
         )
     }
 
-    const brand = product.description.split(" ")[0] ?? ""
+    const brand = product.brand ?? ""
     const rating = 4.5
     const reviews = Math.floor(product.stock * 3.5)
 

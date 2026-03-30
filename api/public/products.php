@@ -132,6 +132,7 @@ try {
       " . ($hasCategoryParent ? "cp.name" : "c.name") . " AS parent_category,
       " . ($hasCategorySlug && $hasCategoryParent ? "COALESCE(cp.slug, c.slug, '')" : ($hasCategorySlug ? "COALESCE(c.slug, '')" : "''")) . " AS parent_category_slug,
       COALESCE(NULLIF(p.description, ''), 'Producto disponible en tienda') AS description,
+      COALESCE(NULLIF(p.brand, ''), '') AS brand,
       $imagesSelect
       p.stock,
       p.mayoreo,
@@ -190,6 +191,7 @@ try {
     $product['parent_category'] = $product['parent_category'] ?? $product['category'];
     $product['parent_category_slug'] = $product['parent_category_slug'] ?? $product['category_slug'];
     $product['description'] = $product['description'] ?? 'Producto disponible en tienda';
+    $product['brand'] = $product['brand'] ?? '';
     $product['image'] = $product['image'] ?? '/images/boligrafos.jpg';
   }
 

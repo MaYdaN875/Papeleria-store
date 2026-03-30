@@ -17,6 +17,8 @@ export interface FilterPanelProps {
     readonly onFilterChange: (filters: FilterState) => void
     /** Callback para cerrar el panel (usado en móvil). */
     readonly onClose?: () => void
+    /** Marcas disponibles extraídas dinámicamente de los productos cargados. */
+    readonly availableBrands?: string[]
 }
 
 const DEFAULT_MAX_PRICE_FILTER = 100000
@@ -41,122 +43,14 @@ const getProducts = (): string[] => {
     ]
 }
 
-const getBrands = (): string[] => {
-    return [
-        "MAE",
-        "PELIKAN",
-        "FIX-UP",
-        "PEGAS",
-        "RESISTOL 850",
-        "PRITT",
-        "BULLY",
-        "BACO",
-        "DIXON",
-        "TOP",
-        "AZOR",
-        "ARTLINE",
-        "NEWELL",
-        "ALBE",
-        "PADI",
-        "ESTRELLA",
-        "SHARPIE",
-        "KORES",
-        "TUK",
-        "EURO",
-        "RAYTER",
-        "A-INK",
-        "DS",
-        "AFRICA",
-        "DIEM",
-        "NASSA",
-        "FABER CASTELL",
-        "LUCELLO",
-        "SHARPENER",
-        "BEROL",
-        "BIC",
-        "ZEBRA",
-        "BAHANG",
-        "SMART OFFICE",
-        "CETVELL",
-        "ALCO",
-        "PRODUCTOS G.G",
-        "NEW",
-        "ARLY",
-        "CHÓSCH",
-        "TRYME",
-        "PAPER MATE",
-        "VINCI",
-        "DIDASEL",
-        "CORTY",
-        "DELTA",
-        "CRAYOLA",
-        "MAPITA",
-        "NORMA",
-        "STRATERS",
-        "PRISMACOLOR",
-        "PILOT",
-        "MUJUU",
-        "JIA HAO",
-        "MAPED",
-        "QUIN",
-        "BIC EVOLUTION",
-        "HAPPY HALLOWEEN",
-        "GAMA COLOR",
-        "BOMBIN",
-        "CIRCULAR",
-        "FANTASIA",
-        "LORD´II",
-        "AIN STEIN",
-        "ELEPHANT",
-        "CELICA",
-        "PRETUL",
-        "LESA",
-        "KPMG",
-        "DORAEMON",
-        "SNRIO",
-        "GM TOYS",
-        "ALIAMEX",
-        "FUMETAX",
-        "SMOKELESS CANDLES",
-        "CANDLE",
-        "RUVALCABA FANTASIAS Y NOVEDADES",
-        "POPULAR",
-        "ARCOIRIS",
-        "PLAY DOH",
-        "KOLA LOKA",
-        "RESISTOL",
-        "UHU",
-        "ZHENG HAO",
-        "MAIN FLEX",
-        "MENDOZA",
-        "ZIGZAG",
-        "BAZICMAGISTRAL",
-        "EXPO",
-        "SIGNAL",
-        "TWIN",
-        "BACOFLASH",
-        "SCRIBE",
-        "U PACK",
-        "JEANBOOK",
-        "ARTIST PALETTE",
-        "SAIRA",
-        "POLYCHEM",
-        "JANEL",
-        "NAVITEK",
-        "LAROUSSE",
-        "BARRILITO",
-        "HANFANG",
-        "BINDER CLIP",
-        "BOB",
-    ]
-}
+
 
 /* ================================
    COMPONENTE: FilterPanel
    Panel lateral de filtros con múltiples opciones
    ================================ */
 
-export function FilterPanel({ initialFilters, onFilterChange, onClose }: FilterPanelProps) {
+export function FilterPanel({ initialFilters, onFilterChange, onClose, availableBrands }: FilterPanelProps) {
     /* Estado para controlar qué secciones están expandidas */
     const [expandedSections, setExpandedSections] = useState<
         Record<string, boolean>
@@ -180,7 +74,7 @@ export function FilterPanel({ initialFilters, onFilterChange, onClose }: FilterP
     )
 
     const filterProducts = getProducts()
-    const brands = getBrands()
+    const brands = availableBrands ?? []
 
     /* ================================
        MANEJADORES DE EVENTOS

@@ -57,7 +57,7 @@ function normalizeCategoryText(value: string): string {
 }
 
 function getBrand(product: Product): string {
-    return product.description.split(" ")[0] ?? ""
+    return product.brand ?? ""
 }
 
 function getBadgeForProduct(product: Product): ProductCardBadge | undefined {
@@ -377,6 +377,16 @@ export const AllProducts = () => {
         () => applyPriceMode(filteredProducts, filters),
         [filteredProducts, filters]
     )
+
+    // Extraer marcas únicas dinámicamente de los productos visibles (antes de filtro de marca)
+    const availableBrands = useMemo(() => {
+        const brandSet = new Set<string>()
+        for (const product of productsAfterSearch) {
+            const brand = product.brand
+            if (brand) brandSet.add(brand)
+        }
+        return Array.from(brandSet).sort()
+    }, [productsAfterSearch])
     const hasNoFilteredProducts = !isLoadingProducts && displayProducts.length === 0
 
     const activeMode = filters.mayoreo ? "mayoreo" : filters.menudeo ? "menudeo" : null
@@ -533,6 +543,7 @@ export const AllProducts = () => {
                             initialFilters={filters}
                             onFilterChange={handleFilterChange}
                             onClose={handleCloseDrawer}
+                            availableBrands={availableBrands}
                         />
                     </div>
 

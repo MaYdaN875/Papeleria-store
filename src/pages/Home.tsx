@@ -16,7 +16,7 @@ import { addProductToCart, syncCartCount } from "../utils/cart"
  */
 
 function getItemConfig(product: Product): ProductCarouselSlideConfig | undefined {
-    const brand = product.description.split(" ")[0] ?? ""
+    const brand = product.brand ?? ""
 
     if (!product.originalPrice || product.originalPrice <= product.price) {
         return {

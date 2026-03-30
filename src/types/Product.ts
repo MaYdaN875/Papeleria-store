@@ -8,6 +8,7 @@ export type Product = {
     isOffer?: boolean
     category: string
     description: string
+    brand?: string
     image: string
     stock: number
     mayoreo?: boolean

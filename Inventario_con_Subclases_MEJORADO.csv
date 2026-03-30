@@ -32,7 +32,7 @@ Stock,Producto y Descripción,Marca,Categorias,Precio,Precio Mayoreo,Stock mayor
 17,Cuaderno. Profesional. Mixto,,Oficina y escolares,30,,,Cuadernos
 8,Cuaderno. Profesional. Cocido. Cuadro. Alemán,,Oficina y escolares,52,,,Cuadernos
 5,Cuaderno. Profesional. Cocido.,C7,Oficina y escolares,52,,,Cuadernos
-8,Cuaderno. Profesional. Cocido.,C5,Oficina y escolares,52,,,Cuadernos
+8,Cuadern. Profesional. Cocido.,C5,Oficina y escolares,52,,,Cuadernos
 15,Silicon frío 30 ml,MAE,Oficina y escolares,10,,,Silicon
 16,Silicon frío 60 ml,MAE,Oficina y escolares,15,,,Silicon
 8,Silicon frío 100ml,MAE,Oficina y escolares,25,,,Silicon
@@ -41,16 +41,16 @@ Stock,Producto y Descripción,Marca,Categorias,Precio,Precio Mayoreo,Stock mayor
 8,Pegamento liquido 60g,PEGAS,Oficina y escolares,15,,,Pegamento
 4,Pegamento liquido 125g,PEGAS,Oficina y escolares,29,,,Pegamento
 5,Pegamento liquido 250g,PEGAS,Oficina y escolares,39,,,Pegamento
-7,Pegamento liquido 35g ,RESISTOL 850,Oficina y escolares,,,,Pegamento
-9,Pegamento liquido 55g ,RESISTOL 850,Oficina y escolares,,,,Pegamento
-13,LápIz adhesivo. Pegamento 11 g,PRITT,Oficina y escolares,20,,,Pegamento
-19,Lápiz adhesivo. Pegamento 11g,BULLY,Oficina y escolares,13,,,Pegamento
-3,Lápiz adhesivo. Pegamento 22g,PRITT,Oficina y escolares,39,,,Pegamento
-1,Lápiz adhesivo. Pegamento 21g,BACO,Oficina y escolares,24,,,Pegamento
-9,Lápiz adhesivo. Pegamento  21g,DIXON,Oficina y escolares,24,,,Pegamento
-70,Lápiz adhesivo. Pegamento 22g,BULLY,Oficina y escolares,24,,,Pegamento
-67,Lápiz adhesivo. Pegamento 36g,TOP,Oficina y escolares,39,,,Pegamento
-19,Lápiz adhesivo. Pegamento 8g,TOP,Oficina y escolares,12,,,Pegamento
+7,Pegamento liquido 35g RESISTOL 850,,Oficina y escolares,,,,Pegamento
+9,pegamento liquido 55g RESISTOL 850,,Oficina y escolares,,,,Pegamento
+13,LápIz adhesivo 11 g,PRITT,Oficina y escolares,20,,,Lápices
+19,Lápiz adhesivo 11g,BULLY,Oficina y escolares,13,,,Lápices
+3,Lápiz adhesivo 22g,PRITT,Oficina y escolares,39,,,Lápices
+1,Lápiz adhesivo 21g,BACO,Oficina y escolares,24,,,Lápices
+9,Lápiz adhesivo 21g,DIXON,Oficina y escolares,24,,,Lápices
+70,Lápiz adhesivo 22g,BULLY,Oficina y escolares,24,,,Lápices
+67,Lápiz adhesivo 36g,TOP,Oficina y escolares,39,,,Lápices
+19,Lápiz adhesivo 8g,TOP,Oficina y escolares,12,,,Lápices
 4,Carpeta. Classic T/Carta Negro.,AZOR,Oficina y escolares,85,,,Carpetas
 31,Marcador Permanente EK-109. Negro.,ARTLINE,Oficina y escolares,25,,,Marcadores
 12,Marcador Permanente EK-109 Rojo.,ARTLINE,Oficina y escolares,25,,,Marcadores
@@ -82,10 +82,10 @@ Stock,Producto y Descripción,Marca,Categorias,Precio,Precio Mayoreo,Stock mayor
 34,Marcador Esterbrook Azul.,SHARPIE,Oficina y escolares,40,,,Marcadores
 13,Marcador Esterbrook Rojo.,SHARPIE,Oficina y escolares,40,,,Marcadores
 40,Borrador KE20. Negro.,KORES,Oficina y escolares,8,,,Borradores
-6,Cinta Adhesiva Adhesiva 179 Canela. 48mm x50 m.,TUK,Oficina y escolares,30,,,Cinta Adhesiva Adhesiva
+6,Cinta 179 Canela. 48mm x50 m.,TUK,Oficina y escolares,30,,,Cintas
 1,Silueta EA0010. Euromac. Negro. C/25 MT.,EURO,Oficina y escolares,$10 x Mtr.,,,Papel
 10,Terciopelo Rojo,RAYTER,Oficina y escolares,15,,,Terciopelo
-10,Terciopelo Negro.,RAYTER,Oficina y escolares,15,,,Terciopelo
+10,Terciopelo Negro.,RAYTER,Oficina y escolares,15,,,Tercipelo
 10,Marcador Aqua-INK. Negro.,A-INK,Oficina y escolares,10,,,Marcadores
 12,Marcador Aqua-INK.Rojo.,A-INK,Oficina y escolares,10,,,Marcadores
 12,Marcador Aqua-INK.Naranja.,A-INK,Oficina y escolares,10,,,Marcadores
@@ -123,8 +123,8 @@ Stock,Producto y Descripción,Marca,Categorias,Precio,Precio Mayoreo,Stock mayor
 1,Corrector Líquido-Pluma. 8ml.,BIC,Oficina y escolares,45,,,Correcores
 7,Corrector Líquido-Pluma. 7ml.,PELIKAN,Oficina y escolares,33,,,Correctores
 2,Corrector Líquido-Pluma. 3.5 ml. Punta 1.0.,ZEBRA,Oficina y escolares,42,,,Correctores
-10,Corrector de Cinta ,BAHANG,Oficina y escolares,12,,,Correctores
-3,Corrector de Cinta  5mm x 8m. SMART,OFFICE,Oficina y escolares,24,,,Correctores
+10,Corrector de Cinta.,BAHANG,Oficina y escolares,12,,,Correctores
+3,Corrector de Cinta 5mm x 8m. SMART,OFFICE,Oficina y escolares,24,,,Correctores
 48,Regla Flexible 30 cm. NEW.,CETVEL,Oficina y escolares,12,,,Reglas
 12,Regla Flexible 20cm,,Oficina y escolares,5,,,Reglas
 3,Regla Flexible 30 cm.,ALCO,Oficina y escolares,12,,,Reglas
@@ -144,7 +144,7 @@ Stock,Producto y Descripción,Marca,Categorias,Precio,Precio Mayoreo,Stock mayor
 35,Plumas de Gel. Azul. Punta 0.8mm .,A-INK,Oficina y escolares,14,,,Plumas
 12,Plumas de Gel. Rojo. Punta 0.8mm.,A-INK,Oficina y escolares,14,,,Plumas
 85,Borrador de Balon Futbol.,FABER-CASTELL,Oficina y escolares,12,,,Borradores
-10,Paq/12pz/136pz Plumas Kilometrica.Verde. 1.0mm.,PAPER-MATE,Oficina y escolares,6,65,,Plumas
+10,Pa/12Ppz/136pz Pluma Kilometrica.Verde. 1.0mm.,PAPER-MATE,Oficina y escolares,6,65,,Plumas
 11,Paq/145 pz Pluma Kilometrica.Rojo.1.0mm.,PAPER-MATE,Oficina y escolares,6,65,,Plumas
 2,Paq/33pza Pluma Kilometrica.Negro.1.01mm.,PAPER-MATE,Oficina y escolares,6,65,,Plumas
 2,Paq/40pza Pluma Kilometrica.Azul.1.0mm.,PAPER-MATE,Oficina y escolares,6,65,,Plumas
@@ -169,9 +169,9 @@ Stock,Producto y Descripción,Marca,Categorias,Precio,Precio Mayoreo,Stock mayor
 3,Cortador Para Foami y Unicel. ,DIDASEL,Oficina y escolares,$,,,Fomi
 22,Cutter Grande,CORTY,Oficina y escolares,20,,,Cuter
 12,Cutter Chico.,DELTA,Oficina y escolares,5,,,Cuter
-6,Tinta Para Sello Giraplica 60ml. Color Negro.,PELIKAN,Arte y manualidades,48,,,Tinta
-6,Tinta Para Sello Giraplica 60ml. Color Azul.,PELIKAN,Arte y manualidades,48,,,Tinta
-1,Tinta Para Sello Giraplica 60ml. Color Rojo.,PELIKAN,Arte y manualidades,48,,,Tinta
+6,Tinta Para Sello Giraplica 60ml. Color Negro.,PELIKAN,Arte y manualidades,48,,,Colores
+6,Tinta Para Sello Giraplica 60ml. Color Azul.,PELIKAN,Arte y manualidades,48,,,Colores
+1,Tinta Para Sello Giraplica 60ml. Color Rojo.,PELIKAN,Arte y manualidades,48,,,Colores
 1,Paq. Lapices de Color Acuarela C/12 Colores.,FABER-CASTELL,Arte y manualidades,,,,Colores
 4,Paq. Lapices de Color Reales y Brillantes Puntas Fuertes.,CRAYOLA,Arte y manualidades,163,,,Colores
 3,Paq.Lapices de Colores KIDS C/24 Colores +2 Lápices Gratis.,BIC,Arte y manualidades,200,,,Colores
@@ -307,9 +307,9 @@ Stock,Producto y Descripción,Marca,Categorias,Precio,Precio Mayoreo,Stock mayor
 2,Bote de Crayones Jumbo. C/28pz.,CRAYOLA,Oficina y escolares,160,,,Crayones
 2,Compás de Presición COP-10+ Puntillas + Mini Goma.,MAE,Oficina y escolares,111,,,Compás
 9,Pegamento Instantaneo. Goterito. C/3.5g.,KOLA-LOKA,Oficina y escolares,30,,,Pegamento
-1,"Paq. Cuadritos Adhesivos Multi Usos. C/35g emobible, Reutilizables. Cinta Adhesiva Adhesiva Adhesiva",PRITT,Oficina y escolares,52,,,Cinta Adhesiva Adhesiva
-1,Pegamento de Contacto. 5000 Uso General. C/21ml.,RESISTOL 850,Oficina y escolares,49,,,Pegamento
-1,Pegamento de Contacto Multi Usos. C/20g.,RESISTOL 850,Oficina y escolares,$,,,Pegamento
+1,"Paq. Cuadritos Adhesivos Multi Usos. C/35g emobible, Reutilizables.",PRITT,Oficina y escolares,52,,,Cintas
+1,Pegamento de Contacto. 5000 Uso General. C/21ml.,RESISTOL,Oficina y escolares,49,,,Pegamento
+1,Pegamento de Contacto Multi Usos. C/20g.,RESISTOL,Oficina y escolares,$,,,Pegamento
 1,Pegamento de Contacto Multi Usos. C/20g/ml.,UHU,Oficina y escolares,45,,,Pegamento
 10,Rollo de Etiqueta Blanca Para Etiquetadora.MOD TF-2498. ZHENG,HAO,Oficina y escolares,13,,,Etiquetas
 7,Rollo de Estiqueta Naranja Para Etiquetadora. MOD PL-084. ZHENG,HAO,Oficina y escolares,15,,,Etiquetas
@@ -368,9 +368,9 @@ Stock,Producto y Descripción,Marca,Categorias,Precio,Precio Mayoreo,Stock mayor
 12,Marcatexto. Color Amarillo.,FABER-CASTELL,Oficina y escolares,15,,,Marcatextos
 6,Marcatexto. Colo Rosa.,FABER-CASTELL,Oficina y escolares,15,,,Marcatextos
 1,Marcatexto. Color Rosa.,A-INK,Oficina y escolares,15,,,Marcatextos
-12,Marcatexto Jumbi 42. Color Amarillo.,FABER-CASTELL,Oficina y escolares,10,,,Marcatextos
+12,Marcatexto Jumbi 42. Color Amarillo.,FABER-CASTEÑÑ,Oficina y escolares,10,,,Marcatextos
 21,Marcatexto Fino. Color Verde.,BACOFLASH,Oficina y escolares,15,,,Marcatextos
-19,Lapiz Bicolor. Grande.,SMARTY,Oficina y escolares,$,,,Lápices
+19,Lapiz Bicolor. Grande.,SMAARTY,Oficina y escolares,$,,,Lápices
 26,Lapiz Bicolor. Jumbo.,SMARTY,Oficina y escolares,$,,,Lápices
 35,Lapiz ECO Chequeo. Color Rojo.,FABER-CASTELL,Oficina y escolares,$,,,Lápices
 3,Lpaiz Chuequeo.Color Rojo.,PAPER-MATE,Arte y manualidades,$,,,Colores
@@ -401,12 +401,12 @@ Stock,Producto y Descripción,Marca,Categorias,Precio,Precio Mayoreo,Stock mayor
 7,Acuarelas C/16 Colores + 1 Pincel.,CRAYOLA,Arte y manualidades,111,,,Pintura
 1,Acuarela C/12 Colores +1 Pincel.,SMARTY,Arte y manualidades,39,,,Pintura
 1,BolsaCon Barras de Silicon. 7.4 mm x 250 mm. Para Pistola de Silicon de 1kg.,SAIRA,Miscelanea y regalos,$4pz,,,Silicon
-23,Cinta Adhesiva Adhesiva Transparente Ancha C/150 m.,POLYCHEM,Oficina y escolares,130,,,Cinta Adhesiva Adhesiva
-3,Cinta Adhesiva Adhesiva Ancha Transparente C/50 m.,JANEL,Oficina y escolares,27,,,Cinta Adhesiva Adhesiva
-4,Cinta Adhesiva Adhesiva Canela C/50 m.,TUCK,Oficina y escolares,31,,,Cinta Adhesiva Adhesiva
-3,Cinta Adhesiva Adhesiva Doble Cara,,Oficina y escolares,45,,,Cinta Adhesiva Adhesiva
-1,Cinta Adhesiva Adhesiva Doble Cara. C/50m.,NAVITEK,Oficina y escolares,85,,,Cinta Adhesiva Adhesiva
-2,Cinta Adhesiva Adhesiva Aislante de Vinilo .19 mm x 18 m.Para 600V.,TUK,Oficina y escolares,24,,,Cinta Adhesiva Adhesiva
+23,Cinta Transparente Ancha C/150 m.,POLYCHEM,Oficina y escolares,130,,,Cintas
+3,Cinta Ancha Transparente C/50 m.,JANEL,Oficina y escolares,27,,,Cintas
+4,Cinta Canela C/50 m.,TUCK,Oficina y escolares,31,,,Cintas
+3,Cinta Doble Cara,,Oficina y escolares,45,,,Cintas
+1,Cinta Doble Cara. C/50m.,NAVITEK,Oficina y escolares,85,,,Cintas
+2,Cinta Aislante de Vinilo .19 mm x 18 m.Para 600V.,TUK,Oficina y escolares,24,,,Cintas
 2,Diccionario Verde. Diccionario Basico Lengua Española.,LAROUSSE,Oficina y escolares,150,,,Libros
 3,Cuerpos Geometricos Fluorescente. 20 pz.,BOB,Oficina y escolares,65,,,Figuras Geometricas
 1,Cuerpos Geometricos. 20 pz.,BOB,Oficina y escolares,65,,,Figuras Geometricas

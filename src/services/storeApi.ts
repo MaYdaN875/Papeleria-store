@@ -44,6 +44,7 @@ interface RawStoreProduct {
     final_price?: number | string
     discount_percentage?: number | string
     price?: number | string
+    brand?: string | null
 }
 
 interface RawStoreHomeSlide {
@@ -97,6 +98,7 @@ function normalizeStoreProduct(raw: RawStoreProduct, apiBase: string): Product {
         parentCategory: raw.parent_category ?? "",
         parentCategorySlug: raw.parent_category_slug ?? "",
         description: raw.description ?? "Producto disponible en tienda",
+        brand: raw.brand ?? "",
         image: resolveStoreImageUrl(raw.image, apiBase),
         stock: Number(raw.stock) || 0,
         mayoreo: toBooleanFlag(raw.mayoreo),
