@@ -50,13 +50,25 @@ export function InstallPWA() {
     useEffect(() => {
         if (isStandalone()) return
 
-        const handler = (e: Event) => {
+        const promptHandler = (e: Event) => {
             e.preventDefault()
             setDeferredPrompt(e as BeforeInstallPromptEvent)
         }
 
-        window.addEventListener("beforeinstallprompt", handler)
-        return () => window.removeEventListener("beforeinstallprompt", handler)
+        const installHandler = () => {
+            // El usuario instaló la app exitosamente (ya sea desde el banner o nativamente)
+            setDismissed(true)
+            setDeferredPrompt(null)
+            localStorage.setItem("pwa-install-dismissed", "true")
+        }
+
+        window.addEventListener("beforeinstallprompt", promptHandler)
+        window.addEventListener("appinstalled", installHandler)
+
+        return () => {
+            window.removeEventListener("beforeinstallprompt", promptHandler)
+            window.removeEventListener("appinstalled", installHandler)
+        }
     }, [])
 
     // Detectar iOS para mostrar guía manual
@@ -73,6 +85,8 @@ export function InstallPWA() {
         const choice = await deferredPrompt.userChoice
         if (choice.outcome === "accepted") {
             setDeferredPrompt(null)
+            setDismissed(true)
+            localStorage.setItem("pwa-install-dismissed", "true")
         }
     }, [deferredPrompt])
 
