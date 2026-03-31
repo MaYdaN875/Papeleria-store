@@ -33,6 +33,7 @@ function slugify(string $text): string
 $data = adminReadJsonBody();
 $categoryId = isset($data['category_id']) ? (int) $data['category_id'] : 0;
 $name = trim((string) ($data['name'] ?? ''));
+$brand = trim((string) ($data['brand'] ?? ''));
 $price = isset($data['price']) ? (float) $data['price'] : -1;
 $stock = isset($data['stock']) ? (int) $data['stock'] : -1;
 $imageUrl = trim((string) ($data['image_url'] ?? ''));
@@ -118,7 +119,7 @@ try {
     ':name',
     ':slug',
     'NULL',
-    'NULL',
+    ':brand',
     ':price',
     ':stock',
     'NULL',
@@ -132,6 +133,7 @@ try {
     'category_id' => $categoryId,
     'name' => $name,
     'slug' => $slug,
+    'brand' => $brand !== '' ? $brand : null,
     'price' => $price,
     'stock' => $stock,
     'mayoreo' => $mayoreo,
@@ -188,6 +190,7 @@ try {
       p.id,
       p.name,
       p.category_id,
+      p.brand,
       p.price,
       p.stock,
       p.mayoreo,

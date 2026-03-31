@@ -387,6 +387,15 @@ export const AllProducts = () => {
         }
         return Array.from(brandSet).sort()
     }, [productsAfterSearch])
+
+    const availableSubclasses = useMemo(() => {
+        const subclassSet = new Set<string>()
+        for (const product of productsAfterSearch) {
+            const category = product.category
+            if (category && category !== "Sin categoría") subclassSet.add(category)
+        }
+        return Array.from(subclassSet).sort()
+    }, [productsAfterSearch])
     const hasNoFilteredProducts = !isLoadingProducts && displayProducts.length === 0
 
     const activeMode = filters.mayoreo ? "mayoreo" : filters.menudeo ? "menudeo" : null
@@ -544,6 +553,7 @@ export const AllProducts = () => {
                             onFilterChange={handleFilterChange}
                             onClose={handleCloseDrawer}
                             availableBrands={availableBrands}
+                            availableSubclasses={availableSubclasses}
                         />
                     </div>
 

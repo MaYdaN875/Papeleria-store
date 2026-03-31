@@ -27,7 +27,9 @@ adminRequireMethod('POST');
 // }
 $data = adminReadJsonBody();
 $id = isset($data['id']) ? (int) $data['id'] : 0;
+$categoryId = isset($data['category_id']) ? (int) $data['category_id'] : -1;
 $name = trim((string) ($data['name'] ?? ''));
+$brand = isset($data['brand']) ? trim((string) $data['brand']) : null;
 $price = isset($data['price']) ? (float) $data['price'] : -1;
 $stock = isset($data['stock']) ? (int) $data['stock'] : -1;
 $imageUrl = trim((string) ($data['image_url'] ?? ''));
@@ -80,6 +82,11 @@ try {
     'menudeo_stock = :menudeo_stock',
   ];
 
+  if ($categoryId > 0)
+    $setParts[] = 'category_id = :category_id';
+  if ($brand !== null)
+    $setParts[] = 'brand = :brand';
+
   if ($hasMayoreoMinQty)
     $setParts[] = 'mayoreo_min_qty = :mayoreo_min_qty';
   if ($hasMenudeoMinQty)
@@ -103,6 +110,11 @@ try {
     'menudeo_stock' => $menudeoStock,
   ];
 
+  if ($categoryId > 0)
+    $updateParams['category_id'] = $categoryId;
+  if ($brand !== null)
+    $updateParams['brand'] = $brand === '' ? null : $brand;
+
   if ($hasMayoreoMinQty)
     $updateParams['mayoreo_min_qty'] = $mayoreoMinQty;
   if ($hasMenudeoMinQty)
@@ -123,6 +135,7 @@ try {
       p.id,
       p.name,
       p.category_id,
+      p.brand,
       p.price,
       p.stock,
       p.mayoreo,

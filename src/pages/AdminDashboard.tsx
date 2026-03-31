@@ -41,6 +41,8 @@ import { getImageValidationError } from "../utils/validation";
 
 interface ProductEditFormState {
   name: string;
+  categoryId: string;
+  brand: string;
   price: string;
   stock: string;
   imageUrl: string;
@@ -56,6 +58,7 @@ interface ProductEditFormState {
 interface ProductCreateFormState {
   name: string;
   categoryId: string;
+  brand: string;
   price: string;
   stock: string;
   imageUrl: string;
@@ -359,6 +362,8 @@ export function AdminDashboard() {
   const [isUploadingEditImage, setIsUploadingEditImage] = useState(false);
   const [editForm, setEditForm] = useState<ProductEditFormState>({
     name: "",
+    categoryId: "",
+    brand: "",
     price: "",
     stock: "",
     imageUrl: "",
@@ -400,6 +405,7 @@ export function AdminDashboard() {
   const [createForm, setCreateForm] = useState<ProductCreateFormState>({
     name: "",
     categoryId: "",
+    brand: "",
     price: "",
     stock: "",
     imageUrl: "",
@@ -803,6 +809,8 @@ export function AdminDashboard() {
     setEditImageUploadSuccess("");
     setEditForm({
       name: product.name,
+      categoryId: String(product.categoryId),
+      brand: product.brand ?? "",
       price: String(product.price),
       stock: String(product.stock),
       imageUrl: product.image ?? "",
@@ -1035,7 +1043,9 @@ export function AdminDashboard() {
       const result = await updateAdminProduct(
         {
           id: product.id,
+          categoryId: product.categoryId,
           name: product.name,
+          brand: product.brand,
           price: product.price,
           stock: product.stock,
           imageUrl: "",
@@ -1224,7 +1234,9 @@ export function AdminDashboard() {
       // Persistencia real en MySQL mediante endpoint PHP.
       const result = await updateAdminProduct({
         id: editingProductId,
+        categoryId: Number(editForm.categoryId),
         name: editForm.name.trim(),
+        brand: editForm.brand.trim(),
         price: parsedPrice,
         stock: parsedStock,
         imageUrl: editForm.imageUrl.trim(),
@@ -1484,6 +1496,15 @@ export function AdminDashboard() {
     setIsMobileMenuOpen(false);
     scrollToTop();
   }
+
+  const groupedCategories = useMemo(() => {
+    const parents = categories.filter((c) => c.parentId === null);
+    
+    return parents.map((parent) => ({
+      ...parent,
+      subclasses: categories.filter((c) => c.parentId === parent.id),
+    }));
+  }, [categories]);
 
   return (
     <div className="admin-layout">
@@ -1853,7 +1874,7 @@ export function AdminDashboard() {
               </label>
 
               <label className="admin-edit-label">
-                <span>Categoría</span>
+                <span>Categoría / Subclase</span>
                 <select
                   className="admin-edit-input"
                   value={createForm.categoryId}
@@ -1863,12 +1884,30 @@ export function AdminDashboard() {
                   disabled={isLoadingCategories || categories.length === 0}
                 >
                   {categories.length === 0 && <option value="">Sin categorías</option>}
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name} (ID: {category.id})
-                    </option>
-                  ))}
+                  {groupedCategories.flatMap((group) => [
+                    <option key={group.id} value={group.id} style={{ fontWeight: "bold", background: "#f8f9fa", color: "#1a1a1a" }}>
+                      📁 {group.name} (Principal - ID: {group.id})
+                    </option>,
+                    ...group.subclasses.map((child) => (
+                      <option key={child.id} value={child.id}>
+                        {"\u00A0\u00A0\u00A0↳ "}{child.name} (ID: {child.id})
+                      </option>
+                    ))
+                  ])}
                 </select>
+              </label>
+
+              <label className="admin-edit-label">
+                <span>Marca (Opcional)</span>
+                <input
+                  type="text"
+                  className="admin-edit-input"
+                  value={createForm.brand}
+                  onChange={(event) =>
+                    setCreateForm((prevForm) => ({ ...prevForm, brand: event.target.value }))
+                  }
+                  placeholder="Ej: BIC, Norma, Pritt"
+                />
               </label>
 
               <label className="admin-edit-label">
@@ -2159,6 +2198,41 @@ export function AdminDashboard() {
                     onChange={(event) =>
                       setEditForm((prevForm) => ({ ...prevForm, name: event.target.value }))
                     }
+                  />
+                </label>
+
+                <label className="admin-edit-label">
+                  <span>Categoría / Subclase</span>
+                  <select
+                    className="admin-edit-input"
+                    value={editForm.categoryId}
+                    onChange={(event) =>
+                      setEditForm((prevForm) => ({ ...prevForm, categoryId: event.target.value }))
+                    }
+                  >
+                    {groupedCategories.flatMap((group) => [
+                      <option key={group.id} value={group.id} style={{ fontWeight: "bold", background: "#f8f9fa", color: "#1a1a1a" }}>
+                        📁 {group.name} (Principal - ID: {group.id})
+                      </option>,
+                      ...group.subclasses.map((child) => (
+                        <option key={child.id} value={child.id}>
+                          {"\u00A0\u00A0\u00A0↳ "}{child.name} (ID: {child.id})
+                        </option>
+                      ))
+                    ])}
+                  </select>
+                </label>
+
+                <label className="admin-edit-label">
+                  <span>Marca (Opcional)</span>
+                  <input
+                    type="text"
+                    className="admin-edit-input"
+                    value={editForm.brand}
+                    onChange={(event) =>
+                      setEditForm((prevForm) => ({ ...prevForm, brand: event.target.value }))
+                    }
+                    placeholder="Ej: BIC, Norma, Pritt"
                   />
                 </label>
 

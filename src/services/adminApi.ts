@@ -136,6 +136,7 @@ interface RawAdminProduct {
   id: number | string;
   name: string;
   category_id?: number | string;
+  brand?: string;
   price: number | string;
   stock: number | string;
   image?: string;
@@ -205,6 +206,7 @@ function normalizeAdminProduct(raw: RawAdminProduct): AdminProduct {
     id: Number(raw.id) || 0,
     name: raw.name ?? "",
     categoryId: Number(raw.category_id) || 0,
+    brand: raw.brand ?? "",
     price: Number(raw.price) || 0,
     stock: Number(raw.stock) || 0,
     image: raw.image ?? "/images/boligrafos.jpg",
@@ -417,7 +419,9 @@ export async function updateAdminProduct(
     },
     body: JSON.stringify({
       id: payload.id,
+      category_id: payload.categoryId,
       name: payload.name,
+      brand: payload.brand,
       price: payload.price,
       stock: payload.stock,
       image_url: payload.imageUrl,
@@ -483,6 +487,7 @@ export async function createAdminProduct(
     body: JSON.stringify({
       category_id: payload.categoryId,
       name: payload.name,
+      brand: payload.brand,
       price: payload.price,
       stock: payload.stock,
       image_url: payload.imageUrl,

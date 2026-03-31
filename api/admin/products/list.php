@@ -49,6 +49,7 @@ try {
       p.id,
       p.name,
       p.category_id,
+      p.brand,
       p.price,
       p.stock,
       p.mayoreo,

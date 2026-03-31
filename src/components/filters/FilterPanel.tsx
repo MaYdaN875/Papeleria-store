@@ -19,38 +19,18 @@ export interface FilterPanelProps {
     readonly onClose?: () => void
     /** Marcas disponibles extraídas dinámicamente de los productos cargados. */
     readonly availableBrands?: string[]
+    /** Subclases disponibles extraídas dinámicamente de los productos cargados. */
+    readonly availableSubclasses?: string[]
 }
 
 const DEFAULT_MAX_PRICE_FILTER = 100000
-
-const getProducts = (): string[] => {
-    return [
-        "Bolígrafos",
-        "Carpetas",
-        "Cinta",
-        "Corrector",
-        "Cuaderno",
-        "Cuadernos",
-        "Engrapadora",
-        "Estuches",
-        "Gomas",
-        "Lápices",
-        "Lápiz",
-        "Marcadores",
-        "Papel",
-        "Pegamento",
-        "Plumas",
-    ]
-}
-
-
 
 /* ================================
    COMPONENTE: FilterPanel
    Panel lateral de filtros con múltiples opciones
    ================================ */
 
-export function FilterPanel({ initialFilters, onFilterChange, onClose, availableBrands }: FilterPanelProps) {
+export function FilterPanel({ initialFilters, onFilterChange, onClose, availableBrands, availableSubclasses }: FilterPanelProps) {
     /* Estado para controlar qué secciones están expandidas */
     const [expandedSections, setExpandedSections] = useState<
         Record<string, boolean>
@@ -73,9 +53,8 @@ export function FilterPanel({ initialFilters, onFilterChange, onClose, available
         }
     )
 
-    const filterProducts = getProducts()
+    const filterProducts = availableSubclasses ?? []
     const brands = availableBrands ?? []
-
     /* ================================
        MANEJADORES DE EVENTOS
        ================================ */

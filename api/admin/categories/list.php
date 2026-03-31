@@ -223,10 +223,15 @@ try {
   $categoryNamesQuoted = array_map(static fn(string $name): string => $pdo->quote($name), ADMIN_CANONICAL_CATEGORY_NAMES);
   $filterByCanonical = implode(', ', $categoryNamesQuoted);
 
+  $whereClause = "name IN ($filterByCanonical)";
+  if ($hasParentId) {
+    $whereClause .= " OR parent_id IS NOT NULL";
+  }
+
   $stmt = $pdo->query("
     SELECT " . implode(', ', $selectParts) . "
     FROM categories
-    WHERE name IN ($filterByCanonical)
+    WHERE $whereClause
     ORDER BY $orderBy
   ");
 

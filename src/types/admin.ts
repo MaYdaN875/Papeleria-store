@@ -5,6 +5,7 @@ export interface AdminProduct {
   id: number;
   name: string;
   categoryId: number;
+  brand?: string;
   price: number;
   stock: number;
   image: string;
@@ -82,7 +83,9 @@ export interface AdminCategory {
 
 export interface UpdateAdminProductInput {
   id: number;
+  categoryId: number;
   name: string;
+  brand?: string;
   price: number;
   stock: number;
   imageUrl: string;
@@ -101,6 +104,7 @@ export interface UpdateAdminProductInput {
 export interface CreateAdminProductInput {
   categoryId: number;
   name: string;
+  brand?: string;
   price: number;
   stock: number;
   imageUrl: string;
