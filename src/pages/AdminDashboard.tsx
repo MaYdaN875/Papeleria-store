@@ -25,6 +25,9 @@ import {
   updateAdminProduct,
   uploadAdminProductImage,
   upsertAdminOffer,
+  updateAdminBrandGlobal,
+  updateAdminCategory,
+  createAdminCategory,
 } from "../services/adminApi";
 import type {
   AdminCategory,
@@ -78,7 +81,7 @@ interface HomeSlideCreateFormState {
 
 type HomeCarouselSlotFormValue = "0" | "1" | "2" | "3" | "4";
 type HomeCarouselSlotValue = 0 | 1 | 2 | 3 | 4;
-type AdminSectionView = "resumen" | "productos" | "inicio" | "ofertas" | "ingresos" | "ordenes";
+type AdminSectionView = "resumen" | "productos" | "inicio" | "ofertas" | "ingresos" | "ordenes" | "categorias";
 const MAX_PRODUCTS_PER_HOME_CAROUSEL = 6;
 const PRODUCTS_PER_PAGE = 20;
 
@@ -351,6 +354,25 @@ export function AdminDashboard() {
   const [ordersError, setOrdersError] = useState("");
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
 
+  // Estado de Etiquetas / Categorías masivas
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
+  const [editingCategoryName, setEditingCategoryName] = useState("");
+  const [isSavingCategory, setIsSavingCategory] = useState<number | null>(null);
+  const [categoryResult, setCategoryResult] = useState<{ id: number; message: string; ok: boolean } | null>(null);
+
+  const [editingBrandNameOld, setEditingBrandNameOld] = useState<string | null>(null);
+  const [editingBrandNameNew, setEditingBrandNameNew] = useState("");
+  const [isSavingBrand, setIsSavingBrand] = useState<string | null>(null);
+  const [brandResult, setBrandResult] = useState<{ old: string; message: string; ok: boolean } | null>(null);
+
+  const availableBrandsList = useMemo(() => {
+    const brandSet = new Set<string>();
+    products.forEach((p) => {
+      if (p.brand) brandSet.add(p.brand.trim());
+    });
+    return Array.from(brandSet).sort();
+  }, [products]);
+
   // Estado del formulario de edición de producto.
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const editFormRef = useRef<HTMLFormElement>(null);
@@ -515,6 +537,49 @@ export function AdminDashboard() {
       setIsLoadingOrders(false);
     }
   }, []);
+
+  const handleAddCategoryClick = async () => {
+    const rawName = globalThis.prompt("Nombre de la nueva categoría o subcategoría:");
+    if (!rawName) return;
+    const name = rawName.trim();
+    if (!name) return;
+
+    const isSub = globalThis.confirm(
+      "¿Es una subcategoría de otra ya existente?\n\n- Dale 'Aceptar' si es subcategoría.\n- Dale 'Cancelar' si será una Categoría Principal nueva."
+    );
+    let parentId: number | null = null;
+    if (isSub) {
+      const pIdStr = globalThis.prompt(
+        "Ingresa el ID numérico de la categoría principal padre:\n(Pista: Lo puedes checar en la lista desplegable o en la pestaña Etiquetas)"
+      );
+      if (!pIdStr) return;
+      parentId = parseInt(pIdStr, 10);
+      if (isNaN(parentId)) {
+        globalThis.alert("Error: El ID debe ser numérico.");
+        return;
+      }
+    }
+
+    const token = getAdminToken();
+    if (!token) return;
+    
+    try {
+      const res = await createAdminCategory(token, name, parentId);
+      if (res.ok && res.categoryId) {
+        // Optimistic update
+        if (parentId) {
+          setCategories(prev => [...prev, { id: res.categoryId!, name, slug: "", parentId, displayOrder: 99, isActive: 1, icon: null, color: null }]);
+        } else {
+          setCategories(prev => [...prev, { id: res.categoryId!, name, slug: "", parentId: null, displayOrder: 99, isActive: 1, icon: null, color: null }]);
+        }
+        globalThis.alert("Categoría creada. Ya puedes seleccionarla.");
+      } else {
+        globalThis.alert("Error: " + res.message);
+      }
+    } catch {
+      globalThis.alert("Error de conexión al crear categoría.");
+    }
+  };
 
   function getOfferActionLabel(product: AdminProduct): string {
     if (isSavingOfferProductId === product.id) return "Guardando...";
@@ -1186,6 +1251,46 @@ export function AdminDashboard() {
     }
   }
 
+  async function handleSaveCategory(e: FormEvent, id: number) {
+    e.preventDefault();
+    if (!editingCategoryName.trim()) return;
+
+    setIsSavingCategory(id);
+    setCategoryResult(null);
+    const token = getAdminToken() ?? "";
+    const result = await updateAdminCategory(token, id, editingCategoryName);
+    setIsSavingCategory(null);
+    
+    if (result.ok) {
+      setCategories(categories.map(c => c.id === id ? { ...c, name: editingCategoryName } : c));
+      setEditingCategoryId(null);
+      setCategoryResult({ id, ok: true, message: result.message || "Guardado" });
+      setTimeout(() => setCategoryResult(null), 3000);
+    } else {
+      setCategoryResult({ id, ok: false, message: result.message || "Error al guardar" });
+    }
+  }
+
+  async function handleSaveBrand(e: FormEvent, oldName: string) {
+    e.preventDefault();
+    if (!editingBrandNameNew.trim()) return;
+
+    setIsSavingBrand(oldName);
+    setBrandResult(null);
+    const token = getAdminToken() ?? "";
+    const result = await updateAdminBrandGlobal(token, oldName, editingBrandNameNew);
+    setIsSavingBrand(null);
+
+    if (result.ok) {
+      setProducts(products.map(p => p.brand === oldName ? { ...p, brand: editingBrandNameNew } : p));
+      setEditingBrandNameOld(null);
+      setBrandResult({ old: oldName, ok: true, message: result.message || "Completado" });
+      setTimeout(() => setBrandResult(null), 3000);
+    } else {
+      setBrandResult({ old: oldName, ok: false, message: result.message || "Error" });
+    }
+  }
+
   async function handleSaveProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!editingProductId) return;
@@ -1558,6 +1663,7 @@ export function AdminDashboard() {
             { key: "productos" as const, label: "📦 Productos" },
             { key: "inicio" as const, label: "🖼️ Inicio (Slides)" },
             { key: "ofertas" as const, label: "🏷️ Ofertas" },
+            { key: "categorias" as const, label: "🏷️ Etiquetas" },
             { key: "ingresos" as const, label: "💰 Ingresos" },
             { key: "ordenes" as const, label: "📋 Órdenes" },
           ]).map((item) => (
@@ -1623,6 +1729,13 @@ export function AdminDashboard() {
             onClick={() => setActiveSection("ofertas")}
           >
             Ofertas
+          </button>
+          <button
+            type="button"
+            className={`admin-nav-item ${activeSection === "categorias" ? "admin-nav-item--active" : ""}`}
+            onClick={() => setActiveSection("categorias")}
+          >
+            Etiquetas
           </button>
           <button
             type="button"
@@ -1874,7 +1987,10 @@ export function AdminDashboard() {
               </label>
 
               <label className="admin-edit-label">
-                <span>Categoría / Subclase</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Categoría / Subclase</span>
+                  <button type="button" tabIndex={-1} onClick={handleAddCategoryClick} className="admin-row-action-button" style={{ padding: '0px 6px', fontSize: '11px', lineHeight: '18px' }} title="Agregar nueva categoría / subcategoría">+ Nueva</button>
+                </div>
                 <select
                   className="admin-edit-input"
                   value={createForm.categoryId}
@@ -2202,7 +2318,10 @@ export function AdminDashboard() {
                 </label>
 
                 <label className="admin-edit-label">
-                  <span>Categoría / Subclase</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Categoría / Subclase</span>
+                    <button type="button" tabIndex={-1} onClick={handleAddCategoryClick} className="admin-row-action-button" style={{ padding: '0px 6px', fontSize: '11px', lineHeight: '18px' }} title="Agregar nueva categoría / subcategoría">+ Nueva</button>
+                  </div>
                   <select
                     className="admin-edit-input"
                     value={editForm.categoryId}
@@ -2579,6 +2698,114 @@ export function AdminDashboard() {
               </table>
             </div>
           )}
+          </section>
+        )}
+
+        {activeSection === "categorias" && (
+          <section className="admin-info-panel admin-module-section">
+            <div className="admin-panel-header">
+              <h2>Etiquetas y Clasificaciones</h2>
+              <p>
+                Aquí puedes arreglar errores ortográficos o renombrar masivamente tanto las Subcategorías del sistema como las Marcas asignadas a los productos preexistentes.
+              </p>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "2rem", alignItems: "flex-start" }}>
+              <div className="admin-surface-card" style={{ padding: "1.5rem", overflowX: "auto" }}>
+                <h3 style={{ marginBottom: "0.25rem" }}>Subcategorías y Categorías</h3>
+                <p style={{ fontSize: "0.85rem", opacity: 0.8, marginBottom: "1rem" }}>La base de datos actual.</p>
+                <div className="admin-table-wrapper">
+                  <table className="admin-table">
+                    <thead><tr><th>ID</th><th>Nombre Original</th><th>Acción</th></tr></thead>
+                    <tbody>
+                      {categories.map((cat) => {
+                        const isEditing = editingCategoryId === cat.id;
+                        return (
+                          <tr key={cat.id}>
+                            <td>{cat.id}</td>
+                            <td>
+                              {isEditing ? (
+                                <form onSubmit={(e) => void handleSaveCategory(e, cat.id)}>
+                                  <input 
+                                    className="admin-edit-input" 
+                                    value={editingCategoryName} 
+                                    onChange={(e) => setEditingCategoryName(e.target.value)} 
+                                  />
+                                </form>
+                              ) : (
+                                <span style={{ fontWeight: cat.parentId ? 'normal' : 'bold' }}>{cat.parentId ? "↳ " : "📁 "}{cat.name} {cat.parentId ? "" : "(Principal)"}</span>
+                              )}
+                              {categoryResult?.id === cat.id && (
+                                <span style={{display: 'block', fontSize: '12px', marginTop: '4px', color: categoryResult.ok ? 'var(--color-primary)' : 'var(--color-success)'}}>
+                                  {categoryResult.message}
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              {isEditing ? (
+                                <div style={{display: 'flex', gap: '5px'}}>
+                                  <button onClick={(e) => void handleSaveCategory(e, cat.id)} className="admin-row-action-button admin-row-action-button--save" disabled={isSavingCategory === cat.id}>Guardar</button>
+                                  <button onClick={() => setEditingCategoryId(null)} className="admin-row-action-button">Cancelar</button>
+                                </div>
+                              ) : (
+                                <button onClick={() => { setEditingCategoryId(cat.id); setEditingCategoryName(cat.name); }} className="admin-row-action-button">Renombrar</button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="admin-surface-card" style={{ padding: "1.5rem", overflowX: "auto" }}>
+                <h3 style={{ marginBottom: "0.25rem" }}>Marcas de Productos</h3>
+                <p style={{ fontSize: "0.85rem", opacity: 0.8, marginBottom: "1rem" }}>Extraídas dinámicamente según lo que has escrito. Las marcas no usadas ya no aparecerán.</p>
+                <div className="admin-table-wrapper">
+                  <table className="admin-table">
+                    <thead><tr><th>Marca Localizada</th><th>Acción (Masiva)</th></tr></thead>
+                    <tbody>
+                      {availableBrandsList.map((brand) => {
+                        const isEditing = editingBrandNameOld === brand;
+                        return (
+                          <tr key={brand}>
+                            <td>
+                              {isEditing ? (
+                                <form onSubmit={(e) => void handleSaveBrand(e, brand)}>
+                                  <input 
+                                    className="admin-edit-input" 
+                                    value={editingBrandNameNew} 
+                                    onChange={(e) => setEditingBrandNameNew(e.target.value)} 
+                                  />
+                                </form>
+                              ) : (
+                                <b>{brand}</b>
+                              )}
+                              {brandResult?.old === brand && (
+                                <span style={{display: 'block', fontSize: '12px', marginTop: '4px', color: brandResult.ok ? 'var(--color-primary)' : 'var(--color-success)'}}>
+                                  {brandResult.message}
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              {isEditing ? (
+                                <div style={{display: 'flex', gap: '5px'}}>
+                                  <button onClick={(e) => void handleSaveBrand(e, brand)} className="admin-row-action-button admin-row-action-button--save" disabled={isSavingBrand === brand}>Guardar</button>
+                                  <button onClick={() => setEditingBrandNameOld(null)} className="admin-row-action-button">Cancelar</button>
+                                </div>
+                              ) : (
+                                <button onClick={() => { setEditingBrandNameOld(brand); setEditingBrandNameNew(brand); }} className="admin-row-action-button">Corregir / Editar</button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </section>
         )}
 

@@ -972,3 +972,68 @@ export async function fetchAdminOrders(token: string): Promise<AdminOrdersRespon
   return body;
 }
 
+/** Actualiza nombre y slug de una subcategoría o categoría dada su ID */
+export async function updateAdminCategory(
+  token: string,
+  id: number,
+  name: string
+): Promise<{ ok: boolean; message?: string }> {
+  if (!API_BASE) {
+    return { ok: false, message: "Falta configurar API_URL para conectar con el servidor." };
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/categories/update.php`, {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify({ id, name }),
+    });
+    return (await res.json()) as { ok: boolean; message?: string };
+  } catch {
+    return { ok: false, message: "Excepción al intentar conectarse al servidor para actualizar categoría." };
+  }
+}
+
+/** Renombra una marca pre-existente para todos los productos en la base de datos de manera masiva */
+export async function updateAdminBrandGlobal(
+  token: string,
+  oldName: string,
+  newName: string
+): Promise<{ ok: boolean; message?: string; affectedRows?: number }> {
+  if (!API_BASE) {
+    return { ok: false, message: "Falta configurar API_URL para conectar con el servidor." };
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/brands/update.php`, {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify({ oldName, newName }),
+    });
+    return (await res.json()) as { ok: boolean; message?: string; affectedRows?: number };
+  } catch {
+    return { ok: false, message: "Excepción al intentar conectarse al servidor para actualizar marca." };
+  }
+}
+
+/** Crea una nueva categoría o subcategoría directamente desde el dashboard */
+export async function createAdminCategory(
+  token: string,
+  name: string,
+  parentId: number | null
+): Promise<{ ok: boolean; message?: string; categoryId?: number; name?: string; parent_id?: number | null }> {
+  if (!API_BASE) {
+    return { ok: false, message: "Falta configurar API_URL para conectar con el servidor." };
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/categories/create.php`, {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify({ name, parent_id: parentId }),
+    });
+    return (await res.json()) as { ok: boolean; message?: string; categoryId?: number; name?: string; parent_id?: number | null };
+  } catch {
+    return { ok: false, message: "Excepción al intentar conectarse al servidor para crear categoría." };
+  }
+}
