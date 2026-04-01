@@ -78,6 +78,7 @@ export interface AdminCategory {
   id: number;
   name: string;
   parentId: number | null;
+  parentName?: string | null;
   isActive: AdminBinaryFlag;
 }
 

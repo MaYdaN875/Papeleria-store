@@ -159,6 +159,7 @@ interface RawAdminCategory {
   id: number | string;
   name: string;
   parent_id?: number | string | null;
+  parent_name?: string | null;
   is_active?: RawBinaryFlag;
 }
 
@@ -976,21 +977,47 @@ export async function fetchAdminOrders(token: string): Promise<AdminOrdersRespon
 export async function updateAdminCategory(
   token: string,
   id: number,
-  name: string
+  name: string,
+  parentId?: number | null
 ): Promise<{ ok: boolean; message?: string }> {
   if (!API_BASE) {
     return { ok: false, message: "Falta configurar API_URL para conectar con el servidor." };
   }
 
   try {
+    const payload: any = { id, name };
+    if (parentId !== undefined) {
+      payload.parent_id = parentId;
+    }
+    
     const res = await fetch(`${API_BASE}/admin/categories/update.php`, {
       method: "POST",
       headers: buildAuthHeaders(token),
-      body: JSON.stringify({ id, name }),
+      body: JSON.stringify(payload),
     });
     return (await res.json()) as { ok: boolean; message?: string };
   } catch {
     return { ok: false, message: "Excepción al intentar conectarse al servidor para actualizar categoría." };
+  }
+}
+
+/** Elimina una categoría o subcategoría */
+export async function deleteAdminCategory(
+  token: string,
+  id: number
+): Promise<{ ok: boolean; message?: string }> {
+  if (!API_BASE) {
+    return { ok: false, message: "Falta configurar API_URL para conectar con el servidor." };
+  }
+  try {
+    const res = await fetch(`${API_BASE}/admin/categories/delete.php`, {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify({ id }),
+    });
+    return (await res.json()) as { ok: boolean; message?: string };
+  } catch {
+    return { ok: false, message: "Error al intentar borrar la categoría." };
   }
 }
 
@@ -1035,5 +1062,51 @@ export async function createAdminCategory(
     return (await res.json()) as { ok: boolean; message?: string; categoryId?: number; name?: string; parent_id?: number | null };
   } catch {
     return { ok: false, message: "Excepción al intentar conectarse al servidor para crear categoría." };
+  }
+}
+
+export async function fetchAdminBrands(token: string): Promise<{ ok: boolean; brands?: string[]; message?: string }> {
+  if (!API_BASE) {
+    return { ok: false, message: "Falta configurar API_URL." };
+  }
+  try {
+    const res = await fetch(`${API_BASE}/admin/brands/list.php`, {
+      headers: buildAuthHeaders(token),
+    });
+    return (await res.json()) as { ok: boolean; brands?: string[]; message?: string };
+  } catch {
+    return { ok: false, message: "Error al cargar las marcas del diccionario." };
+  }
+}
+
+export async function createAdminBrand(token: string, name: string): Promise<{ ok: boolean; message?: string }> {
+  if (!API_BASE) {
+    return { ok: false, message: "Falta configurar API_URL." };
+  }
+  try {
+    const res = await fetch(`${API_BASE}/admin/brands/create.php`, {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify({ name }),
+    });
+    return (await res.json()) as { ok: boolean; message?: string };
+  } catch {
+    return { ok: false, message: "Error al crear la marca." };
+  }
+}
+
+export async function deleteAdminBrand(token: string, name: string): Promise<{ ok: boolean; message?: string }> {
+  if (!API_BASE) {
+    return { ok: false, message: "Falta configurar API_URL." };
+  }
+  try {
+    const res = await fetch(`${API_BASE}/admin/brands/delete.php`, {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify({ name }),
+    });
+    return (await res.json()) as { ok: boolean; message?: string };
+  } catch {
+    return { ok: false, message: "Error al intentar eliminar la marca." };
   }
 }

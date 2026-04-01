@@ -885,12 +885,18 @@
   border-radius: var(--radius-md);
   background: var(--color-primary-light);
   color: var(--color-primary);
-  padding: 6px 10px;
-  font-size: var(--font-size-sm);
+  padding: 6px 14px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   transition:
     background var(--transition-fast),
     transform var(--transition-fast),
+    box-shadow var(--transition-fast),
     opacity var(--transition-fast);
 }
 
@@ -929,10 +935,34 @@
 .admin-row-action-button--danger {
   background: #fde9e6;
   color: #a03d2d;
+  border: 1px solid #f5c5bc;
 }
 
 .admin-row-action-button--danger:hover {
   background: #f8d8d2;
+  box-shadow: 0 4px 8px rgba(160, 61, 45, 0.1);
+}
+
+.admin-row-action-button--warning {
+  background: #fff8e1;
+  color: #b08900;
+  border: 1px solid #ffe082;
+}
+
+.admin-row-action-button--warning:hover {
+  background: #ffecb3;
+  box-shadow: 0 4px 8px rgba(176, 137, 0, 0.1);
+}
+
+.admin-row-action-button--edit {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #bbdefb;
+}
+
+.admin-row-action-button--edit:hover {
+  background: #bbdefb;
+  box-shadow: 0 4px 8px rgba(21, 101, 192, 0.1);
 }
 
 .admin-row-action-button:disabled {

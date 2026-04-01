@@ -36,17 +36,27 @@ if ($name === '') {
     $slug = trim(preg_replace('/[^a-z0-9]+/', '-', $value), '-');
     if ($slug === '') $slug = 'categoria';
 
-    // Checar existencia de la columna slug 
     $columns = adminGetTableColumns($pdo, 'categories');
     $hasSlug = in_array('slug', $columns, true);
+    $hasParent = in_array('parent_id', $columns, true);
+
+    $updateFields = ['name = ?'];
+    $params = [$name];
 
     if ($hasSlug) {
-        $stmt = $pdo->prepare('UPDATE categories SET name = ?, slug = ? WHERE id = ?');
-        $stmt->execute([$name, $slug, $id]);
-    } else {
-        $stmt = $pdo->prepare('UPDATE categories SET name = ? WHERE id = ?');
-        $stmt->execute([$name, $id]);
+        $updateFields[] = 'slug = ?';
+        $params[] = $slug;
     }
+
+    if ($hasParent && array_key_exists('parent_id', $data)) {
+        $updateFields[] = 'parent_id = ?';
+        $params[] = $data['parent_id'] > 0 ? (int)$data['parent_id'] : null;
+    }
+    
+    $params[] = $id;
+
+    $stmt = $pdo->prepare('UPDATE categories SET ' . implode(', ', $updateFields) . ' WHERE id = ?');
+    $stmt->execute($params);
 
     if ($stmt->rowCount() === 0) {
         // Verificar existencia de la categoría

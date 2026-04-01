@@ -33,6 +33,13 @@ if ($oldName === '' || $newName === '') {
         adminJsonResponse(400, ['ok' => false, 'message' => 'El campo brand no existe en la tabla products.']);
     }
 
+    $stmtBrands = $pdo->prepare('UPDATE brands SET name = ? WHERE name = ?');
+    try {
+        $stmtBrands->execute([$newName, $oldName]);
+    } catch (PDOException $e) {
+        // En caso de que el nuevo nombre ya exista en la tabla, se ignorará
+    }
+
     $stmt = $pdo->prepare('UPDATE products SET brand = ? WHERE brand = ?');
     $stmt->execute([$newName, $oldName]);
 

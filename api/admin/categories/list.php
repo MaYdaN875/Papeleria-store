@@ -207,30 +207,33 @@ try {
   $hasIsActive = in_array('is_active', $columns, true);
   $hasDisplayOrder = in_array('display_order', $columns, true);
 
-  $selectParts = ['id', 'name'];
+  $selectParts = ['c.id', 'c.name'];
   if ($hasParentId) {
-    $selectParts[] = 'parent_id';
+    $selectParts[] = 'c.parent_id';
+    $selectParts[] = 'p.name AS parent_name';
   } else {
     $selectParts[] = 'NULL AS parent_id';
+    $selectParts[] = 'NULL AS parent_name';
   }
   if ($hasIsActive) {
-    $selectParts[] = 'is_active';
+    $selectParts[] = 'c.is_active';
   } else {
     $selectParts[] = '1 AS is_active';
   }
 
-  $orderBy = $hasDisplayOrder ? 'display_order ASC, name ASC' : 'name ASC';
+  $orderBy = $hasDisplayOrder ? 'c.display_order ASC, c.name ASC' : 'c.name ASC';
   $categoryNamesQuoted = array_map(static fn(string $name): string => $pdo->quote($name), ADMIN_CANONICAL_CATEGORY_NAMES);
   $filterByCanonical = implode(', ', $categoryNamesQuoted);
 
-  $whereClause = "name IN ($filterByCanonical)";
+  $whereClause = "c.name IN ($filterByCanonical)";
   if ($hasParentId) {
-    $whereClause .= " OR parent_id IS NOT NULL";
+    $whereClause .= " OR c.parent_id IS NOT NULL";
   }
 
   $stmt = $pdo->query("
     SELECT " . implode(', ', $selectParts) . "
-    FROM categories
+    FROM categories c
+    LEFT JOIN categories p ON c.parent_id = p.id
     WHERE $whereClause
     ORDER BY $orderBy
   ");
