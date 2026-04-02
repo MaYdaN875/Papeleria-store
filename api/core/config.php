@@ -54,3 +54,12 @@ function getStripePublishableKey(): string
   $v = getenv('STRIPE_PUBLISHABLE_KEY');
   return $v !== false && $v !== '' ? $v : (defined('STRIPE_PUBLISHABLE_KEY') ? STRIPE_PUBLISHABLE_KEY : '');
 }
+
+// Nombres canónicos de las categorías principales de la tienda.
+// Usada por list.php (para auto-crear) y delete.php (para proteger).
+const ADMIN_CANONICAL_CATEGORY_NAMES = [
+  'Oficina y Escolares',
+  'Arte y Manualidades',
+  'Miselanea y Regalos',
+  'Servicios Digitales e Impresiones',
+];

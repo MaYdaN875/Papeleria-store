@@ -12,12 +12,8 @@ require_once __DIR__ . '/../../_admin_common.php';
 adminHandleCors(['GET']);
 adminRequireMethod('GET');
 
-const ADMIN_CANONICAL_CATEGORY_NAMES = [
-  'Oficina y Escolares',
-  'Arte y Manualidades',
-  'Miselanea y Regalos',
-  'Servicios Digitales e Impresiones',
-];
+// ADMIN_CANONICAL_CATEGORY_NAMES ahora se define en core/config.php
+// y está disponible automáticamente vía _admin_common.php.
 
 /**
  * Convierte nombre de categoría a slug URL-friendly.

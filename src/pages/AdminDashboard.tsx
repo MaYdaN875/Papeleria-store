@@ -456,6 +456,8 @@ export function AdminDashboard() {
     return filteredOrders.slice(start, start + ORDERS_PER_PAGE);
   }, [filteredOrders, safeOrderPage]);
 
+  const [categorySearch, setCategorySearch] = useState("");
+  const [brandSearch, setBrandSearch] = useState("");
   const [stockAlertsExpanded, setStockAlertsExpanded] = useState(false);
   const [createForm, setCreateForm] = useState<ProductCreateFormState>({
     name: "",
@@ -577,11 +579,21 @@ export function AdminDashboard() {
     const name = rawName.trim();
     if (!name) return;
 
-    const isSub = globalThis.confirm(
-      "¿Es una subcategoría de otra ya existente?\n\n- Dale 'Aceptar' si es subcategoría.\n- Dale 'Cancelar' si será una Categoría Principal nueva."
+    // Flujo más intuitivo: un prompt con opciones numeradas
+    const typeChoice = globalThis.prompt(
+      `¿Qué tipo es "${name}"?\n\nEscribe el número:\n  1 → Categoría Principal (nueva carpeta)\n  2 → Subcategoría (dentro de una categoría existente)\n\nO cierra este cuadro para cancelar.`
     );
+
+    if (!typeChoice) return; // el usuario cerró → cancelar
+
+    const choice = typeChoice.trim();
+    if (choice !== "1" && choice !== "2") {
+      globalThis.alert("Opción no válida. Escribe 1 o 2.");
+      return;
+    }
+
     let parentId: number | null = null;
-    if (isSub) {
+    if (choice === "2") {
       // Mostrar lista simple de IDs para ayudar
       const parentOptions = categories
         .filter(c => !c.parentId)
@@ -589,12 +601,16 @@ export function AdminDashboard() {
         .join("\n");
       
       const pIdStr = globalThis.prompt(
-        "Ingresa el ID numérico de la categoría principal padre:\n\nOpciones principales:\n" + parentOptions
+        `Escoge la categoría padre para "${name}".\nEscribe el número de ID:\n\n${parentOptions}\n\nO cierra este cuadro para cancelar.`
       );
       if (!pIdStr) return;
       parentId = parseInt(pIdStr, 10);
       if (isNaN(parentId)) {
-        globalThis.alert("Error: El ID debe ser numérico.");
+        globalThis.alert("Error: El ID debe ser un número.");
+        return;
+      }
+      if (!categories.find(c => c.id === parentId && !c.parentId)) {
+        globalThis.alert("Error: No existe una categoría principal con ese ID.");
         return;
       }
     }
@@ -612,7 +628,7 @@ export function AdminDashboard() {
           isActive: 1,
           parentName: parentId ? categories.find(c => c.id === parentId)?.name : null
         }]);
-        globalThis.alert("Categoría creada.");
+        globalThis.alert("✅ Categoría creada exitosamente.");
       } else {
         globalThis.alert("Error: " + res.message);
       }
@@ -740,6 +756,8 @@ export function AdminDashboard() {
     if (!name || !name.trim()) return;
     const trimmed = name.trim();
 
+    if (!globalThis.confirm(`¿Agregar la marca "${trimmed}" al catálogo?`)) return;
+
     const token = getAdminToken();
     if (!token) return;
 
@@ -747,7 +765,7 @@ export function AdminDashboard() {
       const res = await createAdminBrand(token, trimmed);
       if (res.ok) {
         setDictBrands(prev => [...new Set([...prev, trimmed])].sort());
-        globalThis.alert("Marca agregada al catálogo.");
+        globalThis.alert("✅ Marca agregada al catálogo.");
       } else {
         globalThis.alert("Error: " + res.message);
       }
@@ -2889,12 +2907,24 @@ export function AdminDashboard() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100%, 1fr))", gap: "2rem", alignItems: "flex-start" }}>
               <div className="admin-surface-card" style={{ padding: "1.5rem", overflowX: "auto" }}>
                 <h3 style={{ marginBottom: "0.25rem" }}>Jerarquía de Categorías</h3>
-                <p style={{ fontSize: "0.85rem", opacity: 0.8, marginBottom: "1rem" }}>Puedes mover subcategorías entre carpetas o borrarlas.</p>
+                <p style={{ fontSize: "0.85rem", opacity: 0.8, marginBottom: "0.75rem" }}>Puedes mover subcategorías entre carpetas o borrarlas.</p>
+                <input
+                  type="text"
+                  className="admin-search-input"
+                  placeholder="Buscar categoría o subcategoría..."
+                  value={categorySearch}
+                  onChange={(e) => setCategorySearch(e.target.value)}
+                  style={{ marginBottom: "0.75rem", maxWidth: "350px" }}
+                />
                 <div className="admin-table-wrapper" style={{ overflowX: 'auto' }}>
                   <table className="admin-table">
                     <thead><tr><th>ID</th><th>Clasificación</th><th>Acciones</th></tr></thead>
                     <tbody>
-                      {[...categories].sort((a,b) => (a.parentId ?? 0) - (b.parentId ?? 0) || a.id - b.id).map((cat) => {
+                      {[...categories].sort((a,b) => (a.parentId ?? 0) - (b.parentId ?? 0) || a.id - b.id).filter((cat) => {
+                        if (!categorySearch.trim()) return true;
+                        const q = categorySearch.toLowerCase();
+                        return cat.name.toLowerCase().includes(q) || cat.id.toString().includes(q) || (cat.parentName ?? "").toLowerCase().includes(q);
+                      }).map((cat) => {
                         const isEditing = editingCategoryId === cat.id;
                         return (
                           <tr key={cat.id}>
@@ -2957,12 +2987,23 @@ export function AdminDashboard() {
 
               <div className="admin-surface-card" style={{ padding: "1.5rem", overflowX: "auto" }}>
                 <h3 style={{ marginBottom: "0.25rem" }}>Diccionario de Marcas</h3>
-                <p style={{ fontSize: "0.85rem", opacity: 0.8, marginBottom: "1rem" }}>Gestiona las marcas que aparecen en el auto-completado de productos.</p>
+                <p style={{ fontSize: "0.85rem", opacity: 0.8, marginBottom: "0.75rem" }}>Gestiona las marcas que aparecen en el auto-completado de productos.</p>
+                <input
+                  type="text"
+                  className="admin-search-input"
+                  placeholder="Buscar marca..."
+                  value={brandSearch}
+                  onChange={(e) => setBrandSearch(e.target.value)}
+                  style={{ marginBottom: "0.75rem", maxWidth: "350px" }}
+                />
                 <div className="admin-table-wrapper" style={{ overflowX: 'auto' }}>
                   <table className="admin-table">
                     <thead><tr><th>Nombre de Marca</th><th>Acciones</th></tr></thead>
                     <tbody>
-                      {availableBrandsList.map((brand) => {
+                      {availableBrandsList.filter((brand) => {
+                        if (!brandSearch.trim()) return true;
+                        return brand.toLowerCase().includes(brandSearch.toLowerCase());
+                      }).map((brand) => {
                         const isEditing = editingBrandNameOld === brand;
                         return (
                           <tr key={brand}>

@@ -12,20 +12,29 @@ try {
     $pdo = adminGetPdo();
     adminRequireSession($pdo);
 
-// Obtener carga JSON
-$input = file_get_contents('php://input');
-$data = json_decode($input, true);
+    // Auto-crear la tabla brands si no existe
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS brands (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
 
-if (!isset($data['oldName']) || !isset($data['newName'])) {
-    adminJsonResponse(400, ['ok' => false, 'message' => 'Faltan campos requeridos (oldName, newName)']);
-}
+    // Obtener carga JSON
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
 
-$oldName = trim($data['oldName']);
-$newName = trim($data['newName']);
+    if (!isset($data['oldName']) || !isset($data['newName'])) {
+        adminJsonResponse(400, ['ok' => false, 'message' => 'Faltan campos requeridos (oldName, newName)']);
+    }
 
-if ($oldName === '' || $newName === '') {
-    adminJsonResponse(400, ['ok' => false, 'message' => 'Los nombres de marca no pueden estar vacíos']);
-}
+    $oldName = trim($data['oldName']);
+    $newName = trim($data['newName']);
+
+    if ($oldName === '' || $newName === '') {
+        adminJsonResponse(400, ['ok' => false, 'message' => 'Los nombres de marca no pueden estar vacíos']);
+    }
 
     // Checar existencia de la columna brand
     $columns = adminGetTableColumns($pdo, 'products');

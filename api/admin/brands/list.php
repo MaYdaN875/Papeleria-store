@@ -12,6 +12,15 @@ try {
     $pdo = adminGetPdo();
     adminRequireSession($pdo);
 
+    // Auto-crear la tabla brands si no existe
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS brands (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+
     // Obtener desde tabla products
     $stmtProducts = $pdo->query("SELECT DISTINCT brand FROM products WHERE brand IS NOT NULL AND brand != ''");
     $productBrands = $stmtProducts->fetchAll(PDO::FETCH_COLUMN) ?: [];

@@ -12,6 +12,15 @@ try {
     $pdo = adminGetPdo();
     adminRequireSession($pdo);
 
+    // Auto-crear la tabla brands si no existe
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS brands (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+
     $input = file_get_contents('php://input');
     $data = json_decode($input, true);
 
