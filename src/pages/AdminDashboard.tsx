@@ -88,7 +88,6 @@ type HomeCarouselSlotValue = 0 | 1 | 2 | 3 | 4;
 type AdminSectionView = "resumen" | "productos" | "inicio" | "ofertas" | "ingresos" | "ordenes" | "categorias";
 const MAX_PRODUCTS_PER_HOME_CAROUSEL = 6;
 const PRODUCTS_PER_PAGE = 20;
-const CORE_CATEGORY_IDS = [1, 2, 4, 48];
 
 interface InitialLoadState {
   productsLoading: boolean;
@@ -677,7 +676,10 @@ export function AdminDashboard() {
     try {
       const res = await deleteAdminCategory(token, id);
       if (res.ok) {
-        setCategories(prev => prev.filter(c => c.id !== id));
+        setCategories(prev => prev
+          .filter(c => c.id !== id)
+          .map(c => c.parentId === id ? { ...c, parentId: cat.parentId, parentName: cat.parentId ? prev.find(p => p.id === cat.parentId)?.name ?? null : null } : c)
+        );
         globalThis.alert("Eliminada correctamente.");
       } else {
         globalThis.alert("Error: " + res.message);
@@ -2967,12 +2969,10 @@ export function AdminDashboard() {
                                 ) : (
                                   <>
                                     <button onClick={() => { setEditingCategoryId(cat.id); setEditingCategoryName(cat.name); }} className="admin-row-action-button admin-row-action-button--edit" title="Renombrar">Editar</button>
-                                    {!CORE_CATEGORY_IDS.includes(cat.id) && (
-                                      <>
-                                        <button onClick={() => handleMoveCategory(cat.id)} className="admin-row-action-button admin-row-action-button--warning" title="Mover a otra categoría">Mover</button>
-                                        <button onClick={() => handleDeleteCategory(cat.id)} className="admin-row-action-button admin-row-action-button--danger" title="Eliminar">Borrar</button>
-                                      </>
+                                    {cat.parentId && (
+                                      <button onClick={() => handleMoveCategory(cat.id)} className="admin-row-action-button admin-row-action-button--warning" title="Mover a otra categoría">Mover</button>
                                     )}
+                                    <button onClick={() => handleDeleteCategory(cat.id)} className="admin-row-action-button admin-row-action-button--danger" title="Eliminar">Borrar</button>
                                   </>
                                 )}
                               </div>

@@ -80,11 +80,6 @@ try {
       continue;
     }
 
-    $nameKey = publicNormalizeCategoryName($row['name']);
-    if (!isset($canonicalIndex[$nameKey])) {
-      continue;
-    }
-
     $children = [];
     foreach ($rowsById as $candidate) {
       if ((int)$candidate['parent_id'] !== (int)$row['id']) {
@@ -100,11 +95,14 @@ try {
       return strcasecmp($left['name'], $right['name']);
     });
 
+    $nameKey = publicNormalizeCategoryName($row['name']);
+    $canonicalOrder = isset($canonicalIndex[$nameKey]) ? $canonicalIndex[$nameKey] : (1000 + $row['id']);
+
     $result[] = [
       'id' => (int)$row['id'],
       'name' => (string)$row['name'],
       'children' => $children,
-      'canonical_order' => $canonicalIndex[$nameKey],
+      'canonical_order' => $canonicalOrder,
     ];
   }
 
