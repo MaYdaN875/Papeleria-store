@@ -22,6 +22,7 @@ import {
 } from "../../utils/storeSession"
 import { Notification } from "../ui/Notification"
 import { SearchBar } from "./SearchBar"
+import { useIsPWA } from "../../hooks/useIsPWA"
 
 interface NavbarCategory {
     id: string
@@ -111,6 +112,9 @@ export function Navbar() {
     const [isDesktopCategoriesOpen, setIsDesktopCategoriesOpen] = useState(false)
     const [expandedDesktopCategoryId, setExpandedDesktopCategoryId] = useState<string | null>(null)
     const [expandedMobileCategoryId, setExpandedMobileCategoryId] = useState<string | null>(null)
+    
+    // Agregamos detección de la PWA para el Layout
+    const isPWA = useIsPWA()
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
     const [isMobileSearchClosing, setIsMobileSearchClosing] = useState(false)
     const [isProductsExpanded, setIsProductsExpanded] = useState(false)
@@ -352,18 +356,20 @@ export function Navbar() {
                     duration={3000}
                 />
             )}
-            <header className={`header${isMobileSearchOpen ? ' mobile-search-active' : ''}${isMobileSearchClosing ? ' mobile-search-closing' : ''}`}>
+            <header className={`header ${isMobileSearchOpen ? ' mobile-search-active' : ''} ${isMobileSearchClosing ? ' mobile-search-closing' : ''} ${isPWA ? 'header-pwa' : ''}`}>
                 <div className="header-container">
-                    {/* Mobile hamburger – left side */}
-                    <button
-                        type="button"
-                        className="btn-menu-mobile"
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        aria-label="Abrir menú"
-                        aria-expanded={isMobileMenuOpen ? "true" : "false"}
-                    >
-                        <i className="fas fa-bars" aria-hidden="true" />
-                    </button>
+                    {/* EN MODO WEB: Botón hamburguesa a la izquierda */}
+                    {!isPWA && (
+                        <button
+                            type="button"
+                            className="btn-menu-mobile"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Abrir menú"
+                            aria-expanded={isMobileMenuOpen ? "true" : "false"}
+                        >
+                            <i className="fas fa-bars" aria-hidden="true" />
+                        </button>
+                    )}
 
                     <div className="header-left">
                         <Link
@@ -562,9 +568,22 @@ export function Navbar() {
                             </span>
                         </Link>
                     </div>
+
+                    {/* EN MODO PWA: Botón hamburguesa a la derecha, con diseño retro */}
+                    {isPWA && (
+                        <button
+                            type="button"
+                            className="btn-menu-mobile pwa-menu-btn"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Abrir menú"
+                            aria-expanded={isMobileMenuOpen ? "true" : "false"}
+                        >
+                            <i className="fas fa-bars" aria-hidden="true" />
+                        </button>
+                    )}
                 </div>
 
-                {/* Menú lateral rediseñado */}
+                {/* Menú lateral (lo mantenemos porque él tiene la hamburguesa en su PWA) */}
                 {isMobileMenuOpen && (
                     <>
                         <button
@@ -575,11 +594,17 @@ export function Navbar() {
                         />
                         <div className={`mobile-menu ${isMenuClosing ? "closing" : ""}`}>
                             <div className={`mobile-menu-header ${isMenuClosing ? "closing" : ""}`}>
-                                <img
-                                    src="/logo.png"
-                                    alt="God Art"
-                                    className="mobile-menu-logo"
-                                />
+                                {isPWA ? (
+                                    <h3 style={{ margin: 0, paddingLeft: '8px', fontSize: '18px', fontWeight: 'bold', color: 'var(--color-text)' }}>
+                                        Categorías
+                                    </h3>
+                                ) : (
+                                    <img
+                                        src="/logo.png"
+                                        alt="God Art"
+                                        className="mobile-menu-logo"
+                                    />
+                                )}
                                 <button
                                     type="button"
                                     className="close-menu-btn"
@@ -591,30 +616,36 @@ export function Navbar() {
                             </div>
 
                             <nav className="mobile-menu-nav">
-                                <div className="mobile-nav-section-title">Explorar</div>
-                                {/* Inicio */}
-                                <Link
-                                    to="/"
-                                    className={`mobile-nav-link ${location.pathname === "/" ? "mobile-nav-link--active" : ""}`}
-                                    onClick={() => closeMenu()}
-                                >
-                                    <i className="fas fa-home" aria-hidden="true" />
-                                    <span>Inicio</span>
-                                </Link>
+                                {!isPWA && (
+                                    <>
+                                        <div className="mobile-nav-section-title">Explorar</div>
+                                        {/* Inicio */}
+                                        <Link
+                                            to="/"
+                                            className={`mobile-nav-link ${location.pathname === "/" ? "mobile-nav-link--active" : ""}`}
+                                            onClick={() => closeMenu()}
+                                        >
+                                            <i className="fas fa-home" aria-hidden="true" />
+                                            <span>Inicio</span>
+                                        </Link>
+                                    </>
+                                )}
 
-                                {/* Productos (expandable) */}
-                                <div className={`mobile-nav-group ${isProductsExpanded ? "mobile-nav-group--open" : ""}`}>
-                                    <button
-                                        type="button"
-                                        className="mobile-nav-link mobile-nav-link--expandable"
-                                        onClick={() => setIsProductsExpanded(prev => !prev)}
-                                    >
-                                        <i className="fas fa-store" aria-hidden="true" />
-                                        <span>Productos</span>
-                                        <i className={`fas fa-chevron-${isProductsExpanded ? "up" : "down"} mobile-nav-chevron`} aria-hidden="true" />
-                                    </button>
+                                {/* Productos (En PWA sale directo sin acordeón) */}
+                                <div className={!isPWA ? `mobile-nav-group ${isProductsExpanded ? "mobile-nav-group--open" : ""}` : ""}>
+                                    {!isPWA && (
+                                        <button
+                                            type="button"
+                                            className="mobile-nav-link mobile-nav-link--expandable"
+                                            onClick={() => setIsProductsExpanded(prev => !prev)}
+                                        >
+                                            <i className="fas fa-store" aria-hidden="true" />
+                                            <span>Productos</span>
+                                            <i className={`fas fa-chevron-${isProductsExpanded ? "up" : "down"} mobile-nav-chevron`} aria-hidden="true" />
+                                        </button>
+                                    )}
 
-                                    <div className="mobile-nav-subitems">
+                                    <div className={!isPWA ? "mobile-nav-subitems" : "pwa-categories-container"}>
                                         <button
                                             type="button"
                                             className="mobile-category-view-all"
@@ -673,58 +704,62 @@ export function Navbar() {
                                     </div>
                                 </div>
 
-                                <div className="mobile-nav-section-title">Cuenta y Ayuda</div>
-                                {/* Mi Perfil / Iniciar Sesión */}
-                                <Link
-                                    to="/login"
-                                    className={`mobile-nav-link ${location.pathname === "/login" ? "mobile-nav-link--active" : ""}`}
-                                    onClick={() => closeMenu()}
-                                >
-                                    {hasStoreSession ? (
-                                        <div className="mobile-nav-avatar">
-                                            {storeUserName.charAt(0).toUpperCase()}
-                                        </div>
-                                    ) : (
-                                        <i className="fas fa-user-circle" aria-hidden="true" />
-                                    )}
-                                    <span>{storeUserLabel}</span>
-                                </Link>
+                                {/* ================================
+                                    SECCIÓN NO VISIBLE EN PWA MODE
+                                    ================================ */}
+                                {!isPWA && (
+                                    <>
+                                        <div className="mobile-nav-section-title">Cuenta y Ayuda</div>
+                                        {/* Mi Perfil / Iniciar Sesión */}
+                                        <Link
+                                            to="/login"
+                                            className={`mobile-nav-link ${location.pathname === "/login" ? "mobile-nav-link--active" : ""}`}
+                                            onClick={() => closeMenu()}
+                                        >
+                                            {hasStoreSession ? (
+                                                <div className="mobile-nav-avatar">
+                                                    {storeUserName.charAt(0).toUpperCase()}
+                                                </div>
+                                            ) : (
+                                                <i className="fas fa-user-circle" aria-hidden="true" />
+                                            )}
+                                            <span>{storeUserLabel}</span>
+                                        </Link>
 
-                                {/* Soporte */}
-                                <a
-                                    href="https://wa.me/3318686645"
-                                    className="mobile-nav-link"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={() => closeMenu()}
-                                >
-                                    <i className="fas fa-headset" aria-hidden="true" />
-                                    <span>Soporte</span>
-                                </a>
+                                        {/* Soporte */}
+                                        <a
+                                            href="https://wa.me/3318686645"
+                                            className="mobile-nav-link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={() => closeMenu()}
+                                        >
+                                            <i className="fas fa-headset" aria-hidden="true" />
+                                            <span>Soporte</span>
+                                        </a>
+                                    </>
+                                )}
                             </nav>
 
-                            {/* Footer fijo al fondo de la barra lateral */}
-                            <div className="mobile-menu-footer">
-                                {hasStoreSession ? (
-                                    <button
-                                        type="button"
-                                        className="mobile-logout-btn"
-                                        onClick={() => { closeMenu(); void handleStoreLogout(); }}
-                                    >
-                                        <i className="fas fa-sign-out-alt" aria-hidden="true" />
-                                        <span>Cerrar Sesión</span>
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        className="mobile-logout-btn mobile-logout-btn--guest"
-                                        onClick={() => navigate("/login")}
-                                    >
-                                        <i className="fas fa-user-circle" aria-hidden="true" />
-                                        <span>Invitado</span>
-                                    </button>
-                                )}
-                            </div>
+                            {/* Footer fijo al fondo de la barra lateral (También apagado en PWA xq todo está abajo) */}
+                            {!isPWA && (
+                                <div className="mobile-menu-footer">
+                                    {hasStoreSession ? (
+                                        <button
+                                            type="button"
+                                            className="mobile-logout-btn"
+                                            onClick={() => { closeMenu(); void handleStoreLogout(); }}
+                                        >
+                                            <i className="fas fa-sign-out-alt" aria-hidden="true" />
+                                            <span>Cerrar Sesión</span>
+                                        </button>
+                                    ) : (
+                                        <div className="mobile-login-hint">
+                                            Inicia sesión para realizar y guardar tus pedidos.
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </>
                 )}

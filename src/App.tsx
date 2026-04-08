@@ -11,6 +11,7 @@
 import { useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import { AdminRoute } from "./components/admin/AdminRoute";
+import "./styles/PwaHeader.css";
 import { FloatingWhatsAppButton, Footer, MobileBottomNav, Navbar } from "./components/layout";
 import { useIsPWA } from "./hooks/useIsPWA";
 import { InstallPWA } from "./components/pwa/InstallPWA";

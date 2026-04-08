@@ -1221,8 +1221,28 @@
   }
 
   .mobile-menu {
-    max-width: 280px;
+    width: 250px;
   }
+}
+
+/* ========================================= */
+/* ALINEACIONES ESPECIALES PARA APP (PWA)    */
+/* ========================================= */
+body.is-pwa-app .search-container {
+  display: flex !important;
+  flex: 1;
+  margin: 0 12px;
+}
+
+body.is-pwa-app .header-right {
+  display: none !important; /* Desactivar las herramientas de la dcha para dejar espacio a la hamburguesa */
+}
+
+body.is-pwa-app .pwa-menu-btn {
+  display: flex !important;
+  background-color: rgba(0,0,0,0.1);
+  border-radius: var(--radius-sm);
+  margin-left: 4px;
 }
 
 @media (min-width: 769px) {

@@ -1,0 +1,94 @@
+/* ================================
+   PWA EXCLUSIVE LEGACY DESIGN
+   (Idéntico a la App nativa GodArt original)
+   ================================ */
+
+body.is-pwa-app .header {
+  padding-top: env(safe-area-inset-top, 0px) !important;
+  background-color: var(--color-primary) !important; 
+}
+
+body.is-pwa-app .header-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 10px 15px !important;
+  gap: 12px !important;
+}
+
+body.is-pwa-app .header-logo-img {
+  height: 38px !important;
+  width: auto !important;
+  margin-right: 0 !important;
+}
+
+/* La gran barra buscadora central de la foto */
+body.is-pwa-app .search-container {
+  display: flex !important;
+  flex: 1 !important;
+  margin: 0 !important;
+  position: relative !important;
+  width: auto !important;
+  max-width: none !important;
+  box-shadow: none !important;
+}
+
+body.is-pwa-app .search-container form {
+  width: 100% !important;
+}
+
+body.is-pwa-app .search-container input {
+  width: 100% !important;
+  border-radius: 20px !important;
+  padding: 8px 16px 8px 36px !important;
+  font-size: 14px !important;
+  border: none !important;
+  background-color: #fff !important;
+}
+
+body.is-pwa-app .search-container .search-icon {
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #888 !important;
+  font-size: 14px !important;
+}
+
+/* Ocultar botones desktop / web en el Navbar Superior de App */
+body.is-pwa-app .header-right,
+body.is-pwa-app .btn-menu-mobile:not(.pwa-menu-btn) {
+  display: none !important;
+}
+
+/* Botón oscuro burguesa de la foto */
+body.is-pwa-app .pwa-menu-btn {
+  display: flex !important;
+  background-color: rgba(0, 0, 0, 0.15) !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  width: 40px !important;
+  height: 40px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+body.is-pwa-app .pwa-menu-btn i {
+  font-size: 18px !important;
+}
+
+/* Limpiador de estilos para Sidebar Menú en PWA */
+body.is-pwa-app .pwa-categories-container {
+  padding-top: 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+body.is-pwa-app .mobile-menu-header {
+  border-bottom: 2px solid #f1f5f9 !important;
+}

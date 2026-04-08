@@ -137,26 +137,4 @@
     padding: 0 4px;
   }
 
-  .mobile-bottom-nav__item i {
-    font-size: 20px;
-  }
-
-  .mobile-bottom-nav__label {
-    font-size: 10px;
-    max-width: 48px;
-  }
-}
-
-@media (min-width: 769px) {
-  .mobile-bottom-nav {
-    display: none !important;
-  }
-}
-
-@supports (padding: max(0px)) {
-  @media (max-width: 768px) {
-    .mobile-bottom-nav {
-      padding-bottom: max(8px, env(safe-area-inset-bottom));
-    }
-  }
 }
