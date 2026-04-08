@@ -384,7 +384,7 @@ export function Navbar() {
                         </Link>
                     </div>
 
-                    <div style={{ display: isPWA ? 'flex' : undefined, flex: isPWA ? 1 : undefined, margin: isPWA ? '0 10px' : undefined, width: isPWA ? '100%' : undefined }}>
+                    <div style={{ display: isPWA ? 'flex' : undefined, flex: isPWA ? 1 : undefined, margin: isPWA ? '0 5px' : undefined, width: isPWA ? '100%' : undefined }}>
                         <SearchBar
                             products={searchProducts}
                             placeholder="Buscar productos..."

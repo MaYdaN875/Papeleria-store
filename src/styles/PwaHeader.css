@@ -12,8 +12,8 @@ body.is-pwa-app .header-container {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 10px 15px !important;
-  gap: 12px !important;
+  padding: 10px 10px !important;
+  gap: 8px !important;
 }
 
 body.is-pwa-app .header-logo-img {
@@ -96,4 +96,38 @@ body.is-pwa-app .pwa-categories-container {
 
 body.is-pwa-app .mobile-menu-header {
   border-bottom: 2px solid #f1f5f9 !important;
+}
+/* Menú lateral abriendo desde la derecha en PWA */
+body.is-pwa-app .mobile-menu {
+  left: auto !important;
+  right: 0 !important;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12) !important;
+  animation: slideInFromRightPwa 0.35s ease !important;
+}
+
+body.is-pwa-app .mobile-menu.closing {
+  animation: slideOutToRightPwa 0.3s ease forwards !important;
+}
+
+@keyframes slideInFromRightPwa {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutToRightPwa {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+/* Buscador un poquito más ancho (término medio) */
+body.is-pwa-app .header-search {
+  margin: 0 8px !important;
+}
+
+body.is-pwa-app .header-left {
+  padding-left: 5px !important;
+}
+
+body.is-pwa-app .pwa-menu-btn {
+  margin-right: 5px !important;
 }
