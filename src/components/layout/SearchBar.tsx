@@ -78,8 +78,10 @@ export function SearchBar({
         }
     }
 
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || ("standalone" in navigator && (navigator as any).standalone === true);
+
     return (
-        <div className="header-search" ref={searchBoxRef}>
+        <div className="header-search" ref={searchBoxRef} style={{ display: isStandalone ? 'flex' : undefined, margin: isStandalone ? 0 : undefined }}>
             <div className="search-box">
                 <i className="fas fa-search" aria-hidden="true" />
                 <input

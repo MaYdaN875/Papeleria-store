@@ -384,10 +384,12 @@ export function Navbar() {
                         </Link>
                     </div>
 
-                    <SearchBar
-                        products={searchProducts}
-                        placeholder="Buscar productos, marcas..."
-                    />
+                    <div style={{ display: isPWA ? 'flex' : undefined, flex: isPWA ? 1 : undefined, margin: isPWA ? '0 10px' : undefined, width: isPWA ? '100%' : undefined }}>
+                        <SearchBar
+                            products={searchProducts}
+                            placeholder="Buscar productos, marcas..."
+                        />
+                    </div>
 
                     <div className="header-right">
                         <div
@@ -578,8 +580,21 @@ export function Navbar() {
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Abrir menú"
                             aria-expanded={isMobileMenuOpen ? "true" : "false"}
+                            style={{
+                                display: 'flex',
+                                width: '40px',
+                                height: '40px',
+                                backgroundColor: 'rgba(0, 0, 0, 0.15)',
+                                color: 'white',
+                                borderRadius: '6px',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: 0,
+                                margin: 0,
+                                flexShrink: 0
+                            }}
                         >
-                            <i className="fas fa-bars" aria-hidden="true" />
+                            <i className="fas fa-bars" aria-hidden="true" style={{ fontSize: '18px' }} />
                         </button>
                     )}
                 </div>
