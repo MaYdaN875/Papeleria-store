@@ -113,8 +113,9 @@ export function Navbar() {
     const [expandedDesktopCategoryId, setExpandedDesktopCategoryId] = useState<string | null>(null)
     const [expandedMobileCategoryId, setExpandedMobileCategoryId] = useState<string | null>(null)
     
-    // Agregamos detección de la PWA para el Layout
+    // Detector PWA
     const isPWA = useIsPWA()
+
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
     const [isMobileSearchClosing, setIsMobileSearchClosing] = useState(false)
     const [isProductsExpanded, setIsProductsExpanded] = useState(false)
@@ -317,11 +318,8 @@ export function Navbar() {
             setIsMobileMenuOpen(false)
             setIsMenuClosing(false)
             setExpandedMobileCategoryId(null)
-            setIsProductsExpanded(false)
-            if (isMobileSearchOpen) {
-                setIsMobileSearchOpen(false)
-                setIsMobileSearchClosing(false)
-            }
+            setIsMobileSearchOpen(false)
+            setIsMobileSearchClosing(false)
         }, 500)
     }
 
@@ -356,9 +354,10 @@ export function Navbar() {
                     duration={3000}
                 />
             )}
-            <header className={`header ${isMobileSearchOpen ? ' mobile-search-active' : ''} ${isMobileSearchClosing ? ' mobile-search-closing' : ''} ${isPWA ? 'header-pwa' : ''}`}>
+            {/* EN MODO MÓVIL: Si es PWA mostramos 'legacy-header' para forzar su estilo clásico. Si no, usa el premium web. */}
+            <header className={`header ${isPWA ? 'mobile-legacy-header' : ''} ${isMobileSearchOpen ? ' mobile-search-active' : ''} ${isMobileSearchClosing ? ' mobile-search-closing' : ''}`}>
                 <div className="header-container">
-                    {/* EN MODO WEB: Botón hamburguesa a la izquierda */}
+                    {/* EN MODO WEB: Botón hamburguesa a la izquierda (DISEÑO PREMIUM MÓVIL) */}
                     {!isPWA && (
                         <button
                             type="button"
@@ -423,6 +422,8 @@ export function Navbar() {
                                     if (event.key === "Escape") {
                                         setIsDesktopCategoriesOpen(false)
                                         setExpandedDesktopCategoryId(null)
+                                        setExpandedMobileCategoryId(null)
+                                        setIsProductsExpanded(false)
                                     }
                                 }}
                                 tabIndex={-1}
@@ -569,11 +570,11 @@ export function Navbar() {
                         </Link>
                     </div>
 
-                    {/* EN MODO PWA: Botón hamburguesa a la derecha, con diseño retro */}
+                    {/* Botón hamburguesa a la derecha SOLO PARA LA APLICACIÓN INSTALADA (Diseño Viejo) */}
                     {isPWA && (
                         <button
                             type="button"
-                            className="btn-menu-mobile pwa-menu-btn"
+                            className="btn-menu-mobile legacy-menu-btn"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Abrir menú"
                             aria-expanded={isMobileMenuOpen ? "true" : "false"}
@@ -616,6 +617,9 @@ export function Navbar() {
                             </div>
 
                             <nav className="mobile-menu-nav">
+                                {/* ==============================
+                                    SECCIÓN NO VISIBLE EN PWA APP (Explorar/Inicio)
+                                    ============================== */}
                                 {!isPWA && (
                                     <>
                                         <div className="mobile-nav-section-title">Explorar</div>
@@ -631,7 +635,7 @@ export function Navbar() {
                                     </>
                                 )}
 
-                                {/* Productos (En PWA sale directo sin acordeón) */}
+                                {/* Productos (En App PWA sale desmenuzado sin el folder) */}
                                 <div className={!isPWA ? `mobile-nav-group ${isProductsExpanded ? "mobile-nav-group--open" : ""}` : ""}>
                                     {!isPWA && (
                                         <button
@@ -645,7 +649,7 @@ export function Navbar() {
                                         </button>
                                     )}
 
-                                    <div className={!isPWA ? "mobile-nav-subitems" : "pwa-categories-container"}>
+                                    <div className={!isPWA ? "mobile-nav-subitems" : "legacy-categories-container"}>
                                         <button
                                             type="button"
                                             className="mobile-category-view-all"
@@ -704,16 +708,15 @@ export function Navbar() {
                                     </div>
                                 </div>
 
-                                {/* ================================
-                                    SECCIÓN NO VISIBLE EN PWA MODE
-                                    ================================ */}
+                                {/* ==============================
+                                    FOOTER PERFIL / LOGOUT (Sólo en Web Mobile Premium)
+                                    ============================== */}
                                 {!isPWA && (
                                     <>
                                         <div className="mobile-nav-section-title">Cuenta y Ayuda</div>
-                                        {/* Mi Perfil / Iniciar Sesión */}
                                         <Link
                                             to="/login"
-                                            className={`mobile-nav-link ${location.pathname === "/login" ? "mobile-nav-link--active" : ""}`}
+                                            className="mobile-nav-link"
                                             onClick={() => closeMenu()}
                                         >
                                             {hasStoreSession ? (
@@ -725,41 +728,24 @@ export function Navbar() {
                                             )}
                                             <span>{storeUserLabel}</span>
                                         </Link>
-
-                                        {/* Soporte */}
-                                        <a
-                                            href="https://wa.me/3318686645"
-                                            className="mobile-nav-link"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            onClick={() => closeMenu()}
-                                        >
+                                        <a href="https://wa.me/3318686645" className="mobile-nav-link" target="_blank" rel="noopener noreferrer" onClick={() => closeMenu()}>
                                             <i className="fas fa-headset" aria-hidden="true" />
                                             <span>Soporte</span>
                                         </a>
+
+                                        <div className="mobile-menu-footer">
+                                            {hasStoreSession ? (
+                                                <button type="button" className="mobile-logout-btn" onClick={() => { closeMenu(); void handleStoreLogout(); }}>
+                                                    <i className="fas fa-sign-out-alt" aria-hidden="true" />
+                                                    <span>Cerrar Sesión</span>
+                                                </button>
+                                            ) : (
+                                                <div className="mobile-login-hint">Inicia sesión para reservar tus pedidos.</div>
+                                            )}
+                                        </div>
                                     </>
                                 )}
                             </nav>
-
-                            {/* Footer fijo al fondo de la barra lateral (También apagado en PWA xq todo está abajo) */}
-                            {!isPWA && (
-                                <div className="mobile-menu-footer">
-                                    {hasStoreSession ? (
-                                        <button
-                                            type="button"
-                                            className="mobile-logout-btn"
-                                            onClick={() => { closeMenu(); void handleStoreLogout(); }}
-                                        >
-                                            <i className="fas fa-sign-out-alt" aria-hidden="true" />
-                                            <span>Cerrar Sesión</span>
-                                        </button>
-                                    ) : (
-                                        <div className="mobile-login-hint">
-                                            Inicia sesión para realizar y guardar tus pedidos.
-                                        </div>
-                                    )}
-                                </div>
-                            )}
                         </div>
                     </>
                 )}
