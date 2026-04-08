@@ -574,7 +574,7 @@ export function Navbar() {
                     {isPWA && (
                         <button
                             type="button"
-                            className="btn-menu-mobile legacy-menu-btn"
+                            className="btn-menu-mobile pwa-menu-btn"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Abrir menú"
                             aria-expanded={isMobileMenuOpen ? "true" : "false"}
