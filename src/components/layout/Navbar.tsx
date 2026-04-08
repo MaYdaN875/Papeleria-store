@@ -357,18 +357,16 @@ export function Navbar() {
             {/* EN MODO MÓVIL: Si es PWA mostramos 'legacy-header' para forzar su estilo clásico. Si no, usa el premium web. */}
             <header className={`header ${isPWA ? 'mobile-legacy-header' : ''} ${isMobileSearchOpen ? ' mobile-search-active' : ''} ${isMobileSearchClosing ? ' mobile-search-closing' : ''}`}>
                 <div className="header-container">
-                    {/* EN MODO WEB: Botón hamburguesa a la izquierda (DISEÑO PREMIUM MÓVIL) */}
-                    {!isPWA && (
-                        <button
-                            type="button"
-                            className="btn-menu-mobile"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            aria-label="Abrir menú"
-                            aria-expanded={isMobileMenuOpen ? "true" : "false"}
-                        >
-                            <i className="fas fa-bars" aria-hidden="true" />
-                        </button>
-                    )}
+                    {/* EN MODO MÓVIL: Botón hamburguesa A LA IZQUIERDA, en ambas versiones (PWA oscura, Web premium transparente) */}
+                    <button
+                        type="button"
+                        className={`btn-menu-mobile ${isPWA ? 'pwa-menu-btn' : ''}`}
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        aria-label="Abrir menú"
+                        aria-expanded={isMobileMenuOpen ? "true" : "false"}
+                    >
+                        <i className="fas fa-bars" aria-hidden="true" />
+                    </button>
 
                     <div className="header-left">
                         <Link
@@ -384,10 +382,10 @@ export function Navbar() {
                         </Link>
                     </div>
 
-                    <div style={{ display: isPWA ? 'flex' : undefined, flex: isPWA ? 1 : undefined, margin: isPWA ? '0 10px' : undefined, width: isPWA ? '100%' : undefined }}>
+                    <div style={{ flex: isPWA ? 1 : undefined, marginLeft: isPWA ? '12px' : undefined }}>
                         <SearchBar
                             products={searchProducts}
-                            placeholder="Buscar productos, marcas..."
+                            placeholder="Buscar productos..."
                         />
                     </div>
 
@@ -572,31 +570,6 @@ export function Navbar() {
                         </Link>
                     </div>
 
-                    {/* Botón hamburguesa a la derecha SOLO PARA LA APLICACIÓN INSTALADA (Diseño Viejo) */}
-                    {isPWA && (
-                        <button
-                            type="button"
-                            className="btn-menu-mobile pwa-menu-btn"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            aria-label="Abrir menú"
-                            aria-expanded={isMobileMenuOpen ? "true" : "false"}
-                            style={{
-                                display: 'flex',
-                                width: '40px',
-                                height: '40px',
-                                backgroundColor: 'rgba(0, 0, 0, 0.15)',
-                                color: 'white',
-                                borderRadius: '6px',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: 0,
-                                margin: 0,
-                                flexShrink: 0
-                            }}
-                        >
-                            <i className="fas fa-bars" aria-hidden="true" style={{ fontSize: '18px' }} />
-                        </button>
-                    )}
                 </div>
 
                 {/* Menú lateral (lo mantenemos porque él tiene la hamburguesa en su PWA) */}
