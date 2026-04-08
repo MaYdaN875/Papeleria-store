@@ -111,6 +111,9 @@ export function Navbar() {
     const [isDesktopCategoriesOpen, setIsDesktopCategoriesOpen] = useState(false)
     const [expandedDesktopCategoryId, setExpandedDesktopCategoryId] = useState<string | null>(null)
     const [expandedMobileCategoryId, setExpandedMobileCategoryId] = useState<string | null>(null)
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
+    const [isMobileSearchClosing, setIsMobileSearchClosing] = useState(false)
+    const [isProductsExpanded, setIsProductsExpanded] = useState(false)
     const desktopCloseTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null)
     const preventDesktopOpenUntilRef = useRef(0)
     const menuRef = useRef<HTMLDivElement>(null)
@@ -292,12 +295,29 @@ export function Navbar() {
         setExpandedDesktopCategoryId(null)
     }, [location.pathname, location.search])
 
+    const toggleMobileSearch = () => {
+        if (isMobileSearchOpen) {
+            setIsMobileSearchClosing(true)
+            setTimeout(() => {
+                setIsMobileSearchOpen(false)
+                setIsMobileSearchClosing(false)
+            }, 250)
+        } else {
+            setIsMobileSearchOpen(true)
+        }
+    }
+
     const closeMenu = () => {
         setIsMenuClosing(true)
         setTimeout(() => {
             setIsMobileMenuOpen(false)
             setIsMenuClosing(false)
             setExpandedMobileCategoryId(null)
+            setIsProductsExpanded(false)
+            if (isMobileSearchOpen) {
+                setIsMobileSearchOpen(false)
+                setIsMobileSearchClosing(false)
+            }
         }, 500)
     }
 
@@ -332,8 +352,19 @@ export function Navbar() {
                     duration={3000}
                 />
             )}
-            <header className="header">
+            <header className={`header${isMobileSearchOpen ? ' mobile-search-active' : ''}${isMobileSearchClosing ? ' mobile-search-closing' : ''}`}>
                 <div className="header-container">
+                    {/* Mobile hamburger – left side */}
+                    <button
+                        type="button"
+                        className="btn-menu-mobile"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        aria-label="Abrir menú"
+                        aria-expanded={isMobileMenuOpen ? "true" : "false"}
+                    >
+                        <i className="fas fa-bars" aria-hidden="true" />
+                    </button>
+
                     <div className="header-left">
                         <Link
                             to="/"
@@ -368,7 +399,7 @@ export function Navbar() {
                                 onMouseEnter={openDesktopCategories}
                                 onMouseLeave={closeDesktopCategoriesWithDelay}
                                 aria-label="Mostrar categorías"
-                                aria-expanded={isDesktopCategoriesOpen}
+                                aria-expanded={isDesktopCategoriesOpen ? "true" : "false"}
                                 aria-haspopup="menu"
                             >
                                 <span>Categorías</span>
@@ -438,7 +469,7 @@ export function Navbar() {
                                                     aria-label={`Desplegar opciones de ${category.label}`}
                                                     aria-expanded={
                                                         expandedDesktopCategoryId ===
-                                                        category.id
+                                                        category.id ? "true" : "false"
                                                     }
                                                     onClick={() =>
                                                         toggleDesktopSubOptions(
@@ -481,15 +512,14 @@ export function Navbar() {
                                 </div>
                             </div>
                         </div>
+                        {/* Mobile search toggle */}
                         <button
                             type="button"
-                            className="btn-categories"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            aria-label="Abrir menú de categorías"
-                            aria-expanded={isMobileMenuOpen}
-                            title="Categorías"
+                            className="mobile-search-btn"
+                            onClick={toggleMobileSearch}
+                            aria-label={isMobileSearchOpen ? "Cerrar búsqueda" : "Buscar"}
                         >
-                            <i className="fas fa-bars" aria-hidden="true" />
+                            <i className={`fas fa-${isMobileSearchOpen ? 'times' : 'search'}`} aria-hidden="true" />
                         </button>
                         <Link
                             to="/login"
@@ -534,18 +564,22 @@ export function Navbar() {
                     </div>
                 </div>
 
-                {/* Menú deslizable en móvil */}
+                {/* Menú lateral rediseñado */}
                 {isMobileMenuOpen && (
                     <>
                         <button
                             type="button"
                             className={`mobile-menu-backdrop ${isMenuClosing ? "closing" : ""}`}
                             onClick={() => closeMenu()}
-                            aria-label="Cerrar menú de categorías"
+                            aria-label="Cerrar menú"
                         />
                         <div className={`mobile-menu ${isMenuClosing ? "closing" : ""}`}>
                             <div className={`mobile-menu-header ${isMenuClosing ? "closing" : ""}`}>
-                                <h2>Categorías</h2>
+                                <img
+                                    src="/logo.png"
+                                    alt="God Art"
+                                    className="mobile-menu-logo"
+                                />
                                 <button
                                     type="button"
                                     className="close-menu-btn"
@@ -555,72 +589,141 @@ export function Navbar() {
                                     <i className="fas fa-times" aria-hidden />
                                 </button>
                             </div>
-                            <div className="mobile-menu-categories">
-                                <button
-                                    type="button"
-                                    className="mobile-category-view-all"
-                                    onClick={() => {
-                                        closeMenu()
-                                        navigate("/all-products")
-                                    }}
+
+                            <nav className="mobile-menu-nav">
+                                <div className="mobile-nav-section-title">Explorar</div>
+                                {/* Inicio */}
+                                <Link
+                                    to="/"
+                                    className={`mobile-nav-link ${location.pathname === "/" ? "mobile-nav-link--active" : ""}`}
+                                    onClick={() => closeMenu()}
                                 >
-                                    <i className="fas fa-th-large" aria-hidden="true" />
-                                    <span>Ver todo el catálogo</span>
-                                </button>
-                                {categories.map((category) => (
-                                    <div
-                                        key={category.id}
-                                        className={`mobile-category-group ${expandedMobileCategoryId === category.id ? "mobile-category-group--open" : ""}`}
+                                    <i className="fas fa-home" aria-hidden="true" />
+                                    <span>Inicio</span>
+                                </Link>
+
+                                {/* Productos (expandable) */}
+                                <div className={`mobile-nav-group ${isProductsExpanded ? "mobile-nav-group--open" : ""}`}>
+                                    <button
+                                        type="button"
+                                        className="mobile-nav-link mobile-nav-link--expandable"
+                                        onClick={() => setIsProductsExpanded(prev => !prev)}
                                     >
-                                        <div className={`mobile-category-row ${isMenuClosing ? "closing" : ""}`}>
-                                            <button
-                                                type="button"
-                                                className="mobile-category-btn"
-                                                onClick={() =>
-                                                    handleCategoryClick(category.id)
-                                                }
+                                        <i className="fas fa-store" aria-hidden="true" />
+                                        <span>Productos</span>
+                                        <i className={`fas fa-chevron-${isProductsExpanded ? "up" : "down"} mobile-nav-chevron`} aria-hidden="true" />
+                                    </button>
+
+                                    <div className="mobile-nav-subitems">
+                                        <button
+                                            type="button"
+                                            className="mobile-category-view-all"
+                                            onClick={() => {
+                                                closeMenu()
+                                                navigate("/all-products")
+                                            }}
+                                        >
+                                            <i className="fas fa-th-large" aria-hidden="true" />
+                                            <span>Ver todo el catálogo</span>
+                                        </button>
+                                        {categories.map((category) => (
+                                            <div
+                                                key={category.id}
+                                                className={`mobile-category-group ${expandedMobileCategoryId === category.id ? "mobile-category-group--open" : ""}`}
                                             >
-                                                <i
-                                                    className={category.icon}
-                                                    aria-hidden
-                                                />
-                                                <span>{category.label}</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="mobile-category-expand-btn"
-                                                aria-label={`Ver opciones de ${category.label}`}
-                                                aria-expanded={expandedMobileCategoryId === category.id}
-                                                onClick={() => toggleMobileSubOptions(category.id)}
-                                            >
-                                                <i
-                                                    className={`fas fa-chevron-${expandedMobileCategoryId === category.id ? "up" : "down"}`}
-                                                    aria-hidden
-                                                />
-                                            </button>
-                                        </div>
-                                        <div className="mobile-suboptions-list">
-                                            {category.subOptions.map(
-                                                (subOption) => (
+                                                <div className="mobile-category-row">
                                                     <button
-                                                        key={`${category.id}-mobile-${subOption}`}
                                                         type="button"
-                                                        className="mobile-suboption-item"
-                                                        onClick={() => {
-                                                            closeMenu()
-                                                            handleSubOptionClick(
-                                                                category.id,
-                                                                subOption
-                                                            )
-                                                        }}
+                                                        className="mobile-category-btn"
+                                                        onClick={() => handleCategoryClick(category.id)}
                                                     >
-                                                        {subOption}
+                                                        <i className={category.icon} aria-hidden />
+                                                        <span>{category.label}</span>
                                                     </button>
-                                                )
-                                            )}
-                                        </div>
+                                                    <button
+                                                        type="button"
+                                                        className="mobile-category-expand-btn"
+                                                        aria-label={`Ver opciones de ${category.label}`}
+                                                        aria-expanded={expandedMobileCategoryId === category.id ? "true" : "false"}
+                                                        onClick={() => toggleMobileSubOptions(category.id)}
+                                                    >
+                                                        <i
+                                                            className={`fas fa-chevron-${expandedMobileCategoryId === category.id ? "up" : "down"}`}
+                                                            aria-hidden
+                                                        />
+                                                    </button>
+                                                </div>
+                                                <div className="mobile-suboptions-list">
+                                                    {category.subOptions.map((subOption) => (
+                                                        <button
+                                                            key={`${category.id}-mobile-${subOption}`}
+                                                            type="button"
+                                                            className="mobile-suboption-item"
+                                                            onClick={() => {
+                                                                closeMenu()
+                                                                handleSubOptionClick(category.id, subOption)
+                                                            }}
+                                                        >
+                                                            {subOption}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                </div>
+
+                                <div className="mobile-nav-section-title">Cuenta y Ayuda</div>
+                                {/* Mi Perfil / Iniciar Sesión */}
+                                <Link
+                                    to="/login"
+                                    className={`mobile-nav-link ${location.pathname === "/login" ? "mobile-nav-link--active" : ""}`}
+                                    onClick={() => closeMenu()}
+                                >
+                                    {hasStoreSession ? (
+                                        <div className="mobile-nav-avatar">
+                                            {storeUserName.charAt(0).toUpperCase()}
+                                        </div>
+                                    ) : (
+                                        <i className="fas fa-user-circle" aria-hidden="true" />
+                                    )}
+                                    <span>{storeUserLabel}</span>
+                                </Link>
+
+                                {/* Soporte */}
+                                <a
+                                    href="https://wa.me/3318686645"
+                                    className="mobile-nav-link"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => closeMenu()}
+                                >
+                                    <i className="fas fa-headset" aria-hidden="true" />
+                                    <span>Soporte</span>
+                                </a>
+                            </nav>
+
+                            {/* Footer fijo al fondo de la barra lateral */}
+                            <div className="mobile-menu-footer">
+                                {hasStoreSession ? (
+                                    <button
+                                        type="button"
+                                        className="mobile-logout-btn"
+                                        onClick={() => { closeMenu(); void handleStoreLogout(); }}
+                                    >
+                                        <i className="fas fa-sign-out-alt" aria-hidden="true" />
+                                        <span>Cerrar Sesión</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className="mobile-logout-btn mobile-logout-btn--guest"
+                                        onClick={() => navigate("/login")}
+                                    >
+                                        <i className="fas fa-user-circle" aria-hidden="true" />
+                                        <span>Invitado</span>
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </>

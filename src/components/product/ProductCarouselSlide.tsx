@@ -28,11 +28,12 @@ export function ProductCarouselSlide({
 }: Readonly<ProductCarouselSlideProps>) {
     const { badge, originalPrice, brand } = config ?? {}
 
-    const isDigitalService = typeof product.category === 'string' && product.category.toLowerCase().includes('digitales');
+    const isDigitalCat = (c?: string | null) => typeof c === 'string' && /digital|impresi|copia|servicio/i.test(c);
+    const isDigitalService = isDigitalCat(product.category) || isDigitalCat(product.parentCategory);
 
     const handleWhatsAppClick = (e: any) => {
         e.stopPropagation();
-        const text = encodeURIComponent(`Hola, quiero solicitar el siguiente servicio: ${product.name}. Mi nombre completo es: `);
+        const text = encodeURIComponent(`¡Hola! 👋 Me interesa el servicio de: *${product.name}*. ¿Me podrían confirmar si cuentan con entrega a domicilio en mi zona? (Entiendo que aplica zona delimitada).`);
         window.open(`https://wa.me/3318686645?text=${text}`, '_blank');
     };
 

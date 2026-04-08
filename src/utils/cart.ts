@@ -9,6 +9,7 @@ import { getStoreCartOwnerKey, getStoreUserToken } from './storeSession'
 const CART_STORAGE_PREFIX = 'cart'
 const CART_COUNT_ID = 'cartCount'
 const MOBILE_CART_COUNT_ID = 'mobileCartCount'
+const SIDEBAR_CART_COUNT_ID = 'sidebarCartCount'
 
 export interface CartItem {
     name: string
@@ -111,6 +112,17 @@ function updateAllCartCounts(totalItems: number): void {
             setTimeout(() => {
                 mobileCartCount.style.animation = 'badgePulse 0.6s ease infinite'
             }, 10)
+        }
+    }
+
+    // Actualizar contador del sidebar móvil
+    const sidebarCartCount = document.getElementById(SIDEBAR_CART_COUNT_ID)
+    if (sidebarCartCount) {
+        sidebarCartCount.textContent = totalItems.toString()
+        if (totalItems > 0) {
+            sidebarCartCount.style.display = 'flex'
+        } else {
+            sidebarCartCount.style.display = 'none'
         }
     }
 }

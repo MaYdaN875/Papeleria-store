@@ -10,27 +10,29 @@
  */
 import { useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
+import { AdminRoute } from "./components/admin/AdminRoute";
 import { FloatingWhatsAppButton, Footer, MobileBottomNav, Navbar } from "./components/layout";
+import { useIsPWA } from "./hooks/useIsPWA";
 import { InstallPWA } from "./components/pwa/InstallPWA";
 import {
-  AllProducts,
-  AdminDashboard,
-  AdminLogin,
-  Cart,
-  CheckoutCancel,
-  CheckoutSuccess,
-  ForgotPassword,
-  Home,
-  Login,
-  ProductDetail,
-  ResetPassword,
-  SignUp,
-  VerifyEmail,
+    AdminDashboard,
+    AdminLogin,
+    AllProducts,
+    Cart,
+    CheckoutCancel,
+    CheckoutSuccess,
+    ForgotPassword,
+    Home,
+    Login,
+    ProductDetail,
+    ResetPassword,
+    SignUp,
+    VerifyEmail,
 } from "./pages";
-import { AdminRoute } from "./components/admin/AdminRoute";
 
 function AppContent() {
   const location = useLocation();
+  const isPWA = useIsPWA();
 
   /** Evita que el navegador restaure scroll al recargar. */
   useEffect(() => {
@@ -46,6 +48,15 @@ function AppContent() {
     const t = globalThis.setTimeout(() => globalThis.scrollTo(0, 0), 0);
     return () => globalThis.clearTimeout(t);
   }, [location.pathname]);
+
+  // Efecto global para añadir clase PWA al body
+  useEffect(() => {
+    if (isPWA) {
+      document.body.classList.add("is-pwa-app");
+    } else {
+      document.body.classList.remove("is-pwa-app");
+    }
+  }, [isPWA]);
 
   const hideLayout =
     location.pathname === "/login" ||
@@ -75,10 +86,10 @@ function AppContent() {
           <Route path="/admin" element={<AdminDashboard />} />
         </Route>
       </Routes>
+      {!hideLayout && isPWA && <MobileBottomNav />}
       {!hideLayout && <FloatingWhatsAppButton />}
-      {!hideLayout && <InstallPWA />}
       {!hideLayout && <Footer />}
-      {!hideLayout && <MobileBottomNav />}
+      <InstallPWA />
     </>
   );
 }
