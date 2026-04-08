@@ -370,7 +370,7 @@ export function Navbar() {
                         </button>
                     )}
 
-                    <div className="header-left">
+                    <div className="header-left" style={{ flex: isPWA ? '0 0 auto' : undefined, paddingLeft: isPWA ? 0 : undefined }}>
                         <Link
                             to="/"
                             className="header-logo"
@@ -591,7 +591,8 @@ export function Navbar() {
                                 justifyContent: 'center',
                                 padding: 0,
                                 margin: 0,
-                                flexShrink: 0
+                                flexShrink: 0,
+                                order: 99
                             }}
                         >
                             <i className="fas fa-bars" aria-hidden="true" style={{ fontSize: '18px' }} />
