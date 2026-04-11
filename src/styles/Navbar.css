@@ -1094,6 +1094,12 @@
     display: none;
   }
 
+  .header.mobile-search-active .search-wrapper {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+  }
+
   .header.mobile-search-active .header-search {
     display: -webkit-flex;
     display: flex;
