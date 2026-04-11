@@ -1095,9 +1095,18 @@
   }
 
   .header.mobile-search-active .header-search {
+    display: -webkit-flex;
     display: flex;
+    -webkit-align-items: center;
     align-items: center;
     animation: fadeInSearch 0.25s ease;
+    width: 100%;
+    -webkit-flex: 1 1 100%;
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0;
   }
 
   /* Closing animations */
@@ -1138,7 +1147,11 @@
   }
 
   .search-box input {
-    font-size: 15px;
+    font-size: 16px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    min-width: 0;
   }
 
   /* Hide desktop-only elements */
