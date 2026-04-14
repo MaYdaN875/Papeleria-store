@@ -323,6 +323,46 @@ export function Navbar() {
         }, 500)
     }
 
+    // Bloquear scroll/zoom del body cuando el menú lateral está abierto
+    useEffect(() => {
+        const html = document.documentElement
+        const viewportMeta = document.querySelector('meta[name="viewport"]') as HTMLMetaElement | null
+
+        if (isMobileMenuOpen) {
+            document.body.classList.add("mobile-menu-open")
+            html.classList.add("mobile-menu-open")
+
+            // En PWA: bloquear zoom dinámicamente a través del viewport meta
+            if (isPWA && viewportMeta) {
+                viewportMeta.setAttribute(
+                    "content",
+                    "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+                )
+            }
+        } else {
+            document.body.classList.remove("mobile-menu-open")
+            html.classList.remove("mobile-menu-open")
+
+            // Restaurar viewport normal
+            if (viewportMeta) {
+                viewportMeta.setAttribute(
+                    "content",
+                    "width=device-width, initial-scale=1.0, viewport-fit=cover"
+                )
+            }
+        }
+        return () => {
+            document.body.classList.remove("mobile-menu-open")
+            html.classList.remove("mobile-menu-open")
+            if (viewportMeta) {
+                viewportMeta.setAttribute(
+                    "content",
+                    "width=device-width, initial-scale=1.0, viewport-fit=cover"
+                )
+            }
+        }
+    }, [isMobileMenuOpen, isPWA])
+
     const toggleMobileSubOptions = (categoryId: string) => {
         setExpandedMobileCategoryId((currentId) =>
             currentId === categoryId ? null : categoryId
