@@ -53,12 +53,29 @@ export function CheckoutSuccess() {
                   <span className="checkout-order-total"> — ${order.total.toFixed(2)} MXN</span>
                 )}
               </p>
-              <p className="checkout-pickup-message">
-                <i className="fas fa-store" aria-hidden /> Recoge tu pedido en nuestra tienda física. No hay envíos.
-              </p>
-              <p className="checkout-order-hint">
-                Guarda este número de pedido para recoger: <strong>#{order.id}</strong>
-              </p>
+              {order.delivery_method === "delivery" ? (
+                <>
+                  <p className="checkout-pickup-message" style={{color: "#28a745"}}>
+                    <i className="fas fa-truck" aria-hidden /> Envío a domicilio
+                  </p>
+                  <div style={{backgroundColor: "#f9f9f9", padding: "12px", borderRadius: "8px", marginTop: "10px"}}>
+                    <p style={{margin: "0 0 5px 0", fontWeight: "bold"}}>Dirección de Entrega:</p>
+                    <p style={{margin: "0", color: "#555", fontSize: "0.95rem"}}>{order.delivery_address}</p>
+                  </div>
+                  <p className="checkout-order-hint" style={{marginTop: "10px"}}>
+                     Guarda este número de pedido para cualquier aclaración: <strong>#{order.id}</strong>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="checkout-pickup-message">
+                    <i className="fas fa-store" aria-hidden /> Recoge tu pedido en nuestra tienda física. No hay envíos.
+                  </p>
+                  <p className="checkout-order-hint">
+                    Guarda este número de pedido para recoger: <strong>#{order.id}</strong>
+                  </p>
+                </>
+              )}
             </div>
           )}
           {!orderLoading && !order && sessionId && (

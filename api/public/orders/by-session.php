@@ -26,7 +26,7 @@ try {
   $customerUserId = (int) $session['customer_user_id'];
 
   $stmt = $pdo->prepare('
-    SELECT id, total, currency, status, created_at, updated_at
+    SELECT id, total, currency, status, delivery_method, delivery_address, created_at, updated_at
     FROM orders
     WHERE stripe_checkout_session_id = :session_id
       AND customer_user_id = :customer_user_id

@@ -479,6 +479,8 @@ export async function createCheckoutSession(
     items: Array<{ product_id: number; quantity: number }>;
     success_url?: string;
     cancel_url?: string;
+    delivery_method?: "pickup" | "delivery";
+    delivery_address?: string;
   }
 ): Promise<CreateCheckoutSessionResponse> {
   try {
@@ -498,6 +500,8 @@ export async function createCheckoutSession(
         items: input.items,
         success_url: input.success_url ?? undefined,
         cancel_url: input.cancel_url ?? undefined,
+        delivery_method: input.delivery_method ?? "pickup",
+        delivery_address: input.delivery_address ?? undefined,
       }),
     });
 
@@ -537,6 +541,8 @@ export interface OrderResponse {
   total: number;
   currency: string;
   status: string;
+  delivery_method?: string;
+  delivery_address?: string;
   created_at: string;
   updated_at: string;
   items: OrderItemResponse[];
@@ -618,6 +624,37 @@ export async function loginWithFirebaseToken(
       expiresAt: body.expiresAt,
       user: body.user ? normalizeUser(body.user) : undefined,
     };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "No se pudo conectar con la API.",
+    };
+  }
+}
+
+export interface ValidateShippingResponse {
+  ok: boolean;
+  allowed?: boolean;
+  distance?: number;
+  message?: string;
+}
+
+export async function validateShippingLocation(lat: number, lng: number): Promise<ValidateShippingResponse> {
+  try {
+    const { response, body } = await requestWithBaseFallback<ValidateShippingResponse>("/public/checkout/validate-shipping.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lat, lng }),
+    });
+
+    if (!response.ok || !body.ok) {
+      return {
+        ok: false,
+        message: body.message ?? "Error al validar la ubicación.",
+      };
+    }
+
+    return body;
   } catch (error) {
     return {
       ok: false,
