@@ -39,6 +39,26 @@ try {
     adminJsonResponse(404, ['ok' => false, 'message' => 'Orden no encontrada']);
   }
 
+  if ($order['status'] === 'pending') {
+    require_once __DIR__ . '/../../core/stripe_loader.php';
+    if (loadStripeSdk()) {
+      $secretKey = getStripeSecretKey();
+      if ($secretKey) {
+        \Stripe\Stripe::setApiKey($secretKey);
+        try {
+          $stripeSession = \Stripe\Checkout\Session::retrieve($sessionId);
+          if ($stripeSession->payment_status === 'paid') {
+            $order['status'] = 'paid';
+            $updateStmt = $pdo->prepare('UPDATE orders SET status = "paid", updated_at = NOW() WHERE id = :id');
+            $updateStmt->execute(['id' => $order['id']]);
+          }
+        } catch (\Exception $e) {
+          error_log('orders/by-session.php Stripe retrieve error: ' . $e->getMessage());
+        }
+      }
+    }
+  }
+
   $orderId = (int) $order['id'];
   $itemsStmt = $pdo->prepare('
     SELECT oi.id, oi.product_id, oi.quantity, oi.price,

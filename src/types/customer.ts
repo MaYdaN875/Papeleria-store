@@ -4,6 +4,7 @@ export interface StoreCustomerUser {
   name: string;
   email: string;
   provider?: "api" | "firebase";
+  default_delivery_address?: string;
 }
 
 export interface StoreCustomerAuthResponse {

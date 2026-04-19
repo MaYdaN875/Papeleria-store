@@ -35,6 +35,7 @@ export function getStoreUser(): StoreCustomerUser | null {
       name: parsed.name ?? "",
       email,
       provider: parsed.provider === "firebase" ? "firebase" : "api",
+      default_delivery_address: parsed.default_delivery_address,
     };
   } catch {
     return null;

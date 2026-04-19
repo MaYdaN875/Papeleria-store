@@ -51,6 +51,7 @@ import { generateClosingPDF } from "../utils/pdfGenerator";
 import { clearAdminSession, getAdminMode, getAdminToken } from "../utils/adminSession";
 import { downloadStockListPdf } from "../utils/stockListPdf";
 import { getImageValidationError } from "../utils/validation";
+import { Notification } from "../components/ui/Notification";
 
 interface ProductEditFormState {
   name: string;
@@ -372,6 +373,40 @@ export function AdminDashboard() {
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [ordersError, setOrdersError] = useState("");
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const knownOrderIdsRef = useRef<Set<number>>(new Set());
+
+  // Polling para órdenes de envío
+  useEffect(() => {
+    const token = getAdminToken();
+    if (!token) return;
+
+    const intervalId = globalThis.setInterval(async () => {
+      try {
+        const result = await fetchAdminOrders(token);
+        if (result.ok && result.orders) {
+          let hasNewDelivery = false;
+          result.orders.forEach((order: AdminOrder) => {
+            if (!knownOrderIdsRef.current.has(order.id)) {
+              knownOrderIdsRef.current.add(order.id);
+              if (order.deliveryMethod === 'delivery') {
+                hasNewDelivery = true;
+              }
+            }
+          });
+          
+          if (hasNewDelivery) {
+            setNotificationMessage('¡Atención! Ha llegado una nueva orden de envío a domicilio.');
+            setOrders(result.orders);
+          }
+        }
+      } catch (err) {
+        // Ignorar errores de polling
+      }
+    }, 25000); // 25 segundos
+
+    return () => globalThis.clearInterval(intervalId);
+  }, []);
 
   // Estado de Etiquetas / Categorías masivas
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
@@ -447,6 +482,10 @@ export function AdminDashboard() {
   const [orderStatusFilter, setOrderStatusFilter] = useState("all");
   const [ordersCurrentPage, setOrdersCurrentPage] = useState(1);
   const ORDERS_PER_PAGE = 10;
+
+  const paidDeliveryCount = useMemo(() => {
+    return orders.filter(o => o.deliveryMethod === 'delivery' && o.status === 'paid').length;
+  }, [orders]);
 
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
@@ -637,6 +676,9 @@ export function AdminDashboard() {
       }
 
       setOrders(result.orders ?? []);
+      if (result.orders) {
+        result.orders.forEach((o: AdminOrder) => knownOrderIdsRef.current.add(o.id));
+      }
       setIsLoadingOrders(false);
     } catch (ordersLoadError) {
       console.error(ordersLoadError);
@@ -1904,8 +1946,16 @@ export function AdminDashboard() {
   }, [categories]);
 
   return (
-    <div className="admin-layout">
-      {/* ── Navbar mobile sticky ── */}
+    <>
+      {notificationMessage && (
+        <Notification 
+          message={notificationMessage} 
+          onClose={() => setNotificationMessage("")} 
+          duration={6000} 
+        />
+      )}
+      <div className="admin-layout">
+        {/* ── Navbar mobile sticky ── */}
       <header className="admin-mobile-navbar">
         <button
           type="button"
@@ -1957,7 +2007,7 @@ export function AdminDashboard() {
             { key: "ofertas" as const, label: "🏷️ Ofertas" },
             { key: "categorias" as const, label: "🏷️ Etiquetas" },
             { key: "ingresos" as const, label: "💰 Ingresos" },
-            { key: "ordenes" as const, label: "📋 Órdenes" },
+            { key: "ordenes" as const, label: `📋 Órdenes${paidDeliveryCount > 0 ? ' 🔴' : ''}` },
           ]).map((item) => (
             <button
               key={item.key}
@@ -2040,8 +2090,10 @@ export function AdminDashboard() {
             type="button"
             className={`admin-nav-item ${activeSection === "ordenes" ? "admin-nav-item--active" : ""}`}
             onClick={() => setActiveSection("ordenes")}
+            style={{ display: "flex", alignItems: "center" }}
           >
             Órdenes
+            {paidDeliveryCount > 0 && <span style={{ marginLeft: "auto", background: "#ef4444", color: "white", borderRadius: "50%", padding: "2px 8px", fontSize: "12px", fontWeight: "bold" }}>!</span>}
           </button>
           <button
             type="button"
@@ -2145,6 +2197,25 @@ export function AdminDashboard() {
                 Productos destacados con un precio promocional activo.
               </p>
               <p className="admin-card-note">Haz clic para administrarlas &rarr;</p>
+            </div>
+
+            <div
+              role="button"
+              tabIndex={0}
+              className="admin-card admin-card--clickable"
+              onClick={() => setActiveSection("ordenes")}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveSection("ordenes"); } }}
+              style={paidDeliveryCount > 0 ? { border: "2px solid #ef4444", backgroundColor: "#fef2f2" } : {}}
+            >
+              <h2>
+                <i className="fas fa-truck" aria-hidden style={{ marginRight: '8px', color: 'var(--color-primary)' }}/> 
+                Envíos pagados
+              </h2>
+              <p className="admin-card-number">{paidDeliveryCount}</p>
+              <p className="admin-card-description">
+                Pedidos de envío a domicilio que ya han sido pagados y deben prepararse.
+              </p>
+              <p className="admin-card-note">Haz clic para revisar &rarr;</p>
             </div>
 
             <div
@@ -3443,6 +3514,7 @@ export function AdminDashboard() {
                     <article 
                       key={order.id} 
                       className={`admin-order-card admin-surface-card ${isExpanded ? "admin-order-card--expanded" : ""}`}
+                      style={order.deliveryMethod === "delivery" ? { borderLeft: "5px solid #f59e0b", backgroundColor: "#fffbeb" } : {}}
                     >
                       <header 
                         className="admin-order-card-header"
@@ -3586,6 +3658,7 @@ export function AdminDashboard() {
         )}
       </main>
     </div>
+    </>
   );
 }
 

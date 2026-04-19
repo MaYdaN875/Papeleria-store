@@ -16,7 +16,7 @@ try {
   $pdo = adminGetPdo();
   adminRequireSession($pdo);
 
-  $bodyArr = adminJsonBody();
+  $bodyArr = adminReadJsonBody();
   $orderId = isset($bodyArr['orderId']) ? (int) $bodyArr['orderId'] : 0;
   $newStatus = isset($bodyArr['status']) ? trim((string) $bodyArr['status']) : '';
 
