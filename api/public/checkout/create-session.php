@@ -151,6 +151,12 @@ try {
     ]);
     $orderId = (int) $pdo->lastInsertId();
 
+    // Bonus: Autoguardar la dirección en el perfil si es envıo
+    if ($deliveryMethod === 'delivery' && $deliveryAddress) {
+      $updateProfile = $pdo->prepare('UPDATE customer_users SET default_delivery_address = :addr WHERE id = :cid');
+      $updateProfile->execute(['addr' => $deliveryAddress, 'cid' => $customerUserId]);
+    }
+
     $insertItem = $pdo->prepare('
       INSERT INTO order_items (order_id, product_id, quantity, price, created_at)
       VALUES (:order_id, :product_id, :quantity, :price, NOW())

@@ -9,10 +9,18 @@ import { buildCandidateApiBases, getApiBase } from "./api/base";
 
 const API_BASE = getApiBase();
 
+export interface StoreUser {
+  id: number;
+  name: string;
+  email: string;
+  default_delivery_address?: string;
+}
+
 interface RawStoreCustomerUser {
   id: number | string;
   name: string;
   email: string;
+  default_delivery_address?: string;
 }
 
 function parseRetryAfterSeconds(response: Response, bodyRetryAfterSeconds?: number): number | undefined {
@@ -34,6 +42,7 @@ function normalizeUser(raw: RawStoreCustomerUser) {
     id: Number(raw.id) || 0,
     name: raw.name ?? "",
     email: raw.email ?? "",
+    default_delivery_address: raw.default_delivery_address
   };
 }
 

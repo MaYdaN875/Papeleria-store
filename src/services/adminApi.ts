@@ -1148,6 +1148,31 @@ export async function fetchAdminOrders(token: string): Promise<AdminOrdersRespon
   return body;
 }
 
+/** Actualiza manualmente el estado de una orden. */
+export async function updateAdminOrderStatus(
+  token: string,
+  orderId: number,
+  status: string
+): Promise<{ ok: boolean; message?: string }> {
+  if (!API_BASE) {
+    return { ok: false, message: "Falta configurar API_URL para conectar con el servidor." };
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/orders/update-status.php`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...buildAuthHeaders(token),
+      },
+      body: JSON.stringify({ orderId, status }),
+    });
+    return (await res.json()) as { ok: boolean; message?: string };
+  } catch {
+    return { ok: false, message: "Excepción al intentar conectarse al servidor para actualizar orden." };
+  }
+}
+
 /** Actualiza nombre y slug de una subcategoría o categoría dada su ID */
 export async function updateAdminCategory(
   token: string,

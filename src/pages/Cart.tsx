@@ -6,6 +6,7 @@ import { createCheckoutSession, validateShippingLocation } from "../services/cus
 import "../styles/password-recovery.css"
 import { showNotification } from "../utils/notification"
 import {
+    getStoreUser,
     getStoreUserToken,
     isStoreUserLoggedIn,
 } from "../utils/storeSession"
@@ -24,6 +25,8 @@ export const Cart = () => {
     const [locationMessage, setLocationMessage] = useState("")
     
     // Formulario de envio
+    const user = getStoreUser()
+    const [useSavedAddress, setUseSavedAddress] = useState(!!user?.default_delivery_address)
     const [addressStreet, setAddressStreet] = useState("")
     const [addressColony, setAddressColony] = useState("")
     const [addressRef, setAddressRef] = useState("")
@@ -48,9 +51,11 @@ export const Cart = () => {
                 setCheckoutError("Debes validar tu ubicación para el envío a domicilio.")
                 return
             }
-            if (!addressStreet.trim() || !addressColony.trim() || !addressPhone.trim()) {
-                setCheckoutError("Por favor, llena los campos obligatorios de la dirección de envío.")
-                return
+            if (!useSavedAddress) {
+                if (!addressStreet.trim() || !addressColony.trim() || !addressPhone.trim()) {
+                    setCheckoutError("Por favor, llena los campos obligatorios de la dirección de envío.")
+                    return
+                }
             }
         }
 
@@ -83,7 +88,9 @@ export const Cart = () => {
         setIsCheckoutLoading(true)
         const origin = window.location.origin
         const fullDeliveryAddress = deliveryMethod === "delivery" 
-            ? `${addressStreet}, Col. ${addressColony}. Ref: ${addressRef}. Tel: ${addressPhone}` 
+            ? (useSavedAddress && user?.default_delivery_address 
+                ? user.default_delivery_address 
+                : `${addressStreet}, Col. ${addressColony}. Ref: ${addressRef}. Tel: ${addressPhone}`) 
             : undefined;
 
         const result = await createCheckoutSession(token, {
@@ -242,34 +249,60 @@ export const Cart = () => {
                                             <i className="fas fa-check-circle"></i> ¡Estás en nuestra zona de envío! (+ $10.00 MXN)
                                         </div>
                                         <h4 style={{margin: "0 0 5px 0", fontSize: "1rem"}}>Datos de Entrega</h4>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Calle y Número (Ej. Av. Hidalgo 123)*" 
-                                            value={addressStreet}
-                                            onChange={(e) => setAddressStreet(e.target.value)}
-                                            style={{padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "100%", fontSize: "0.95rem"}}
-                                        />
-                                        <input 
-                                            type="text" 
-                                            placeholder="Colonia y Código Postal*" 
-                                            value={addressColony}
-                                            onChange={(e) => setAddressColony(e.target.value)}
-                                            style={{padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "100%", fontSize: "0.95rem"}}
-                                        />
-                                        <input 
-                                            type="text" 
-                                            placeholder="Referencias (Ej. Casa verde de 2 pisos)" 
-                                            value={addressRef}
-                                            onChange={(e) => setAddressRef(e.target.value)}
-                                            style={{padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "100%", fontSize: "0.95rem"}}
-                                        />
-                                        <input 
-                                            type="tel" 
-                                            placeholder="Teléfono de contacto*" 
-                                            value={addressPhone}
-                                            onChange={(e) => setAddressPhone(e.target.value)}
-                                            style={{padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "100%", fontSize: "0.95rem"}}
-                                        />
+                                        
+                                        {useSavedAddress && user?.default_delivery_address ? (
+                                            <div style={{backgroundColor: "#e8f5e9", color: "#2e7d32", padding: "12px", borderRadius: "8px", border: "1px solid #c8e6c9"}}>
+                                                <p style={{margin: "0 0 8px 0", fontWeight: "bold"}}>Enviaremos tu pedido a la dirección guardada:</p>
+                                                <p style={{margin: "0 0 10px 0", fontSize: "0.95rem"}}>{user.default_delivery_address}</p>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setUseSavedAddress(false)}
+                                                    style={{backgroundColor: "white", color: "#2e7d32", border: "1px solid #2e7d32", padding: "5px 10px", borderRadius: "4px", cursor: "pointer", fontSize: "0.85rem"}}
+                                                >
+                                                    Usar u otra dirección
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {user?.default_delivery_address && (
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => setUseSavedAddress(true)}
+                                                        style={{backgroundColor: "#2e7d32", color: "white", border: "none", padding: "8px 10px", borderRadius: "4px", cursor: "pointer", fontSize: "0.9rem", alignSelf: "flex-start"}}
+                                                    >
+                                                        Utilizar mi dirección guardada
+                                                    </button>
+                                                )}
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Calle y Número (Ej. Av. Hidalgo 123)*" 
+                                                    value={addressStreet}
+                                                    onChange={(e) => setAddressStreet(e.target.value)}
+                                                    style={{padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "100%", fontSize: "0.95rem"}}
+                                                />
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Colonia y Código Postal*" 
+                                                    value={addressColony}
+                                                    onChange={(e) => setAddressColony(e.target.value)}
+                                                    style={{padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "100%", fontSize: "0.95rem"}}
+                                                />
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Referencias (Ej. Casa verde de 2 pisos)" 
+                                                    value={addressRef}
+                                                    onChange={(e) => setAddressRef(e.target.value)}
+                                                    style={{padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "100%", fontSize: "0.95rem"}}
+                                                />
+                                                <input 
+                                                    type="tel" 
+                                                    placeholder="Teléfono de contacto*" 
+                                                    value={addressPhone}
+                                                    onChange={(e) => setAddressPhone(e.target.value)}
+                                                    style={{padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "100%", fontSize: "0.95rem"}}
+                                                />
+                                            </>
+                                        )}
                                     </div>
                                 )}
                             </div>

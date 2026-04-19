@@ -25,6 +25,7 @@ import {
   performDailySalesClose,
   removeAdminOffer,
   updateAdminProduct,
+  updateAdminOrderStatus,
   uploadAdminProductImage,
   upsertAdminOffer,
   updateAdminBrandGlobal,
@@ -643,6 +644,26 @@ export function AdminDashboard() {
       setIsLoadingOrders(false);
     }
   }, []);
+
+  const handleUpdateOrderStatus = async (orderId: number, newStatus: string) => {
+    const token = getAdminToken();
+    if (!token) return;
+    
+    // Optimistic update
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    
+    try {
+      const res = await updateAdminOrderStatus(token, orderId, newStatus);
+      if (!res.ok) {
+        // Rollback on fail
+        globalThis.alert("No se pudo actualizar el estado: " + res.message);
+        loadOrders(token);
+      }
+    } catch {
+      globalThis.alert("Error de red al actualizar estado de la orden");
+      loadOrders(token);
+    }
+  };
 
   const handleAddCategoryClick = async () => {
     const rawName = globalThis.prompt("Nombre de la nueva categoría o subcategoría:");
@@ -3452,12 +3473,20 @@ export function AdminDashboard() {
                               ${order.total.toFixed(2)} {order.currency.toUpperCase()}
                             </span>
                           </div>
-                          <div className="admin-order-status-wrap">
-                            <span className={`admin-order-status-pill admin-order-status-pill--${order.status}`}>
-                              {order.status === "paid" ? "Pagado" : 
-                               order.status === "pending" ? "Pendiente" : 
-                               order.status === "cancelled" ? "Cancelado" : order.status}
-                            </span>
+                          <div className="admin-order-status-wrap" style={{display: "flex", gap: "8px", alignItems: "center"}}>
+                            <select 
+                              value={order.status}
+                              onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                              className={`admin-order-status-pill admin-order-status-pill--${order.status}`}
+                              style={{ border: "none", cursor: "pointer", outline: "none", appearance: "none" }}
+                            >
+                              <option value="pending">Pendiente</option>
+                              <option value="paid">Pagado</option>
+                              <option value="shipped">Enviado</option>
+                              <option value="delivered">Entregado</option>
+                              <option value="cancelled">Cancelado</option>
+                            </select>
                             <span className="admin-order-chevron">
                               {isExpanded ? "▲" : "▼"}
                             </span>
@@ -3468,6 +3497,24 @@ export function AdminDashboard() {
                       {isExpanded && (
                         <div className="admin-order-detail-content">
                           <hr className="admin-order-divider" />
+                          
+                          {/* Detalles de envío */}
+                          {order.deliveryMethod === "delivery" ? (
+                            <div style={{ backgroundColor: "#f0fdf4", padding: "12px", borderRadius: "8px", marginBottom: "16px", border: "1px solid #bbf7d0" }}>
+                              <p style={{ margin: "0 0 5px 0", color: "#166534", fontWeight: "bold", display: "flex", alignItems: "center", gap: "5px" }}>
+                                <i className="fas fa-truck"></i> Envío a Domicilio
+                              </p>
+                              <p style={{ margin: "0", color: "#166534", fontSize: "0.95rem" }}>
+                                {order.deliveryAddress || "Dirección no registrada"}
+                              </p>
+                            </div>
+                          ) : (
+                            <div style={{ backgroundColor: "#f3f4f6", padding: "12px", borderRadius: "8px", marginBottom: "16px", border: "1px solid #e5e7eb" }}>
+                              <p style={{ margin: "0", color: "#374151", fontWeight: "bold", display: "flex", alignItems: "center", gap: "5px" }}>
+                                <i className="fas fa-store"></i> Recoger en Tienda
+                              </p>
+                            </div>
+                          )}
                           <table className="admin-order-items-table">
                             <thead>
                               <tr>

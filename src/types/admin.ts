@@ -57,6 +57,8 @@ export interface AdminOrder {
   total: number;
   currency: string;
   status: string;
+  deliveryMethod?: string;
+  deliveryAddress?: string;
   createdAt: string;
   items: AdminOrderItem[];
 }
