@@ -5,6 +5,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
+import "./styles/tailwind.css"
 import "./styles/index.css"
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
