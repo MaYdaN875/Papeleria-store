@@ -13,6 +13,9 @@ import type {
     AdminProduct,
     AdminSalesProductRow,
     AdminSalesTodaySummary,
+    AdminSalesOrderDetail,
+    AdminDailyClosing,
+    AdminClosingProductDetail,
     AdminOrder,
     CreateAdminHomeSlideInput,
     CreateAdminProductInput,
@@ -31,6 +34,9 @@ export type {
     AdminProduct,
     AdminSalesProductRow,
     AdminSalesTodaySummary,
+    AdminSalesOrderDetail,
+    AdminDailyClosing,
+    AdminClosingProductDetail,
     AdminOrder,
     CreateAdminHomeSlideInput,
     CreateAdminProductInput,
@@ -103,6 +109,21 @@ interface AdminSalesTodayResponse {
   message?: string;
   summary?: AdminSalesTodaySummary;
   products?: AdminSalesProductRow[];
+  orderDetails?: AdminSalesOrderDetail[];
+  periodStart?: string | null;
+  lastClosingId?: number | null;
+}
+
+interface AdminDailyCloseResponse {
+  ok: boolean;
+  message?: string;
+  closing?: AdminDailyClosing;
+}
+
+interface AdminSalesHistoryResponse {
+  ok: boolean;
+  message?: string;
+  closings?: AdminDailyClosing[];
 }
 
 interface AdminOrdersResponse {
@@ -184,6 +205,29 @@ interface RawAdminSalesProductRow {
   total_units: number | string;
   total_revenue: number | string;
   total_orders: number | string;
+}
+
+interface RawAdminSalesOrderDetail {
+  order_id: number | string;
+  order_time: string;
+  product_id: number | string;
+  product_name: string;
+  quantity: number | string;
+  unit_price: number | string;
+  line_total: number | string;
+}
+
+interface RawAdminDailyClosing {
+  id: number | string;
+  closing_date: string;
+  period_start: string;
+  period_end: string;
+  total_revenue: number | string;
+  total_units: number | string;
+  total_orders: number | string;
+  products_detail: AdminClosingProductDetail[] | string;
+  notes?: string | null;
+  closed_at: string;
 }
 
 interface RawAdminHomeSlide {
@@ -274,6 +318,44 @@ function normalizeAdminSalesProductRow(raw: RawAdminSalesProductRow): AdminSales
     totalUnits: Number(raw.total_units) || 0,
     totalRevenue: Number(raw.total_revenue) || 0,
     totalOrders: Number(raw.total_orders) || 0,
+  };
+}
+
+function normalizeAdminSalesOrderDetail(raw: RawAdminSalesOrderDetail): AdminSalesOrderDetail {
+  return {
+    orderId: Number(raw.order_id) || 0,
+    orderTime: raw.order_time ?? "",
+    productId: Number(raw.product_id) || 0,
+    productName: raw.product_name ?? "",
+    quantity: Number(raw.quantity) || 0,
+    unitPrice: Number(raw.unit_price) || 0,
+    lineTotal: Number(raw.line_total) || 0,
+  };
+}
+
+function normalizeAdminDailyClosing(raw: RawAdminDailyClosing): AdminDailyClosing {
+  let productsDetail: AdminClosingProductDetail[] = [];
+  if (typeof raw.products_detail === 'string') {
+    try {
+      productsDetail = JSON.parse(raw.products_detail);
+    } catch {
+      productsDetail = [];
+    }
+  } else if (Array.isArray(raw.products_detail)) {
+    productsDetail = raw.products_detail;
+  }
+
+  return {
+    id: Number(raw.id) || 0,
+    closingDate: raw.closing_date ?? "",
+    periodStart: raw.period_start ?? "",
+    periodEnd: raw.period_end ?? "",
+    totalRevenue: Number(raw.total_revenue) || 0,
+    totalUnits: Number(raw.total_units) || 0,
+    totalOrders: Number(raw.total_orders) || 0,
+    productsDetail,
+    notes: raw.notes ?? null,
+    closedAt: raw.closed_at ?? "",
   };
 }
 
@@ -925,6 +1007,9 @@ export async function fetchAdminSalesToday(token: string): Promise<AdminSalesTod
     message?: string;
     summary?: RawAdminSalesTodaySummary;
     products?: RawAdminSalesProductRow[];
+    order_details?: RawAdminSalesOrderDetail[];
+    period_start?: string | null;
+    last_closing_id?: number | null;
   };
 
   if (!body.ok) {
@@ -945,6 +1030,96 @@ export async function fetchAdminSalesToday(token: string): Promise<AdminSalesTod
       }
     ),
     products: (body.products ?? []).map(normalizeAdminSalesProductRow),
+    orderDetails: (body.order_details ?? []).map(normalizeAdminSalesOrderDetail),
+    periodStart: body.period_start ?? null,
+    lastClosingId: body.last_closing_id ?? null,
+  };
+}
+
+/** Ejecuta un corte de caja, guardando un snapshot de las ventas del periodo actual. */
+export async function performDailySalesClose(token: string, notes?: string): Promise<AdminDailyCloseResponse> {
+  if (!API_BASE) {
+    return {
+      ok: false,
+      message: "Falta configurar VITE_API_URL para conectar con PHP.",
+    };
+  }
+
+  const response = await fetch(`${API_BASE}/admin/sales/daily_close.php`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...buildAuthHeaders(token),
+    },
+    body: JSON.stringify({ notes: notes ?? "" }),
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<AdminDailyCloseResponse>;
+    return {
+      ok: false,
+      message: errorBody.message ?? "No se pudo realizar el corte de caja.",
+    };
+  }
+
+  const body = (await response.json()) as {
+    ok: boolean;
+    message?: string;
+    closing?: RawAdminDailyClosing;
+  };
+
+  if (!body.ok) {
+    return {
+      ok: false,
+      message: body.message ?? "No se pudo realizar el corte de caja.",
+    };
+  }
+
+  return {
+    ok: true,
+    message: body.message ?? "Corte de caja realizado exitosamente.",
+    closing: body.closing ? normalizeAdminDailyClosing(body.closing) : undefined,
+  };
+}
+
+/** Obtiene el historial de cortes de caja (últimos N días). */
+export async function fetchSalesHistory(token: string, days = 90): Promise<AdminSalesHistoryResponse> {
+  if (!API_BASE) {
+    return {
+      ok: false,
+      message: "Falta configurar VITE_API_URL para conectar con PHP.",
+    };
+  }
+
+  const response = await fetch(`${API_BASE}/admin/sales/history.php?days=${days}`, {
+    headers: buildAuthHeaders(token),
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<AdminSalesHistoryResponse>;
+    return {
+      ok: false,
+      message: errorBody.message ?? "No se pudo cargar el historial de ventas.",
+    };
+  }
+
+  const body = (await response.json()) as {
+    ok: boolean;
+    message?: string;
+    closings?: RawAdminDailyClosing[];
+  };
+
+  if (!body.ok) {
+    return {
+      ok: false,
+      message: body.message ?? "No se pudo cargar el historial de ventas.",
+    };
+  }
+
+  return {
+    ok: true,
+    message: body.message,
+    closings: (body.closings ?? []).map(normalizeAdminDailyClosing),
   };
 }
 

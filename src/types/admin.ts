@@ -67,6 +67,37 @@ export interface AdminSalesTodaySummary {
   totalOrders: number;
 }
 
+export interface AdminSalesOrderDetail {
+  orderId: number;
+  orderTime: string;
+  productId: number;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+export interface AdminClosingProductDetail {
+  product_id: number;
+  product_name: string;
+  total_units: number;
+  total_revenue: number;
+  total_orders: number;
+}
+
+export interface AdminDailyClosing {
+  id: number;
+  closingDate: string;
+  periodStart: string;
+  periodEnd: string;
+  totalRevenue: number;
+  totalUnits: number;
+  totalOrders: number;
+  productsDetail: AdminClosingProductDetail[];
+  notes: string | null;
+  closedAt: string;
+}
+
 export interface AdminHomeSlide {
   id: number;
   imageUrl: string;

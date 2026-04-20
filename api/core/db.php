@@ -10,8 +10,8 @@ function adminGetPdo(): PDO {
     ADMIN_DB_PASS,
     [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
   );
-  // Sincronizamos la zona horaria con México
-  $pdo->exec("SET time_zone = '-06:00'");
+  // Hostinger ya ajusta la hora automáticamente; si forzamos -06:00 causa un doble desfase.
+  // $pdo->exec("SET time_zone = '-06:00'");
   return $pdo;
 }
 

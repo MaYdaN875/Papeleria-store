@@ -21,6 +21,8 @@ import {
   fetchAdminOrders,
   fetchAdminProducts,
   fetchAdminSalesToday,
+  fetchSalesHistory,
+  performDailySalesClose,
   removeAdminOffer,
   updateAdminProduct,
   uploadAdminProductImage,
@@ -35,13 +37,16 @@ import {
 } from "../services/adminApi";
 import type {
   AdminCategory,
+  AdminDailyClosing,
   AdminHomeSlide,
   AdminOffer,
   AdminOrder,
   AdminProduct,
+  AdminSalesOrderDetail,
   AdminSalesProductRow,
   AdminSalesTodaySummary,
 } from "../types/admin";
+import { generateClosingPDF } from "../utils/pdfGenerator";
 import { clearAdminSession, getAdminMode, getAdminToken } from "../utils/adminSession";
 import { downloadStockListPdf } from "../utils/stockListPdf";
 import { getImageValidationError } from "../utils/validation";
@@ -333,6 +338,15 @@ export function AdminDashboard() {
     totalOrders: 0,
   });
   const [salesByProduct, setSalesByProduct] = useState<AdminSalesProductRow[]>([]);
+  const [salesOrderDetails, setSalesOrderDetails] = useState<AdminSalesOrderDetail[]>([]);
+  const [salesPeriodStart, setSalesPeriodStart] = useState<string | null>(null);
+  const [salesClosings, setSalesClosings] = useState<AdminDailyClosing[]>([]);
+  const [isLoadingClosings, setIsLoadingClosings] = useState(false);
+  const [closingsError, setClosingsError] = useState("");
+  const [isPerformingClose, setIsPerformingClose] = useState(false);
+  const [closeSuccess, setCloseSuccess] = useState("");
+  const [closeError, setCloseError] = useState("");
+  const [expandedClosingId, setExpandedClosingId] = useState<number | null>(null);
   const [initialLoad, dispatchInitialLoad] = useReducer(
     initialLoadReducer,
     INITIAL_LOAD_STATE
@@ -542,6 +556,8 @@ export function AdminDashboard() {
         }
       );
       setSalesByProduct(result.products ?? []);
+      setSalesOrderDetails(result.orderDetails ?? []);
+      setSalesPeriodStart(result.periodStart ?? null);
       setSalesMessage(result.message ?? "");
       setIsLoadingSales(false);
     } catch (salesLoadError) {
@@ -550,6 +566,62 @@ export function AdminDashboard() {
       setIsLoadingSales(false);
     }
   }, []);
+
+  const loadClosingsHistory = useCallback(async (token: string) => {
+    setIsLoadingClosings(true);
+    setClosingsError("");
+
+    try {
+      const result = await fetchSalesHistory(token);
+      if (!result.ok) {
+        setClosingsError(result.message ?? "No se pudo cargar el historial de cortes.");
+        setIsLoadingClosings(false);
+        return;
+      }
+
+      setSalesClosings(result.closings ?? []);
+      setIsLoadingClosings(false);
+    } catch (closingsLoadError) {
+      console.error(closingsLoadError);
+      setClosingsError("No se pudo conectar con la API para cargar historial.");
+      setIsLoadingClosings(false);
+    }
+  }, []);
+
+  const handleDailyClose = useCallback(async () => {
+    if (!globalThis.confirm(
+      "¿Estás seguro de realizar el corte de caja?\n\nEsto guardará un resumen de las ventas actuales y empezará un nuevo periodo."
+    )) {
+      return;
+    }
+
+    const token = getAdminToken();
+    if (!token) return;
+
+    setIsPerformingClose(true);
+    setCloseError("");
+    setCloseSuccess("");
+
+    try {
+      const result = await performDailySalesClose(token);
+      if (!result.ok) {
+        setCloseError(result.message ?? "No se pudo realizar el corte de caja.");
+        setIsPerformingClose(false);
+        return;
+      }
+
+      setCloseSuccess(result.message ?? "Corte de caja realizado exitosamente.");
+      setIsPerformingClose(false);
+
+      // Recargar datos de ventas y historial.
+      void loadSalesToday(token);
+      void loadClosingsHistory(token);
+    } catch (closeErr) {
+      console.error(closeErr);
+      setCloseError("Error de conexión al realizar el corte de caja.");
+      setIsPerformingClose(false);
+    }
+  }, [loadSalesToday, loadClosingsHistory]);
 
   const loadOrders = useCallback(async (token: string) => {
     setIsLoadingOrders(true);
@@ -1066,6 +1138,17 @@ export function AdminDashboard() {
       if (token) void loadOrders(token);
     }
   }, [activeSection, loadOrders]);
+
+  // Carga historial de cortes cuando se navega a la sección de ingresos.
+  useEffect(() => {
+    if (activeSection === "ingresos") {
+      const token = getAdminToken();
+      if (token) {
+        void loadSalesToday(token);
+        void loadClosingsHistory(token);
+      }
+    }
+  }, [activeSection, loadSalesToday, loadClosingsHistory]);
 
   useEffect(() => {
     if (!createForm.categoryId && categories.length > 0) {
@@ -3055,57 +3138,210 @@ export function AdminDashboard() {
         {activeSection === "ingresos" && (
           <section className="admin-info-panel admin-module-section">
           <div className="admin-panel-header">
-            <h2>Ingresos del día</h2>
+            <h2>💰 Ingresos de la caja actual</h2>
             <p>
-              Muestra ventas totales del día, cantidad de productos vendidos y número total de
-              ventas registradas.
+              Ventas registradas desde el último corte de caja.
+              {salesPeriodStart && (
+                <span className="admin-income-period">
+                  {" "}Periodo actual desde: <strong>{new Date(salesPeriodStart).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}</strong>
+                </span>
+              )}
             </p>
           </div>
 
-          {isLoadingSales && <p>Cargando ingresos del día...</p>}
+          {isLoadingSales && <p className="admin-loading-text">Cargando ingresos del día...</p>}
           {!isLoadingSales && salesError && <p className="admin-auth-error">{salesError}</p>}
           {!isLoadingSales && !salesError && (
             <>
               {salesMessage && <p className="admin-sidebar-note admin-note-dark">{salesMessage}</p>}
-              <div className="admin-sales-summary-grid">
-                <article className="admin-surface-card admin-sales-summary-card">
-                  <h3>Total vendido hoy</h3>
-                  <p>${salesSummary.totalRevenue.toFixed(2)}</p>
+
+              {/* Tarjetas de resumen */}
+              <div className="admin-income-summary-grid">
+                <article className="admin-income-card admin-income-card--revenue">
+                  <div className="admin-income-card__icon">💵</div>
+                  <div className="admin-income-card__content">
+                    <span className="admin-income-card__label">Total vendido</span>
+                    <span className="admin-income-card__value">${salesSummary.totalRevenue.toFixed(2)}</span>
+                  </div>
                 </article>
-                <article className="admin-surface-card admin-sales-summary-card">
-                  <h3>Unidades vendidas</h3>
-                  <p>{salesSummary.totalUnits}</p>
+                <article className="admin-income-card admin-income-card--units">
+                  <div className="admin-income-card__icon">📦</div>
+                  <div className="admin-income-card__content">
+                    <span className="admin-income-card__label">Unidades vendidas</span>
+                    <span className="admin-income-card__value">{salesSummary.totalUnits}</span>
+                  </div>
                 </article>
-                <article className="admin-surface-card admin-sales-summary-card">
-                  <h3>Ventas registradas</h3>
-                  <p>{salesSummary.totalOrders}</p>
+                <article className="admin-income-card admin-income-card--orders">
+                  <div className="admin-income-card__icon">🧾</div>
+                  <div className="admin-income-card__content">
+                    <span className="admin-income-card__label">Ventas registradas</span>
+                    <span className="admin-income-card__value">{salesSummary.totalOrders}</span>
+                  </div>
                 </article>
               </div>
 
-              {salesByProduct.length === 0 ? (
-                <p className="admin-sales-empty">No hay detalle de productos vendidos hoy.</p>
+              {/* Botón de corte de caja */}
+              <div className="admin-income-close-section">
+                <button
+                  type="button"
+                  className="admin-income-close-button"
+                  onClick={() => void handleDailyClose()}
+                  disabled={isPerformingClose}
+                >
+                  {isPerformingClose ? "Realizando corte..." : "✂️ Hacer Corte de Caja"}
+                </button>
+                <span className="admin-income-close-hint">
+                  Guarda las ventas actuales en el historial y empieza un nuevo periodo.
+                </span>
+              </div>
+              {closeSuccess && <p className="admin-success-message">{closeSuccess}</p>}
+              {closeError && <p className="admin-auth-error">{closeError}</p>}
+
+              {/* Tabla de detalle de ventas del periodo */}
+              <h3 className="admin-income-subtitle">Detalle de productos en caja</h3>
+              {salesOrderDetails.length === 0 && salesByProduct.length === 0 ? (
+                <p className="admin-income-empty">No hay ventas registradas en este periodo.</p>
               ) : (
-                <div className="admin-table-wrapper admin-surface-card">
-                  <table className="admin-table">
-                    <thead>
-                      <tr>
-                        <th>Producto</th>
-                        <th>Cantidad vendida</th>
-                        <th>Ingresos</th>
-                        <th>Número de ventas</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {salesByProduct.map((row) => (
-                        <tr key={row.productId}>
-                          <td>{row.productName}</td>
-                          <td>{row.totalUnits}</td>
-                          <td>${row.totalRevenue.toFixed(2)}</td>
-                          <td>{row.totalOrders}</td>
+                <>
+                  {/* Tabla por producto (resumen) */}
+                  <div className="admin-table-wrapper admin-surface-card">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>Producto</th>
+                          <th>Cantidad vendida</th>
+                          <th>Ingresos</th>
+                          <th>Nº ventas</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {salesByProduct.map((row) => (
+                          <tr key={row.productId}>
+                            <td>{row.productName}</td>
+                            <td>{row.totalUnits}</td>
+                            <td className="admin-income-money">${row.totalRevenue.toFixed(2)}</td>
+                            <td>{row.totalOrders}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Tabla detallada por orden (con hora) */}
+                  {salesOrderDetails.length > 0 && (
+                    <>
+                      <h3 className="admin-income-subtitle">Registro detallado por orden</h3>
+                      <div className="admin-table-wrapper admin-surface-card">
+                        <table className="admin-table">
+                          <thead>
+                            <tr>
+                              <th>Hora</th>
+                              <th>#Orden</th>
+                              <th>Producto</th>
+                              <th>Cantidad</th>
+                              <th>Precio unit.</th>
+                              <th>Total línea</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {salesOrderDetails.map((detail, idx) => (
+                              <tr key={`${detail.orderId}-${detail.productId}-${idx}`}>
+                                <td className="admin-income-time">
+                                  {new Date(detail.orderTime).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                                </td>
+                                <td>#{detail.orderId}</td>
+                                <td>{detail.productName}</td>
+                                <td>{detail.quantity}</td>
+                                <td className="admin-income-money">${detail.unitPrice.toFixed(2)}</td>
+                                <td className="admin-income-money">${detail.lineTotal.toFixed(2)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* Historial de cortes de caja */}
+              <h3 className="admin-income-subtitle admin-income-subtitle--history">📋 Historial de Cortes de Caja</h3>
+              {isLoadingClosings && <p className="admin-loading-text">Cargando historial...</p>}
+              {!isLoadingClosings && closingsError && <p className="admin-auth-error">{closingsError}</p>}
+              {!isLoadingClosings && !closingsError && salesClosings.length === 0 && (
+                <p className="admin-income-empty">Aún no se han realizado cortes de caja.</p>
+              )}
+              {!isLoadingClosings && !closingsError && salesClosings.length > 0 && (
+                <div className="admin-income-history">
+                  {salesClosings.map((closing) => (
+                    <div key={closing.id} className="admin-income-history-item">
+                      <button
+                        type="button"
+                        className={`admin-income-history-header ${expandedClosingId === closing.id ? "admin-income-history-header--open" : ""}`}
+                        onClick={() => setExpandedClosingId(expandedClosingId === closing.id ? null : closing.id)}
+                      >
+                        <div className="admin-income-history-meta">
+                          <span className="admin-income-history-date">
+                            {new Date(closing.closedAt).toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
+                          </span>
+                          <span className="admin-income-history-time">
+                            {new Date(closing.periodStart).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                            {" → "}
+                            {new Date(closing.periodEnd).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+                        <div className="admin-income-history-totals">
+                          <span className="admin-income-history-revenue">${closing.totalRevenue.toFixed(2)}</span>
+                          <span className="admin-income-history-detail">
+                            {closing.totalUnits} uds · {closing.totalOrders} ventas
+                          </span>
+                        </div>
+                        <span className="admin-income-history-chevron">{expandedClosingId === closing.id ? "▲" : "▼"}</span>
+                      </button>
+
+                      {expandedClosingId === closing.id && (
+                        <div className="admin-income-history-body">
+                          <div className="admin-income-history-actions">
+                            <button
+                              type="button"
+                              className="admin-btn-download-pdf"
+                              onClick={() => generateClosingPDF(closing)}
+                              title="Descargar Reporte PDF"
+                            >
+                              📄 Descargar Reporte PDF
+                            </button>
+                          </div>
+                          {closing.notes && <p className="admin-income-history-notes">📝 {closing.notes}</p>}
+                          {closing.productsDetail.length === 0 ? (
+                            <p className="admin-income-empty">No hubo productos vendidos en este corte.</p>
+                          ) : (
+                            <div className="admin-table-wrapper">
+                              <table className="admin-table">
+                                <thead>
+                                  <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Ingresos</th>
+                                    <th>Nº ventas</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {closing.productsDetail.map((p) => (
+                                    <tr key={p.product_id}>
+                                      <td>{p.product_name}</td>
+                                      <td>{p.total_units}</td>
+                                      <td className="admin-income-money">${Number(p.total_revenue).toFixed(2)}</td>
+                                      <td>{p.total_orders}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </>
@@ -3152,9 +3388,11 @@ export function AdminDashboard() {
                     }}
                   >
                     <option value="all">Todos los estados</option>
-                    <option value="paid">Pagados</option>
-                    <option value="pending">Pendientes</option>
-                    <option value="cancelled">Cancelados</option>
+                    <option value="pending">PENDIENTE</option>
+                    <option value="paid">PAGADO</option>
+                    <option value="shipped">ENVIADO</option>
+                    <option value="delivered">ENTREGADO</option>
+                    <option value="cancelled">CANCELADO</option>
                   </select>
                 </div>
                 <p className="admin-toolbar-count">

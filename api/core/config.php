@@ -1,3 +1,4 @@
+<?php
 /**
  * Configuración central de API admin.
  */
