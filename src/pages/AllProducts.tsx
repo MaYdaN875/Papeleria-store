@@ -207,6 +207,7 @@ export const AllProducts = () => {
     const [productsLoadError, setProductsLoadError] = useState("")
     const [categoryLabelMap, setCategoryLabelMap] = useState<Record<string, string>>({})
     const [categoryAliasMap, setCategoryAliasMap] = useState<Record<string, string[]>>(CATEGORY_FALLBACK_ALIASES)
+    const [mainCategoryNames, setMainCategoryNames] = useState<Set<string>>(new Set())
 
     // Sincronizar filtros con la URL cuando cambian
     const handleFilterChange = (newFilters: FilterState) => {
@@ -313,9 +314,13 @@ export const AllProducts = () => {
 
                 const labels: Record<string, string> = {}
                 const aliases: Record<string, string[]> = {}
+                const mainNames = new Set<string>()
+
                 for (const categoryNode of result.categories) {
                     const normalizedSlug = normalizeCategoryText(categoryNode.name).replace(/[^a-z0-9]+/g, "-")
                     labels[normalizedSlug] = categoryNode.name
+                    mainNames.add(normalizeCategoryText(categoryNode.name))
+                    
                     aliases[normalizedSlug] = [
                         normalizeCategoryText(categoryNode.name),
                         ...categoryNode.children.map((child) => normalizeCategoryText(child.name))
@@ -323,6 +328,7 @@ export const AllProducts = () => {
                 }
                 setCategoryLabelMap(labels)
                 setCategoryAliasMap(aliases)
+                setMainCategoryNames(mainNames)
             } catch (loadError) {
                 console.error(loadError)
             }
@@ -392,10 +398,16 @@ export const AllProducts = () => {
         const subclassSet = new Set<string>()
         for (const product of productsAfterSearch) {
             const category = product.category
-            if (category && category !== "Sin categoría") subclassSet.add(category)
+            if (category && category !== "Sin categoría") {
+                const normalized = normalizeCategoryText(category)
+                // No incluir en el filtro si es una categoría principal
+                if (!mainCategoryNames.has(normalized)) {
+                    subclassSet.add(category)
+                }
+            }
         }
         return Array.from(subclassSet).sort()
-    }, [productsAfterSearch])
+    }, [productsAfterSearch, mainCategoryNames])
     const hasNoFilteredProducts = !isLoadingProducts && displayProducts.length === 0
 
     const activeMode = filters.mayoreo ? "mayoreo" : filters.menudeo ? "menudeo" : null
