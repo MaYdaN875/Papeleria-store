@@ -55,11 +55,8 @@ try {
   if ($lastClosing) {
     $periodStart = $lastClosing['period_end'];
   } else {
-    // Si es el primer corte, tomar desde la orden pagada más antigua.
-    $stmtMin = $pdo->query("SELECT MIN(created_at) FROM orders WHERE status = 'paid'");
-    $minDate = $stmtMin->fetchColumn();
-    // Si no hay órdenes, usar el inicio del día actual (fallback).
-    $periodStart = $minDate ? $minDate : date('Y-m-d') . ' 00:00:00';
+    // Si es el primer corte, tomar desde el principio de los tiempos para que ">" capture todo.
+    $periodStart = '2000-01-01 00:00:00';
   }
 
   $periodEnd = date('Y-m-d H:i:s');
