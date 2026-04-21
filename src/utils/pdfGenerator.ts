@@ -136,7 +136,7 @@ export const generateClosingPDF = (closing: AdminDailyClosing) => {
     },
     didDrawPage: function (data) {
       // Pie de página en todas las páginas de la tabla
-      const pageCount = doc.internal.getNumberOfPages();
+      const pageCount = (doc.internal as any).getNumberOfPages();
       doc.setFontSize(8);
       doc.setTextColor(150);
       const pageSize = doc.internal.pageSize;
