@@ -16,12 +16,19 @@ try {
   }
 
   $session = storeRequireSession($pdo);
+
+  $cid = (int)$session['customer_user_id'];
+  $stmt = $pdo->prepare('SELECT default_delivery_address FROM customer_users WHERE id = :id');
+  $stmt->execute(['id' => $cid]);
+  $userRow = $stmt->fetch(PDO::FETCH_ASSOC);
+
   adminJsonResponse(200, [
     'ok' => true,
     'user' => [
-      'id' => (int)$session['customer_user_id'],
+      'id' => $cid,
       'name' => (string)$session['name'],
       'email' => (string)$session['email'],
+      'default_delivery_address' => $userRow ? $userRow['default_delivery_address'] : null,
     ],
   ]);
 } catch (PDOException $e) {

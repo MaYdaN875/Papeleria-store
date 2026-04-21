@@ -1,6 +1,7 @@
 /** Re-exporta páginas de la app. */
 export { AllProducts } from "./AllProducts";
 export { Cart } from "./Cart";
+export { Checkout } from "./Checkout";
 export { CheckoutCancel } from "./CheckoutCancel";
 export { CheckoutSuccess } from "./CheckoutSuccess";
 export { Home } from "./Home";

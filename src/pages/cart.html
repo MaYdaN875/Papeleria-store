@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>GodArt - Mi Carrito</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#b05e41",
+                        "on-secondary-container": "#476b65",
+                        "on-primary-fixed": "#00201c",
+                        "on-tertiary-fixed-variant": "#763219",
+                        "on-tertiary-container": "#fffbff",
+                        "outline": "#6d7a77",
+                        "on-background": "#171d1b",
+                        "on-secondary-fixed": "#00201c",
+                        "surface-container-low": "#f0f5f2",
+                        "inverse-surface": "#2c3130",
+                        "primary-fixed": "#8df5e4",
+                        "surface-bright": "#f6faf8",
+                        "surface-dim": "#d6dbd9",
+                        "surface-tint": "#006b5f",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#3d4946",
+                        "outline-variant": "#bcc9c5",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#70d8c8",
+                        "primary": "#00685d",
+                        "secondary-container": "#c3ebe2",
+                        "surface": "#f6faf8",
+                        "primary-container": "#008376",
+                        "tertiary": "#91462c",
+                        "inverse-on-surface": "#edf2ef",
+                        "secondary-fixed": "#c3ebe2",
+                        "on-secondary-fixed-variant": "#294d47",
+                        "on-surface": "#171d1b",
+                        "secondary-fixed-dim": "#a8cec6",
+                        "on-tertiary-fixed": "#390c00",
+                        "tertiary-fixed": "#ffdbcf",
+                        "secondary": "#41655f",
+                        "on-primary-fixed-variant": "#005048",
+                        "background": "#f6faf8",
+                        "surface-variant": "#dfe4e1",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#f4fffb",
+                        "surface-container": "#eaefec",
+                        "tertiary-fixed-dim": "#ffb59c",
+                        "primary-fixed-dim": "#70d8c8",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#dfe4e1",
+                        "surface-container-high": "#e4e9e7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .font-headline {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .text-display-lg {
+            font-size: 3.5rem;
+            line-height: 4rem;
+            letter-spacing: -0.02em;
+        }
+
+        .text-title-md {
+            font-size: 1.125rem;
+            line-height: 1.5rem;
+        }
+
+        .text-body-lg {
+            font-size: 1rem;
+            line-height: 1.5rem;
+        }
+
+        .text-label-md {
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+
+        /* Hide scrollbar for horizontal scroll but allow scrolling */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="text-on-surface min-h-screen flex flex-col">
+    <!-- TopNavBar -->
+
+    <!-- Header Banner (Mobile Only) -->
+    <div class="md:hidden bg-[#00897B] text-white py-4 px-6 mb-6 m-4 rounded-xl shadow-md text-center">
+        <h1 class="font-headline font-bold text-2xl tracking-tight">Mi Carrito Rediseñado</h1>
+    </div>
+    <!-- Main Content -->
+    <main class="flex-grow pt-8 md:pt-16 pb-24 px-4 md:px-8 max-w-6xl mx-auto w-full">
+        <header class="mb-8 hidden md:block">
+            <h1 class="font-headline font-bold text-3xl text-slate-800 tracking-tight mb-2">Mi Carrito (1 Artículos)
+            </h1>
+        </header>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Cart Items List (Left Side) -->
+            <div class="lg:col-span-8 flex flex-col space-y-6">
+                <!-- Item 1 -->
+                <div
+                    class="bg-white rounded-xl p-4 md:p-6 flex flex-row items-center gap-4 md:gap-6 shadow-sm border border-slate-200">
+                    <div
+                        class="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shrink-0 bg-white border border-slate-100 flex items-center justify-center p-2">
+                        <img alt="Cinta Adhesiva Aislante" class="max-w-full max-h-full object-contain"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVjeNK4LB0VQRTWzmWNT6iG035juEtmpvzQF8kkh10P00Jc62q046Y0-3sVCN9Mct2qzCSHIDdCHCCwPYidiwm6beEAjy2cIS_aH-Dg1LDvtQLDPk0CqxlV5GUyI3U4doascQDBg8PANvjtjJJmBQrvlRAUmBrk0EpVSozfzZUyZdvoYo0hMylTHew00mTDGF5XQYSTdZlBTRfkuGSrIBdhLlTIyml3I7pLfxfc3-RPNd6HGsgf0Y1MDi0T3q0dPiJW1ZjmmuThg" />
+                    </div>
+                    <div class="flex-grow flex flex-col justify-between py-1">
+                        <div>
+                            <h3
+                                class="font-headline font-semibold text-base md:text-lg text-slate-800 mb-1 leading-tight">
+                                Cinta Adhesiva Aislante de Vinilo .19 mm x 18 m.Para 600V.</h3>
+                            <div class="md:hidden text-lg font-bold text-slate-900 mt-2">$28.00</div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="hidden md:block text-title-md font-bold text-[#00685d]">$28.00</div>
+                            <div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg">
+                                <button
+                                    class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-l-lg transition-colors">
+                                    <span class="material-symbols-outlined text-sm">remove</span>
+                                </button>
+                                <div
+                                    class="w-10 text-center text-sm font-medium text-slate-800 bg-white border-x border-slate-200 py-1">
+                                    1</div>
+                                <button
+                                    class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-r-lg transition-colors">
+                                    <span class="material-symbols-outlined text-sm">add</span>
+                                </button>
+                            </div>
+                            <button aria-label="Remove item"
+                                class="ml-auto md:ml-4 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-10 h-10 rounded-lg flex items-center justify-center transition-colors">
+                                <span class="material-symbols-outlined text-xl">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Order Summary (Right Side) -->
+            <div class="lg:col-span-4 mt-8 lg:mt-0">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 sticky top-32">
+                    <h3 class="font-headline font-bold text-xl text-slate-800 mb-6">Resumen</h3>
+                    <div class="space-y-4 mb-6">
+                        <div class="flex justify-between items-center text-base text-slate-800">
+                            <span>Total (1 artículo)</span>
+                            <span class="font-bold text-2xl text-slate-900">$28.00</span>
+                        </div>
+                    </div>
+                    <button
+                        class="w-full bg-[#00897B] text-white rounded-lg py-3 px-4 font-headline font-bold text-base hover:bg-teal-700 transition-colors duration-200 text-center">
+                        Proceder al pago
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Recommended Products Section -->
+        <section class="mt-16 md:mt-24 w-full">
+            <div class="flex justify-between items-end mb-6 px-2 md:px-0">
+                <h2 class="font-headline font-bold text-2xl text-slate-800">Productos recomendados</h2>
+                <div class="hidden md:flex gap-2 text-slate-400">
+                    <button class="hover:text-slate-800"><span
+                            class="material-symbols-outlined">chevron_left</span></button>
+                    <button class="hover:text-slate-800"><span
+                            class="material-symbols-outlined">chevron_right</span></button>
+                </div>
+            </div>
+            <div class="flex overflow-x-auto gap-4 md:gap-6 pb-4 hide-scrollbar px-2 md:px-0 snap-x">
+                <!-- Recommended Item 1 -->
+                <div
+                    class="min-w-[160px] md:min-w-[200px] bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col snap-start shrink-0">
+                    <div
+                        class="w-full aspect-square rounded-lg overflow-hidden bg-white mb-4 flex items-center justify-center">
+                        <img alt="Pinceles" class="max-w-full max-h-full object-contain"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnbtPxZXxMbNMnD8hInmLBdqAjtMMUMRkC9wllBgEQYkoadqUafE0XgmE3fLztekADUeDw973qZWNTzwseBgLFBe9O7xaB6wQNRB-OIyJrTdJ286wuKIxpzmOTlldH0-EiP-s2UPtQFZfcD_zY6aHfsM_q5WwCGEXKuhFcvKYeHGCDliiA-7idYY2qDvElewlkXM-9CoUc9Jc0E81sFAqWyTElB5rhxl3dU0J-2B8o8hGtDBFQDDv9W-ZcLm76gmlW9NwClhHijQ" />
+                    </div>
+                    <h4 class="font-headline font-medium text-sm text-slate-800 leading-tight mb-2 flex-grow">Set de 12
+                        Pinceles Acuarela</h4>
+                    <div class="font-bold text-lg text-slate-900">$150.00</div>
+                </div>
+                <!-- Recommended Item 2 -->
+                <div
+                    class="min-w-[160px] md:min-w-[200px] bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col snap-start shrink-0">
+                    <div
+                        class="w-full aspect-square rounded-lg overflow-hidden bg-[#d8c3a5]/20 mb-4 flex items-center justify-center">
+                        <img alt="Cuaderno" class="max-w-full max-h-full object-contain p-4"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOZ-PEP6_e12BFBsTD1qVJK7b8I63RV02dEh2ae0aIvu9SEut8lwm0ZcJgVnXBsS4gmPPe_0Z8TXHMiUPGhWZGpluTjac8aY6DnqPRfv_oy4vYQUMtsn751zfA20WB3Dt8slmrDhFwTZVZhMzOnX-o67aH0sPKDYVU9PYFKQhxtQsG5L4pLaXj8wa1yMM_b2K9_AUYHwXqQyvwj_xd5GthUxKARVXDX3Q4IeFyFfADyMymaJn48a50iAE8FhPp-GaS2DX4fYzIjw" />
+                    </div>
+                    <h4 class="font-headline font-medium text-sm text-slate-800 leading-tight mb-2 flex-grow">Cuaderno
+                        de Dibujo A4</h4>
+                    <div class="font-bold text-lg text-slate-900">$85.00</div>
+                </div>
+                <!-- Recommended Item 3 -->
+                <div
+                    class="min-w-[160px] md:min-w-[200px] bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col snap-start shrink-0">
+                    <div
+                        class="w-full aspect-square rounded-lg overflow-hidden bg-white mb-4 flex items-center justify-center">
+                        <img alt="Lapices" class="max-w-full max-h-full object-contain"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYiLmFyvox-fIeABRtpqz_bQVBFH1jmnP-lJc2SebdlnpKqvg8KzaoPq7C7QAo16Omq17wGov_uMZ2FMb2ND-rZk3JpdrZZVe-pJRJ3eITim0qyzvfr_iHmJ31VpeYHfyzO6GwZpzLURtuMAYNQGdmJ6uT3OAKzlXequWWKai5rlIGhM5TjlhvZZXrz74c88Oa1Uv4zGIcRhe8uWhRCJBPp8vDUHaf7uUOwghKGxTI0tSa9e99X7CtSaOohLl1X3tXr7sbLC8oxg" />
+                    </div>
+                    <h4 class="font-headline font-medium text-sm text-slate-800 leading-tight mb-2 flex-grow">Caja de 24
+                        Lápices de Colores</h4>
+                    <div class="font-bold text-lg text-slate-900">$120.00</div>
+                </div>
+                <!-- Recommended Item 4 -->
+                <div
+                    class="min-w-[160px] md:min-w-[200px] bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col snap-start shrink-0">
+                    <div
+                        class="w-full aspect-square rounded-lg overflow-hidden bg-white mb-4 flex items-center justify-center">
+                        <img alt="Oleo" class="max-w-full max-h-full object-contain"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKo-Utxf_nUP_z3j-XLyUUt7ASlScSNxXi2zblmRM6lqKJcQznXZDZxJVbL1w29-CAQj2vu2L7tO526qmskQAEbQvtl9NshYl-09WLB_BjWuM1LfoXKXLvUY-ZibeaASAZLalLi1bDD8bsGPKJxwHI674M4O9HHYna33q_wcrK7khzfMZuDMfNSMEajkFgxnt_2zK6mvkUOgpYKt_6KvBTls3cPuha9Dwhu8bHWlu2Yo23tzkaPUywjDpDY8pzjxLeSqRSvIchqg" />
+                    </div>
+                    <h4 class="font-headline font-medium text-sm text-slate-800 leading-tight mb-2 flex-grow">Caja de
+                        Óleos Profesionales</h4>
+                    <div class="font-bold text-lg text-slate-900">$450.00</div>
+                </div>
+                <!-- Recommended Item 5 (To show scrolling) -->
+                <div
+                    class="min-w-[160px] md:min-w-[200px] bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col snap-start shrink-0">
+                    <div
+                        class="w-full aspect-square rounded-lg overflow-hidden bg-white mb-4 flex items-center justify-center">
+                        <img alt="Paleta" class="max-w-full max-h-full object-contain"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo97U5kyF9Mv5XyXY8OOJ2omS4akog2dEDMtvGpCZD6j0Y6GIgkzyNS1mir4a3ovcPKqmoTv5LOWkRO8GD4ahMpGyqZ_WQRiPMEJj98p8BF3uBcR4d_J1-mzX8FqRHW3w3KtvvxMsGTJMLxEj0t_fFx99788EJGUXha1j3IPgMyyiFVPlVUsPw1IAYcRt4avZdUuFgTA7YQbTRwwn9l3ywzG1XqXlspcIViRLTrUBRdgY-oYM6m29MsphpALOKSItkxbqw3jEGBw" />
+                    </div>
+                    <h4 class="font-headline font-medium text-sm text-slate-800 leading-tight mb-2 flex-grow">Paleta de
+                        Madera Ovalada</h4>
+                    <div class="font-bold text-lg text-slate-900">$65.00</div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- Footer -->
+    <footer class="w-full py-12 px-8 bg-slate-50 dark:bg-slate-950 flat mt-auto">
+        <div
+            class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-7xl mx-auto border-t border-slate-200/50 pt-8">
+            <div>
+                <span class="text-lg font-bold text-slate-900 dark:text-slate-100 block mb-2">GodArt</span>
+                <p
+                    class="font-inter text-sm antialiased text-[#00897B] dark:text-teal-400 opacity-100 hover:opacity-80 transition-opacity">
+                    © 2024 GodArt Fine Art Supplies. The Curated Canvas.
+                </p>
+            </div>
+            <div>
+                <ul class="flex flex-wrap gap-4 md:justify-end">
+                    <li><a class="text-slate-500 dark:text-slate-400 hover:text-[#00897B] dark:hover:text-teal-400 transition-colors font-inter text-sm antialiased"
+                            href="#">Materiales</a></li>
+                    <li><a class="text-slate-500 dark:text-slate-400 hover:text-[#00897B] dark:hover:text-teal-400 transition-colors font-inter text-sm antialiased"
+                            href="#">Talleres</a></li>
+                    <li><a class="text-slate-500 dark:text-slate-400 hover:text-[#00897B] dark:hover:text-teal-400 transition-colors font-inter text-sm antialiased"
+                            href="#">Galería</a></li>
+                    <li><a class="text-slate-500 dark:text-slate-400 hover:text-[#00897B] dark:hover:text-teal-400 transition-colors font-inter text-sm antialiased"
+                            href="#">Envíos</a></li>
+                    <li><a class="text-slate-500 dark:text-slate-400 hover:text-[#00897B] dark:hover:text-teal-400 transition-colors font-inter text-sm antialiased"
+                            href="#">Privacidad</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

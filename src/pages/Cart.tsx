@@ -1,23 +1,11 @@
-import { useState } from "react"
 import { Link, useNavigate } from "react-router"
 import { CartEmpty, CartItem } from "../components/cart"
 import { useCart } from "../hooks/useCart"
-import { createCheckoutSession } from "../services/customerApi"
-import "../styles/password-recovery.css"
 import { showNotification } from "../utils/notification"
-import {
-    getStoreUserToken,
-    isStoreUserLoggedIn,
-} from "../utils/storeSession"
 
-/**
- * Página del carrito de compras.
- * "Proceder al pago" requiere sesión con la API, crea sesión Stripe y redirige a pagar.
- */
 export const Cart = () => {
     const navigate = useNavigate()
-    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false)
-    const [checkoutError, setCheckoutError] = useState("")
+
     const {
         cartItems,
         total,
@@ -29,61 +17,8 @@ export const Cart = () => {
         clearCart,
     } = useCart()
 
-    const handleCheckout = async () => {
-        setCheckoutError("")
-
-        if (!isStoreUserLoggedIn()) {
-            navigate("/login?returnTo=/cart", { replace: true })
-            return
-        }
-
-        const itemsWithId = cartItems.filter((item) => item.productId != null && item.productId > 0)
-        const missingId = cartItems.some((item) => !item.productId || item.productId <= 0)
-        if (missingId && itemsWithId.length === 0) {
-            setCheckoutError(
-                "Ningún producto tiene ID válido. Quita los productos y agrégalos de nuevo desde la ficha del producto."
-            )
-            return
-        }
-        if (missingId) {
-            setCheckoutError(
-                "Algunos productos no se pueden cobrar. Quítalos y agrégalos de nuevo desde la ficha del producto."
-            )
-            return
-        }
-
-        const token = getStoreUserToken()
-        if (!token) {
-            navigate("/login?returnTo=/cart", { replace: true })
-            return
-        }
-
-        setIsCheckoutLoading(true)
-        const origin = window.location.origin
-        const result = await createCheckoutSession(token, {
-            items: itemsWithId.map((item) => ({
-                product_id: item.productId!,
-                quantity: item.quantity,
-            })),
-            success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${origin}/checkout/cancel`,
-        })
-
-        setIsCheckoutLoading(false)
-        if (!result.ok || !result.url) {
-            setCheckoutError(result.message ?? "No se pudo iniciar el pago. Intenta de nuevo.")
-            return
-        }
-        showNotification("Redirigiendo a la pasarela de pago…")
-        window.location.href = result.url
-    }
-
     const handleClearCart = () => {
-        if (
-            window.confirm(
-                "¿Estás seguro de que deseas eliminar todos los productos del carrito?"
-            )
-        ) {
+        if (window.confirm("¿Estás seguro de que deseas eliminar todos los productos del carrito?")) {
             clearCart()
             showNotification("Carrito vaciado")
             window.scrollTo(0, 0)
@@ -91,75 +26,96 @@ export const Cart = () => {
     }
 
     return (
-        <main className="cart-main">
+        <main className="flex-grow pt-8 md:pt-16 pb-24 px-4 md:px-8 max-w-6xl mx-auto w-full font-body text-slate-800 bg-gray-50 min-h-screen">
+            {/* Header Banner (Mobile Only) */}
+            <div className="md:hidden bg-[#00897B] text-white py-4 px-6 mb-6 rounded-xl shadow-md text-center">
+                <h1 className="font-headline font-bold text-2xl tracking-tight">Mi Carrito</h1>
+            </div>
+
             {cartItems.length === 0 ? (
                 <CartEmpty />
             ) : (
-                <div className="cart-full-container">
-                    <h2 id="cartTitle">
-                        Mi Carrito ({itemCount} Artículos)
-                    </h2>
+                <>
+                    <header className="mb-8 hidden md:flex items-center justify-between">
+                        <h1 className="font-headline font-bold text-3xl text-slate-800 tracking-tight mb-2">
+                            Mi Carrito ({itemCount} {itemCount === 1 ? 'Artículo' : 'Artículos'})
+                        </h1>
+                        <button
+                            onClick={handleClearCart}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-colors font-medium text-sm"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                            Vaciar todo
+                        </button>
+                    </header>
 
                     {sessionExpired && (
-                        <div className="cart-session-expired-banner">
-                            <i className="fas fa-exclamation-triangle" />
-                            <span>
-                                Tu sesión expiró. Tus productos siguen aquí.
-                                {" "}
-                                <Link to="/login?returnTo=/cart">
+                        <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 mb-6 flex items-start gap-3">
+                            <span className="material-symbols-outlined text-amber-600">warning</span>
+                            <div className="text-sm">
+                                Tu sesión expiró. Tus productos siguen aquí.{" "}
+                                <Link to="/login?returnTo=/cart" className="font-bold underline hover:text-amber-900">
                                     Inicia sesión de nuevo
-                                </Link>
-                                {" "} para sincronizar tu carrito.
-                            </span>
+                                </Link>{" "}
+                                para sincronizar tu carrito.
+                            </div>
                         </div>
                     )}
 
-                    <div className="cart-items">
-                        {cartItems.map((item) => (
-                            <CartItem
-                                key={item.id}
-                                item={item}
-                                isRemoving={removingId === item.id}
-                                onQuantityChange={setQuantity}
-                                onRemove={removeItem}
-                            />
-                        ))}
-                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* Cart Items List */}
+                        <div className="lg:col-span-8 flex flex-col space-y-6">
+                            {cartItems.map((item) => (
+                                <CartItem
+                                    key={item.id}
+                                    item={item}
+                                    isRemoving={removingId === item.id}
+                                    onQuantityChange={setQuantity}
+                                    onRemove={removeItem}
+                                />
+                            ))}
+                        </div>
 
-                    <div className="cart-total">
-                        <h3>Total ({itemCount} {itemCount === 1 ? "artículo" : "artículos"})</h3>
-                        <p id="totalAmount">${total.toFixed(2)}</p>
-                        <p className="cart-pickup-note">
-                            <i className="fas fa-store" aria-hidden /> Recogida en tienda. No hay envíos.
-                        </p>
+                        {/* Order Summary */}
+                        <div className="lg:col-span-4 mt-8 lg:mt-0">
+                            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 sticky top-32">
+                                <h3 className="font-headline font-bold text-xl text-slate-800 mb-6">Resumen</h3>
+                                <div className="space-y-4 mb-6">
+                                    <div className="flex justify-between items-center text-base text-slate-800">
+                                        <span>Total ({itemCount} {itemCount === 1 ? 'artículo' : 'artículos'})</span>
+                                        <span className="font-bold text-2xl text-slate-900">${total.toFixed(2)}</span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-2">
+                                      Los costos de envío se calculan en el siguiente paso.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => navigate("/checkout")}
+                                    className="w-full bg-[#00897B] text-white rounded-lg py-3 px-4 font-headline font-bold text-base hover:bg-teal-700 transition-colors duration-200 text-center shadow-sm"
+                                >
+                                    Proceder al pago
+                                </button>
+                                
+                                <button
+                                    onClick={() => navigate("/")}
+                                    className="w-full mt-3 bg-white text-[#00897B] border border-[#00897B] rounded-lg py-3 px-4 font-headline font-bold text-base hover:bg-teal-50 transition-colors duration-200 text-center"
+                                >
+                                    Continuar comprando
+                                </button>
+                                
+                                <div className="md:hidden mt-6 pt-4 border-t border-slate-100 flex justify-center">
+                                    <button
+                                        onClick={handleClearCart}
+                                        className="flex items-center gap-2 text-red-500 hover:text-red-700 font-medium text-sm"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                                        Vaciar carrito
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                    {checkoutError && (
-                        <p className="password-feedback password-feedback--error" style={{ marginBottom: 12 }}>
-                            {checkoutError}
-                        </p>
-                    )}
-
-                    <div className="cart-actions">
-                        <button
-                            className="btn-clear-cart"
-                            onClick={handleClearCart}
-                            title="Eliminar todos los productos"
-                        >
-                            <i className="fas fa-trash-alt" /> Eliminar todo
-                        </button>
-                        <Link to="/" className="btn-continue">
-                            Continuar comprando
-                        </Link>
-                        <button
-                            className="btn-checkout"
-                            onClick={() => void handleCheckout()}
-                            disabled={isCheckoutLoading}
-                        >
-                            {isCheckoutLoading ? "Preparando pago…" : "Proceder al pago"}
-                        </button>
-                    </div>
-                </div>
+                </>
             )}
         </main>
     )

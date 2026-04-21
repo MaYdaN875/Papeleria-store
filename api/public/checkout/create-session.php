@@ -89,6 +89,14 @@ try {
   foreach ($orderLines as $line) {
     $total += $line['price'] * $line['quantity'];
   }
+  
+  $deliveryMethod = isset($body['delivery_method']) && $body['delivery_method'] === 'delivery' ? 'delivery' : 'pickup';
+  $deliveryAddress = isset($body['delivery_address']) ? (string)$body['delivery_address'] : null;
+
+  if ($deliveryMethod === 'delivery') {
+    $total += 10.0; // Costo extra de envío
+  }
+
   if ($total <= 0) {
     adminJsonResponse(400, ['ok' => false, 'message' => 'El total debe ser mayor que cero.']);
   }
@@ -114,19 +122,40 @@ try {
     ];
   }
 
+  if ($deliveryMethod === 'delivery') {
+    $stripeLineItems[] = [
+      'price_data' => [
+        'currency' => 'mxn',
+        'unit_amount' => 1000, // 10.00 MXN en centavos
+        'product_data' => [
+          'name' => 'Costo de Envío a Domicilio',
+        ],
+      ],
+      'quantity' => 1,
+    ];
+  }
+
   $pdo->beginTransaction();
   try {
     $insertOrder = $pdo->prepare('
-      INSERT INTO orders (customer_user_id, total, currency, status, created_at, updated_at)
-      VALUES (:customer_user_id, :total, :currency, :status, NOW(), NOW())
+      INSERT INTO orders (customer_user_id, total, currency, status, delivery_method, delivery_address, created_at, updated_at)
+      VALUES (:customer_user_id, :total, :currency, :status, :delivery_method, :delivery_address, NOW(), NOW())
     ');
     $insertOrder->execute([
       'customer_user_id' => $customerUserId,
       'total' => $total,
       'currency' => 'mxn',
       'status' => 'pending',
+      'delivery_method' => $deliveryMethod,
+      'delivery_address' => $deliveryAddress
     ]);
     $orderId = (int) $pdo->lastInsertId();
+
+    // Bonus: Autoguardar la dirección en el perfil si es envıo
+    if ($deliveryMethod === 'delivery' && $deliveryAddress) {
+      $updateProfile = $pdo->prepare('UPDATE customer_users SET default_delivery_address = :addr WHERE id = :cid');
+      $updateProfile->execute(['addr' => $deliveryAddress, 'cid' => $customerUserId]);
+    }
 
     $insertItem = $pdo->prepare('
       INSERT INTO order_items (order_id, product_id, quantity, price, created_at)
@@ -150,6 +179,7 @@ try {
       'metadata' => [
         'order_id' => (string) $orderId,
         'customer_user_id' => (string) $customerUserId,
+        'delivery_method' => $deliveryMethod,
       ],
       'payment_intent_data' => [
         'metadata' => [

@@ -20,6 +20,7 @@ import {
     AdminLogin,
     AllProducts,
     Cart,
+    Checkout,
     CheckoutCancel,
     CheckoutSuccess,
     ForgotPassword,
@@ -75,6 +76,7 @@ function AppContent() {
         <Route path="/all-products" element={<AllProducts />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
         <Route path="/checkout/cancel" element={<CheckoutCancel />} />
         <Route path="/login" element={<Login />} />

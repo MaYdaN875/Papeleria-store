@@ -35,6 +35,8 @@ try {
       o.total,
       o.currency,
       o.status,
+      o.delivery_method,
+      o.delivery_address,
       o.created_at
     FROM orders o
     LEFT JOIN customer_users cu ON cu.id = o.customer_user_id
@@ -102,6 +104,8 @@ try {
       'total' => (float)$row['total'],
       'currency' => $row['currency'],
       'status' => $row['status'], // 'paid', 'pending', 'cancelled'
+      'deliveryMethod' => isset($row['delivery_method']) ? $row['delivery_method'] : null,
+      'deliveryAddress' => isset($row['delivery_address']) ? $row['delivery_address'] : null,
       'createdAt' => $row['created_at'],
       'items' => isset($itemsByOrder[$oid]) ? $itemsByOrder[$oid] : [],
     ];
